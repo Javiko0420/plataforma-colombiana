@@ -1,0 +1,232 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth.js models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // Hashed password
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  lastLoginAt   DateTime?
+  loginAttempts Int       @default(0)
+  lockedUntil   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  businesses    Business[]
+  forumPosts    ForumPost[]
+  forumComments ForumComment[]
+  auditLogs     AuditLog[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Business models
+model Business {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  category    Category
+  city        String
+  department  String
+  phone       String?
+  email       String?
+  website     String?
+  whatsapp    String?
+  instagram   String?
+  facebook    String?
+  logo        String?
+  images      String[]
+  featured    Boolean  @default(false)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id])
+  ownerId  String
+  products Product[]
+
+  @@index([category])
+  @@index([city])
+  @@index([department])
+  @@index([featured])
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String  @db.Text
+  price       Float?
+  currency    String  @default("COP")
+  image       String?
+  featured    Boolean @default(false)
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+
+  @@index([featured])
+  @@index([businessId])
+}
+
+// Forum models
+model Forum {
+  id          String @id @default(cuid())
+  name        String
+  description String @db.Text
+  slug        String @unique
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now())
+
+  posts ForumPost[]
+}
+
+model ForumPost {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  pinned    Boolean  @default(false)
+  locked    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+  forum    Forum  @relation(fields: [forumId], references: [id])
+  forumId  String
+
+  comments ForumComment[]
+
+  @@index([forumId])
+  @@index([createdAt])
+}
+
+model ForumComment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User      @relation(fields: [authorId], references: [id])
+  authorId String
+  post     ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId   String
+
+  @@index([postId])
+  @@index([createdAt])
+}
+
+// Audit Log model for security tracking
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String   // CREATE, UPDATE, DELETE, LOGIN, etc.
+  resource  String   // User, Business, Product, etc.
+  resourceId String?
+  oldValues Json?
+  newValues Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+// Security Log model for tracking security events
+model SecurityLog {
+  id        String   @id @default(cuid())
+  event     String   // FAILED_LOGIN, RATE_LIMIT, SUSPICIOUS_INPUT, etc.
+  severity  String   // LOW, MEDIUM, HIGH, CRITICAL
+  ip        String?
+  userAgent String?
+  details   Json?
+  createdAt DateTime @default(now())
+
+  userId String?
+
+  @@index([event])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([ip])
+}
+
+// Enums
+enum UserRole {
+  USER
+  BUSINESS_OWNER
+  ADMIN
+}
+
+enum Category {
+  GASTRONOMIA
+  TECNOLOGIA
+  ARTESANIAS
+  SERVICIOS
+  MODA
+  AGRICULTURA
+  TURISMO
+  SALUD
+  EDUCACION
+  CONSTRUCCION
+  TRANSPORTE
+  ENTRETENIMIENTO
+  OTROS
+}
