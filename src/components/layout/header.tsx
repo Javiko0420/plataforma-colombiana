@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Menu, X, Search, User } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
-import { KeyboardNavigation, ScreenReader } from '@/lib/accessibility'
+import { ScreenReader } from '@/lib/accessibility'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -73,37 +73,37 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav 
-            className="hidden md:flex items-center space-x-8"
+            className="hidden md:flex items-center gap-x-10"
             role="navigation"
             aria-label="Navegación principal"
           >
             <Link 
               href="/" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1"
+              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Inicio
             </Link>
             <Link 
               href="/directorio" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1"
+              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Directorio
             </Link>
             <Link 
               href="/foros" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1"
+              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Foros
             </Link>
             <Link 
               href="/deportes" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1"
+              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Deportes
             </Link>
             <Link 
               href="/clima" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-2 py-1"
+              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Clima
             </Link>
@@ -161,11 +161,11 @@ export function Header() {
           >
             <div 
               ref={mobileMenuRef}
-              className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 dark:bg-gray-800 rounded-lg mt-2 border border-gray-200 dark:border-gray-700"
+              className="px-2 pt-2 pb-3 space-y-3 sm:px-3 bg-gray-50 dark:bg-gray-800 rounded-lg mt-2 border border-gray-200 dark:border-gray-700"
             >
               <Link
                 href="/"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] flex items-center"
+                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Inicio', 'polite')
@@ -175,7 +175,7 @@ export function Header() {
               </Link>
               <Link
                 href="/directorio"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] flex items-center"
+                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Directorio', 'polite')
@@ -185,7 +185,7 @@ export function Header() {
               </Link>
               <Link
                 href="/foros"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] flex items-center"
+                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Foros', 'polite')
@@ -195,7 +195,7 @@ export function Header() {
               </Link>
               <Link
                 href="/deportes"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] flex items-center"
+                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Deportes', 'polite')
@@ -205,7 +205,7 @@ export function Header() {
               </Link>
               <Link
                 href="/clima"
-                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] flex items-center"
+                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Clima', 'polite')

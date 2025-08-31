@@ -1,27 +1,29 @@
-import bcrypt from 'bcryptjs'
-import sanitizeHtml from 'sanitize-html'
-import DOMPurify from 'dompurify'
-import { JSDOM } from 'jsdom'
+// Edge Runtime compatible imports
+// Note: Some features will be limited in Edge Runtime
 
 /**
  * Security utilities for the application
  * Includes password hashing, input sanitization, and security headers
  */
 
-// Password security
+// Password security - Edge Runtime compatible version
 export class PasswordSecurity {
-  private static readonly SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS || '12')
-
   /**
-   * Hash a password using bcrypt
-   * @param password - Plain text password
-   * @returns Hashed password
+   * Simple password hashing using Web Crypto API (Edge Runtime compatible)
+   * Note: This is a simplified version. In production, use bcrypt in API routes.
    */
   static async hashPassword(password: string): Promise<string> {
     if (!password || password.length < 8) {
       throw new Error('Password must be at least 8 characters long')
     }
-    return bcrypt.hash(password, this.SALT_ROUNDS)
+    
+    // Use Web Crypto API for Edge Runtime compatibility
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password + process.env.NEXTAUTH_SECRET)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    return hashHex
   }
 
   /**
@@ -34,7 +36,8 @@ export class PasswordSecurity {
     if (!password || !hash) {
       return false
     }
-    return bcrypt.compare(password, hash)
+    const hashedInput = await this.hashPassword(password)
+    return hashedInput === hash
   }
 
   /**
@@ -76,43 +79,31 @@ export class PasswordSecurity {
   }
 }
 
-// Input sanitization
+// Input sanitization - Edge Runtime compatible
 export class InputSanitizer {
   /**
-   * Sanitize HTML content to prevent XSS attacks
+   * Basic HTML sanitization for Edge Runtime
    * @param html - HTML content to sanitize
    * @returns Sanitized HTML
    */
   static sanitizeHtml(html: string): string {
-    return sanitizeHtml(html, {
-      allowedTags: [
-        'p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li',
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote'
-      ],
-      allowedAttributes: {},
-      allowedSchemes: ['http', 'https', 'mailto'],
-      disallowedTagsMode: 'discard',
-      allowedSchemesByTag: {},
-      allowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],
-      allowProtocolRelative: false,
-    })
+    // Simple HTML tag removal for Edge Runtime compatibility
+    return html
+      .replace(/<script[^>]*>.*?<\/script>/gi, '')
+      .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '')
+      .replace(/<object[^>]*>.*?<\/object>/gi, '')
+      .replace(/<embed[^>]*>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
   }
 
   /**
-   * Sanitize text content (remove all HTML)
+   * Remove all HTML tags from text
    * @param text - Text to sanitize
    * @returns Plain text without HTML
    */
   static sanitizeText(text: string): string {
-    if (typeof window !== 'undefined') {
-      // Client-side
-      return DOMPurify.sanitize(text, { ALLOWED_TAGS: [] })
-    } else {
-      // Server-side
-      const window = new JSDOM('').window
-      const purify = DOMPurify(window)
-      return purify.sanitize(text, { ALLOWED_TAGS: [] })
-    }
+    return text.replace(/<[^>]*>/g, '')
   }
 
   /**

@@ -214,16 +214,16 @@ export default function DirectorioPage() {
         </div>
 
         {/* Results */}
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">
             Mostrando {filteredBusinesses.length} emprendimientos
           </p>
         </div>
 
         {/* Business Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
           {filteredBusinesses.map((business) => (
-            <div key={business.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+            <div key={business.id} className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               {/* Business Image */}
               <div className="h-48 bg-gradient-to-r from-yellow-400 via-red-400 to-blue-400 relative">
                 {business.featured && (

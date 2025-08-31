@@ -29,7 +29,7 @@ export default function Home() {
                 Plataforma Colombiana
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-8 max-w-6xl mx-auto text-center" style={{ textAlign: 'center' }}>
               Conectando emprendedores, productos únicos y la pasión colombiana en un solo lugar
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -71,8 +71,8 @@ export default function Home() {
             <h2 id="stats-title" className="sr-only">
               Estadísticas de la plataforma
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center justify-items-center">
+              <div className="text-center">
               <div 
                 className="bg-gradient-to-r from-yellow-400 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
                 aria-hidden="true"
@@ -83,8 +83,8 @@ export default function Home() {
                 1,200+
               </div>
               <div className="text-gray-600 dark:text-gray-400">Emprendedores</div>
-            </div>
-            <div className="text-center">
+              </div>
+              <div className="text-center">
               <div 
                 className="bg-gradient-to-r from-red-400 to-blue-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
                 aria-hidden="true"
@@ -95,8 +95,8 @@ export default function Home() {
                 5,000+
               </div>
               <div className="text-gray-600 dark:text-gray-400">Productos</div>
-            </div>
-            <div className="text-center">
+              </div>
+              <div className="text-center">
               <div 
                 className="bg-gradient-to-r from-blue-400 to-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
                 aria-hidden="true"
@@ -107,8 +107,8 @@ export default function Home() {
                 32
               </div>
               <div className="text-gray-600 dark:text-gray-400">Departamentos</div>
-            </div>
-            <div className="text-center">
+              </div>
+              <div className="text-center">
               <div 
                 className="bg-gradient-to-r from-green-400 to-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
                 aria-hidden="true"
@@ -119,26 +119,26 @@ export default function Home() {
                 98%
               </div>
               <div className="text-gray-600 dark:text-gray-400">Satisfacción</div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Features Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Todo lo que necesitas en un solo lugar
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Desde emprendimientos locales hasta información en tiempo real de Colombia
-            </p>
-          </div>
+        {/* Features Section */}
+        <section className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+                Todo lo que necesitas en un solo lugar
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-6xl mx-auto text-center">
+               Desde emprendimientos locales hasta información en tiempo real de Colombia
+              </p>
+            </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Directorio de Empresas */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-yellow-200 dark:border-yellow-800">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
+              {/* Directorio de Empresas */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-yellow-200 dark:border-yellow-800">
               <div className="bg-gradient-to-r from-yellow-400 to-red-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
                 <Users className="h-6 w-6 text-white" />
               </div>
@@ -157,8 +157,8 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Emisoras */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-red-200 dark:border-red-800">
+              {/* Emisoras */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-red-200 dark:border-red-800">
               <div className="bg-gradient-to-r from-red-400 to-blue-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
                 <Radio className="h-6 w-6 text-white" />
               </div>
@@ -255,29 +255,31 @@ export default function Home() {
                 Ver tasas
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-yellow-500 via-red-500 to-blue-500">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            ¿Eres emprendedor colombiano?
-          </h2>
-          <p className="text-xl text-white/90 mb-8">
-            Únete a nuestra plataforma y da a conocer tu negocio a miles de colombianos
-          </p>
-          <Link
-            href="/registro"
-            className="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center"
-          >
-            Registrar mi negocio
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-        </div>
-      </section>
+        {/* CTA Section */}
+        <section className="py-20 bg-gradient-to-r from-yellow-500 via-red-500 to-blue-500">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 text-center">
+              ¿Eres emprendedor colombiano?
+            </h2>
+            <p className="text-xl text-white/90 mb-8 text-center">
+              Únete a nuestra plataforma y da a conocer tu negocio a miles de colombianos
+            </p>
+            <div className="flex justify-center">
+              <Link
+                href="/registro"
+                className="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center"
+              >
+                Registrar mi negocio
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   )

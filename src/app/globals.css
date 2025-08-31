@@ -3,19 +3,29 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #2563eb;
+  --accent: #f4f4f5;
+  --accent-foreground: #111827;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark theme controlado por la clase .dark (next-themes) */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --border: #2d2d2d;
+  --input: #2d2d2d;
+  --ring: #2563eb;
+  --accent: #2d2d2d;
+  --accent-foreground: #ededed;
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  all: revert-layer;
 }
 
 html,
@@ -101,6 +111,7 @@ a {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  line-clamp: 2;
   overflow: hidden;
 }
 
@@ -108,6 +119,7 @@ a {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  line-clamp: 3;
   overflow: hidden;
 }
 
@@ -140,4 +152,10 @@ a {
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #777;
+}
+
+@layer utilities {
+  .text-webkit-center {
+    text-align: -webkit-center;
+  }
 }

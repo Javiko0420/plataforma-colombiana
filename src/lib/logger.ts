@@ -1,78 +1,30 @@
-import winston from 'winston'
-
 /**
  * Centralized logging system for the application
- * Provides structured logging with different levels and formats
+ * Edge Runtime compatible version - uses console for logging
  */
 
-// Define log levels
-const logLevels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
+// Simple logger for Edge Runtime compatibility
+const logger = {
+  debug: (message: string, data?: unknown) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.debug(`[DEBUG] ${message}`, data || '')
+    }
+  },
+  info: (message: string, data?: unknown) => {
+    console.info(`[INFO] ${message}`, data || '')
+  },
+  warn: (message: string, data?: unknown) => {
+    console.warn(`[WARN] ${message}`, data || '')
+  },
+  error: (message: string, data?: unknown) => {
+    console.error(`[ERROR] ${message}`, data || '')
+  },
+  http: (message: string, data?: unknown) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[HTTP] ${message}`, data || '')
+    }
+  }
 }
-
-// Define colors for each log level
-const logColors = {
-  error: 'red',
-  warn: 'yellow',
-  info: 'green',
-  http: 'magenta',
-  debug: 'white',
-}
-
-// Add colors to winston
-winston.addColors(logColors)
-
-// Define log format
-const logFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
-  )
-)
-
-// Define transports
-const transports = [
-  // Console transport for development
-  new winston.transports.Console({
-    format: logFormat,
-  }),
-  // File transport for errors
-  new winston.transports.File({
-    filename: 'logs/error.log',
-    level: 'error',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-  }),
-  // File transport for all logs
-  new winston.transports.File({
-    filename: 'logs/combined.log',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-  }),
-]
-
-// Create logger instance
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  levels: logLevels,
-  transports,
-  // Handle exceptions and rejections
-  exceptionHandlers: [
-    new winston.transports.File({ filename: 'logs/exceptions.log' }),
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({ filename: 'logs/rejections.log' }),
-  ],
-})
 
 // Security event logger
 class SecurityLogger {
@@ -202,7 +154,7 @@ class AppLogger {
     type: 'business_created' | 'business_updated' | 'business_deleted' | 'product_added' | 'forum_post_created'
     userId?: string
     resourceId?: string
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   }) {
     const logData = {
       event: 'BUSINESS_EVENT',
@@ -221,7 +173,7 @@ class AppLogger {
    */
   static logSystemEvent(event: {
     type: 'startup' | 'shutdown' | 'database_connection' | 'external_api_call' | 'email_sent'
-    details?: Record<string, any>
+    details?: Record<string, unknown>
     success: boolean
     error?: string
   }) {
@@ -253,7 +205,7 @@ class ErrorLogger {
     userAgent?: string
     url?: string
     method?: string
-    body?: any
+    body?: unknown
   }) {
     const logData = {
       event: 'APPLICATION_ERROR',
@@ -307,7 +259,7 @@ class PerformanceLogger {
     operation: string
     duration: number
     memoryUsage?: NodeJS.MemoryUsage
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   }) {
     const logData = {
       event: 'PERFORMANCE_METRIC',
