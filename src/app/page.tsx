@@ -3,7 +3,7 @@ import { ArrowRight, Star, Users, TrendingUp, MapPin, Radio, Cloud, Trophy } fro
 
 export default function Home() {
   return (
-    <div className="bg-gradient-to-br from-yellow-50 via-red-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div>
       {/* Skip to main content link for screen readers */}
       <a 
         href="#main-content" 
@@ -29,7 +29,7 @@ export default function Home() {
                 Plataforma Colombiana
               </span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-8 max-w-6xl mx-auto text-center" style={{ textAlign: 'center' }}>
+            <p className="text-xl md:text-2xl text-black dark:text-gray-300 mb-8 max-w-6xl mx-auto text-center" style={{ textAlign: 'center' }}>
               Conectando emprendedores, productos únicos y la pasión colombiana en un solo lugar
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -128,10 +128,10 @@ export default function Home() {
         <section className="py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4 text-center">
                 Todo lo que necesitas en un solo lugar
               </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-6xl mx-auto text-center">
+              <p className="text-xl text-black dark:text-gray-400 max-w-6xl mx-auto text-center">
                Desde emprendimientos locales hasta información en tiempo real de Colombia
               </p>
             </div>

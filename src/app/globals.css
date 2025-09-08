@@ -8,6 +8,11 @@
   --ring: #2563eb;
   --accent: #f4f4f5;
   --accent-foreground: #111827;
+  /* Fondo cálido y colorido para modo claro (inspirado en bandera colombiana) */
+  --page-background-image:
+    radial-gradient(90% 80% at 95% 5%, rgba(251,191,36,0.65), transparent 88%), /* Amarillo */
+    radial-gradient(75% 60% at 5% 95%, rgba(239,68,68,0.48), transparent 88%),   /* Rojo */
+    radial-gradient(80% 70% at 50% 55%, rgba(59,130,246,0.36), transparent 88%);  /* Azul */
 }
 
 /* Dark theme controlado por la clase .dark (next-themes) */
@@ -19,13 +24,17 @@
   --ring: #2563eb;
   --accent: #2d2d2d;
   --accent-foreground: #ededed;
+  /* Fondo sobrio en modo oscuro */
+  --page-background-image:
+    radial-gradient(60% 50% at 80% 0%, rgba(255,255,255,0.035), transparent 70%),
+    radial-gradient(40% 35% at 10% 100%, rgba(255,255,255,0.025), transparent 70%);
 }
 
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  all: revert-layer;
+  /* all: revert-layer; */
 }
 
 html,
@@ -35,7 +44,12 @@ body {
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: var(--page-background-image);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
   color: var(--foreground);
 }
 
@@ -155,7 +169,11 @@ a {
 }
 
 @layer utilities {
-  .text-webkit-center {
-    text-align: -webkit-center;
-  }
+  .bg-background { background-color: var(--background); }
+  .text-foreground { color: var(--foreground); }
+  .border-border { border-color: var(--border); }
+  .bg-accent { background-color: var(--accent); }
+  .text-accent-foreground { color: var(--accent-foreground); }
+  .ring-ring { --tw-ring-color: var(--ring); }
+  .bg-input { background-color: var(--input); }
 }

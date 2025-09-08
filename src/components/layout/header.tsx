@@ -47,7 +47,7 @@ export function Header() {
 
   return (
     <header 
-      className="bg-white dark:bg-gray-900 shadow-lg border-b-4 border-yellow-400"
+      className="bg-background text-foreground shadow-lg border-b border-border"
       role="banner"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,7 +65,7 @@ export function Header() {
               >
                 <span className="text-white font-bold text-sm">PC</span>
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">
+              <span className="text-xl font-bold text-foreground">
                 Plataforma Colombiana
               </span>
             </Link>
@@ -79,31 +79,31 @@ export function Header() {
           >
             <Link 
               href="/" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Inicio
             </Link>
             <Link 
               href="/directorio" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Directorio
             </Link>
             <Link 
               href="/foros" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Foros
             </Link>
             <Link 
               href="/deportes" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Deportes
             </Link>
             <Link 
               href="/clima" 
-              className="text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
               Clima
             </Link>
@@ -113,7 +113,7 @@ export function Header() {
           <div className="flex items-center space-x-4">
             {/* Search button */}
             <button 
-              className="p-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Abrir búsqueda"
             >
               <Search className="h-5 w-5" aria-hidden="true" />
@@ -127,7 +127,7 @@ export function Header() {
 
             {/* User menu */}
             <button 
-              className="p-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Menú de usuario"
             >
               <User className="h-5 w-5" aria-hidden="true" />
@@ -137,7 +137,7 @@ export function Header() {
             <button
               ref={menuButtonRef}
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="md:hidden p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
               aria-label={isMenuOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
@@ -161,11 +161,11 @@ export function Header() {
           >
             <div 
               ref={mobileMenuRef}
-              className="px-2 pt-2 pb-3 space-y-3 sm:px-3 bg-gray-50 dark:bg-gray-800 rounded-lg mt-2 border border-gray-200 dark:border-gray-700"
+              className="px-2 pt-2 pb-3 space-y-3 sm:px-3 bg-background rounded-lg mt-2 border border-border"
             >
               <Link
                 href="/"
-                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Inicio', 'polite')
@@ -175,7 +175,7 @@ export function Header() {
               </Link>
               <Link
                 href="/directorio"
-                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Directorio', 'polite')
@@ -185,7 +185,7 @@ export function Header() {
               </Link>
               <Link
                 href="/foros"
-                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Foros', 'polite')
@@ -195,7 +195,7 @@ export function Header() {
               </Link>
               <Link
                 href="/deportes"
-                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Deportes', 'polite')
@@ -205,7 +205,7 @@ export function Header() {
               </Link>
               <Link
                 href="/clima"
-                className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
                   ScreenReader.announce('Navegando a Clima', 'polite')
