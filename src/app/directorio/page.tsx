@@ -115,7 +115,7 @@ export default function DirectorioPage() {
   return (
     <div className="min-h-screen">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-yellow-500 via-red-500 to-blue-500 py-16">
+      <div className="bg-gradient-to-r from-yellow-500 via-blue-500 to-red-500 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -225,7 +225,7 @@ export default function DirectorioPage() {
           {filteredBusinesses.map((business) => (
             <div key={business.id} className="w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               {/* Business Image */}
-              <div className="h-48 bg-gradient-to-r from-yellow-400 via-red-400 to-blue-400 relative">
+              <div className="h-48 bg-gradient-to-r from-yellow-400 via-blue-400 to-red-400 relative">
                 {business.featured && (
                   <div className="absolute top-4 left-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                     Destacado

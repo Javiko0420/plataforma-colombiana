@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest --environment jsdom --setupFiles vitest.setup.ts"
+    "test": "vitest"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",

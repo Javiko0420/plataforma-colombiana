@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #171717;
   --border: #e5e7eb;
   --input: #e5e7eb;
@@ -10,9 +10,9 @@
   --accent-foreground: #111827;
   /* Fondo cálido y colorido para modo claro (inspirado en bandera colombiana) */
   --page-background-image:
-    radial-gradient(90% 80% at 95% 5%, rgba(251,191,36,0.65), transparent 88%), /* Amarillo */
-    radial-gradient(75% 60% at 5% 95%, rgba(239,68,68,0.48), transparent 88%),   /* Rojo */
-    radial-gradient(80% 70% at 50% 55%, rgba(59,130,246,0.36), transparent 88%);  /* Azul */
+    radial-gradient(90% 80% at 95% 5%, rgba(251,191,36,0.28), transparent 88%), /* Amarillo suavizado */
+    radial-gradient(75% 60% at 5% 95%, rgba(239,68,68,0.18), transparent 88%),   /* Rojo suavizado */
+    radial-gradient(80% 70% at 50% 55%, rgba(59,130,246,0.14), transparent 88%);  /* Azul suavizado */
 }
 
 /* Dark theme controlado por la clase .dark (next-themes) */
@@ -34,7 +34,7 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
-  /* all: revert-layer; */
+  all: revert-layer;
 }
 
 html,
