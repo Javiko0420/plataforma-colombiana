@@ -6,8 +6,10 @@ import { Menu, X, Search, User } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 import { ScreenReader } from '@/lib/accessibility'
+import { useTranslations } from '@/components/providers/language-provider'
 
 export function Header() {
+  const { t } = useTranslations()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
@@ -19,7 +21,7 @@ export function Header() {
     
     // Announce state change to screen readers
     ScreenReader.announce(
-      newState ? 'Menú de navegación abierto' : 'Menú de navegación cerrado',
+      newState ? t('sr.menu.open') : t('sr.menu.closed'),
       'polite'
     )
   }
@@ -32,7 +34,7 @@ export function Header() {
       if (event.key === 'Escape') {
         setIsMenuOpen(false)
         menuButtonRef.current?.focus()
-        ScreenReader.announce('Menú cerrado', 'polite')
+        ScreenReader.announce(t('sr.menu.closed.short'), 'polite')
       }
     }
 
@@ -43,7 +45,7 @@ export function Header() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isMenuOpen])
+  }, [isMenuOpen, t])
 
   return (
     <header 
@@ -57,7 +59,7 @@ export function Header() {
             <Link 
               href="/" 
               className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md p-1"
-              aria-label="Plataforma Colombiana - Ir a página principal"
+              aria-label={`${t('app.name')} - ${t('nav.home')}`}
             >
               <div 
                 className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full flex items-center justify-center"
@@ -66,7 +68,7 @@ export function Header() {
                 <span className="text-white font-bold text-sm">PC</span>
               </div>
               <span className="text-xl font-bold text-foreground">
-                Plataforma Colombiana
+                {t('app.name')}
               </span>
             </Link>
           </div>
@@ -75,37 +77,37 @@ export function Header() {
           <nav 
             className="hidden md:flex items-center gap-x-10"
             role="navigation"
-            aria-label="Navegación principal"
+            aria-label={t('app.name')}
           >
             <Link 
               href="/" 
               className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
-              Inicio
+              {t('nav.home')}
             </Link>
             <Link 
               href="/directorio" 
               className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
-              Directorio
+              {t('nav.directory')}
             </Link>
             <Link 
               href="/foros" 
               className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
-              Foros
+              {t('nav.forums')}
             </Link>
             <Link 
               href="/deportes" 
               className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
-              Deportes
+              {t('nav.sports')}
             </Link>
             <Link 
               href="/clima" 
               className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
-              Clima
+              {t('nav.weather')}
             </Link>
           </nav>
 
@@ -114,7 +116,7 @@ export function Header() {
             {/* Search button */}
             <button 
               className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Abrir búsqueda"
+              aria-label={t('header.search.aria')}
             >
               <Search className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -128,7 +130,7 @@ export function Header() {
             {/* User menu */}
             <button 
               className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Menú de usuario"
+              aria-label={t('header.userMenu', 'Menú de usuario')}
             >
               <User className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -140,7 +142,7 @@ export function Header() {
               className="md:hidden p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
-              aria-label={isMenuOpen ? "Cerrar menú de navegación" : "Abrir menú de navegación"}
+              aria-label={isMenuOpen ? t('sr.menu.closed') : t('sr.menu.open')}
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" aria-hidden="true" />
@@ -168,50 +170,50 @@ export function Header() {
                 className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
-                  ScreenReader.announce('Navegando a Inicio', 'polite')
+                  ScreenReader.announce(t('sr.nav.to.home'), 'polite')
                 }}
               >
-                Inicio
+                {t('nav.home')}
               </Link>
               <Link
                 href="/directorio"
                 className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
-                  ScreenReader.announce('Navegando a Directorio', 'polite')
+                  ScreenReader.announce(t('sr.nav.to.directory'), 'polite')
                 }}
               >
-                Directorio
+                {t('nav.directory')}
               </Link>
               <Link
                 href="/foros"
                 className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
-                  ScreenReader.announce('Navegando a Foros', 'polite')
+                  ScreenReader.announce(t('sr.nav.to.forums'), 'polite')
                 }}
               >
-                Foros
+                {t('nav.forums')}
               </Link>
               <Link
                 href="/deportes"
                 className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
-                  ScreenReader.announce('Navegando a Deportes', 'polite')
+                  ScreenReader.announce(t('sr.nav.to.sports'), 'polite')
                 }}
               >
-                Deportes
+                {t('nav.sports')}
               </Link>
               <Link
                 href="/clima"
                 className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
                 onClick={() => {
                   setIsMenuOpen(false)
-                  ScreenReader.announce('Navegando a Clima', 'polite')
+                  ScreenReader.announce(t('sr.nav.to.weather'), 'polite')
                 }}
               >
-                Clima
+                {t('nav.weather')}
               </Link>
             </div>
           </div>

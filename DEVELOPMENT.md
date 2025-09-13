@@ -58,6 +58,13 @@ WEATHER_API_KEY=""
 EXCHANGE_RATE_API_KEY=""
 YOUTUBE_API_KEY=""
 SPORTS_API_KEY=""
+
+# Traducción (DeepL)
+TRANSLATION_PROVIDER="deepl"        # deepl | libre
+# URL sin "/v2" (el SDK agrega el path):
+DEEPL_API_URL="https://api-free.deepl.com"   # o https://api.deepl.com
+DEEPL_API_KEY="<tu-api-key-deepl>"  # nunca publiques tu clave real
+TRANSLATION_TIMEOUT_MS="8000"       # timeout de las peticiones de traducción
 ```
 
 ## 🏗️ Arquitectura del Proyecto
@@ -81,6 +88,7 @@ plataforma-colombiana/
 │   │   ├── validations.ts    # Esquemas de validación
 │   │   ├── security.ts       # Utilidades de seguridad
 │   │   ├── logger.ts         # Sistema de logging
+│   │   ├── translation.ts    # Cliente de traducción (DeepL)
 │   │   └── error-handler.ts  # Manejo de errores
 │   └── types/                # Definiciones de TypeScript
 ├── prisma/
@@ -96,6 +104,7 @@ plataforma-colombiana/
 - **Base de datos**: PostgreSQL con Prisma ORM
 - **Autenticación**: NextAuth.js
 - **Validación**: Zod
+- **Traducción**: DeepL (SDK `deepl-node`)
 - **Logging**: Winston
 - **Testing**: Jest, React Testing Library (a implementar)
 
@@ -203,6 +212,89 @@ export const POST = ErrorHandler.asyncHandler(async (request: NextRequest) => {
   return createSuccessResponse(business, 'Emprendimiento creado exitosamente', 201)
 })
 ```
+
+### Traducción (DeepL) – Setup y Uso
+
+#### 1) Instalar dependencia
+```bash
+npm install deepl-node
+```
+
+#### 2) Cliente de traducción (`src/lib/translation.ts`)
+> Crea este archivo con un cliente tipado y seguro. Maneja timeouts y mapea códigos de idioma a DeepL.
+```typescript
+import * as deepl from 'deepl-node'
+
+const apiKey = process.env.DEEPL_API_KEY
+if (!apiKey) {
+  throw new Error('DEEPL_API_KEY no está definido')
+}
+
+const baseUrl = process.env.DEEPL_API_URL
+const translator = new deepl.Translator({ authKey: apiKey, serverUrl: baseUrl })
+
+const DEFAULT_TIMEOUT = Number(process.env.TRANSLATION_TIMEOUT_MS ?? 8000)
+
+export type SupportedLang =
+  | 'ES' | 'EN' | 'PT' | 'FR' | 'DE' | 'IT' | 'NL' | 'PL' | 'JA' | 'KO'
+
+export async function translateText(text: string, targetLang: SupportedLang) {
+  if (!text?.trim()) return text
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT)
+  try {
+    const result = await translator.translateText(text, null, targetLang as deepl.TargetLanguageCode)
+    return result.text
+  } catch (err: any) {
+    // Normalizar errores
+    const code = err?.status || err?.code
+    if (code === 456) {
+      throw new Error('Cuota de DeepL excedida (456)')
+    }
+    if (code === 403) {
+      throw new Error('No autorizado a DeepL (403). Verifica DEEPL_API_KEY')
+    }
+    throw new Error(`Error de traducción: ${err?.message ?? String(err)}`)
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+```
+
+#### 3) API Route opcional (`src/app/api/translate/route.ts`)
+> Úsalo si necesitas traducir desde el cliente. Si solo traduces en SSR/Server Actions, llama a `translateText` directamente.
+```typescript
+import { NextRequest } from 'next/server'
+import { ErrorHandler, createSuccessResponse } from '@/lib/error-handler'
+import { translateText } from '@/lib/translation'
+
+export const runtime = 'nodejs'
+
+export const POST = ErrorHandler.asyncHandler(async (req: NextRequest) => {
+  const { text, lang } = await req.json()
+  if (!text || !lang) {
+    return new Response(JSON.stringify({ success: false, message: 'Faltan parámetros: text, lang' }), { status: 400 })
+  }
+  const translated = await translateText(text, lang)
+  return createSuccessResponse({ translated })
+})
+```
+
+#### 4) Uso en el servidor (ejemplo en un Server Component / Action)
+```typescript
+import { translateText } from '@/lib/translation'
+
+export default async function Page() {
+  const title = await translateText('Conectando emprendedores', 'EN')
+  return <h1>{title}</h1>
+}
+```
+
+#### 5) Seguridad y rendimiento
+- Mantén `DEEPL_API_KEY` **solo en el servidor**; nunca lo expongas al cliente.
+- Establece `TRANSLATION_TIMEOUT_MS` para evitar cuelgues por red.
+- Usa caché (p. ej., con Redis) si traduces el mismo contenido frecuentemente.
+- Para cuentas **Free**, usa `https://api-free.deepl.com/v2` en `DEEPL_API_URL`.
 
 ### Reglas de ESLint
 ```json
@@ -419,6 +511,18 @@ npx prisma generate
 npm run type-check
 ```
 
+#### Errores de DeepL
+```bash
+# Problema: 403 No autorizado
+# Solución: Verifica DEEPL_API_KEY y que no tenga espacios o prefijo incorrecto.
+
+# Problema: 456 Cuota excedida
+# Solución: Espera el reseteo de cuota o mejora tu plan de DeepL.
+
+# Problema: Timeout
+# Solución: Incrementa TRANSLATION_TIMEOUT_MS o revisa conectividad/URL de API.
+```
+
 ### Logs de Debug
 ```bash
 # Ver logs de la aplicación
@@ -459,6 +563,7 @@ npm run format
 - [Prisma Docs](https://www.prisma.io/docs)
 - [NextAuth.js Docs](https://next-auth.js.org)
 - [Tailwind CSS Docs](https://tailwindcss.com/docs)
+- Documentación DeepL (SDK `deepl-node`)
 
 ### Herramientas de Desarrollo
 - **VS Code Extensions**: 

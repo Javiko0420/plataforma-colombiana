@@ -1,7 +1,12 @@
+"use client"
+
 import Link from 'next/link'
 import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react'
+import { useTranslations } from '@/components/providers/language-provider'
 
 export function Footer() {
+  const { t } = useTranslations()
+  const year = new Date().getFullYear()
   return (
     <footer className="bg-background text-foreground border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -12,12 +17,9 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-sm">PC</span>
               </div>
-              <span className="text-xl font-bold">Plataforma Colombiana</span>
+              <span className="text-xl font-bold">{t('app.name')}</span>
             </div>
-            <p className="text-foreground/70 mb-4">
-              Conectando emprendedores y consumidores en toda Colombia. 
-              Descubre productos únicos y apoya el talento local.
-            </p>
+            <p className="text-foreground/70 mb-4">{t('footer.tagline')}</p>
             <div className="flex space-x-4">
               <a href="#" className="text-foreground/70 hover:text-foreground transition-colors">
                 <Facebook className="h-5 w-5" />
@@ -36,26 +38,26 @@ export function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/directorio" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Directorio de Empresas
+                  {t('footer.links.directory')}
                 </Link>
               </li>
               <li>
                 <Link href="/foros" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Foros de Discusión
+                  {t('footer.links.forums')}
                 </Link>
               </li>
               <li>
                 <Link href="/deportes" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Resultados Deportivos
+                  {t('footer.links.sports')}
                 </Link>
               </li>
               <li>
                 <Link href="/clima" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Clima Nacional
+                  {t('footer.links.weather')}
                 </Link>
               </li>
             </ul>
@@ -63,26 +65,26 @@ export function Footer() {
 
           {/* Categories */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Categorías</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.categories')}</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/categoria/gastronomia" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Gastronomía
+                  {t('footer.category.gastronomy')}
                 </Link>
               </li>
               <li>
                 <Link href="/categoria/tecnologia" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Tecnología
+                  {t('footer.category.technology')}
                 </Link>
               </li>
               <li>
                 <Link href="/categoria/artesanias" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Artesanías
+                  {t('footer.category.handicrafts')}
                 </Link>
               </li>
               <li>
                 <Link href="/categoria/moda" className="text-foreground/70 hover:text-foreground transition-colors">
-                  Moda
+                  {t('footer.category.fashion')}
                 </Link>
               </li>
             </ul>
@@ -90,7 +92,7 @@ export function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contacto</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('footer.contact')}</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4" />
@@ -102,7 +104,7 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4" />
-                <span className="text-foreground/70">Bogotá, Colombia</span>
+                <span className="text-foreground/70">{t('footer.location')}</span>
               </div>
             </div>
           </div>
@@ -110,15 +112,13 @@ export function Footer() {
 
         <div className="border-t border-border mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-foreground/70 text-sm">
-              © 2024 Plataforma Colombiana. Todos los derechos reservados.
-            </p>
+            <p className="text-foreground/70 text-sm">© {year} {t('app.name')}. {t('footer.rights')}</p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacidad" className="text-foreground/70 hover:text-foreground text-sm transition-colors">
-                Política de Privacidad
+                {t('footer.privacy')}
               </Link>
               <Link href="/terminos" className="text-foreground/70 hover:text-foreground text-sm transition-colors">
-                Términos de Uso
+                {t('footer.terms')}
               </Link>
             </div>
           </div>

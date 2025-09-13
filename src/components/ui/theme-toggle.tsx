@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useTranslations } from '@/components/providers/language-provider'
 
 export function getNextTheme(current: string | undefined): 'light' | 'dark' {
   return current === 'light' ? 'dark' : 'light'
@@ -10,6 +11,7 @@ export function getNextTheme(current: string | undefined): 'light' | 'dark' {
 
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme()
+  const { t } = useTranslations()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
   const isDark = resolvedTheme === 'dark'
@@ -30,7 +32,7 @@ export function ThemeToggle() {
       ) : (
         <Moon className="h-[1.2rem] w-[1.2rem]" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t('theme.toggle', 'Toggle theme')}</span>
     </button>
   )
 }

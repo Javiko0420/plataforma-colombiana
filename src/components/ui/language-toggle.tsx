@@ -2,22 +2,15 @@
 
 import * as React from 'react'
 import { Languages } from 'lucide-react'
+import { useTranslations } from '@/components/providers/language-provider'
 
 export function LanguageToggle() {
-  const [language, setLanguage] = React.useState('es')
+  const { locale, setLocale } = useTranslations()
 
-  const toggleLanguage = () => {
-    const newLang = language === 'es' ? 'en' : 'es'
-    setLanguage(newLang)
-    // Here we would implement the actual language switching logic
-    // For now, we'll just store it in localStorage
-    localStorage.setItem('language', newLang)
-  }
-
-  React.useEffect(() => {
-    const savedLang = localStorage.getItem('language') || 'es'
-    setLanguage(savedLang)
-  }, [])
+  const toggleLanguage = React.useCallback(() => {
+    const newLang = locale === 'es' ? 'en' : 'es'
+    void setLocale(newLang)
+  }, [locale, setLocale])
 
   return (
     <button
@@ -26,7 +19,7 @@ export function LanguageToggle() {
     >
       <Languages className="h-[1.2rem] w-[1.2rem] mr-2" />
       <span className="text-sm font-medium">
-        {language.toUpperCase()}
+        {locale.toUpperCase()}
       </span>
     </button>
   )

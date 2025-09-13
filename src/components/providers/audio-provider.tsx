@@ -1,6 +1,7 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslations } from '@/components/providers/language-provider'
 
 type Station = {
   id: string
@@ -38,6 +39,7 @@ const DEFAULT_VOLUME = 0.9
 const NOW_PLAYING_INTERVAL_MS = 15000
 
 export function AudioProvider({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslations()
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -69,15 +71,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const updateMediaSessionMetadata = useCallback((station: Station | null, meta: NowPlaying | null) => {
     if (!('mediaSession' in navigator)) return
-    const title = meta?.title || station?.name || 'Radio en vivo'
-    const artist = meta?.artist || 'Vivo'
+    const title = meta?.title || station?.name || t('audio.session.title', 'Radio en vivo')
+    const artist = meta?.artist || t('audio.session.artist', 'Vivo')
     const artwork = [
       meta?.artworkUrl || station?.logoUrl
     ].filter(Boolean).map((src) => ({ src: src as string, sizes: '512x512', type: 'image/png' }))
     try {
       navigator.mediaSession.metadata = new window.MediaMetadata({ title, artist, album: station?.name, artwork })
     } catch {}
-  }, [])
+  }, [t])
 
   const stopNowPlayingPolling = useCallback(() => {
     if (nowPlayingTimerRef.current) {
@@ -144,9 +146,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setIsLoading(false)
       setIsPlaying(false)
-      setError('No se pudo iniciar la reproducción. Toca nuevamente para reintentar.')
+      setError(t('audio.error', 'No se pudo iniciar la reproducción. Toca nuevamente para reintentar.'))
     }
-  }, [currentStation, nowPlaying, startNowPlayingPolling, updateMediaSessionMetadata])
+  }, [currentStation, nowPlaying, startNowPlayingPolling, updateMediaSessionMetadata, t])
 
   const pause = useCallback(() => {
     if (!audioRef.current) return

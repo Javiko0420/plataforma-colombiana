@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Search, Filter, MapPin, Star, Phone, Mail, Globe, MessageCircle } from 'lucide-react'
+import { useTranslations } from '@/components/providers/language-provider'
 
 // Mock data for demonstration
 const mockBusinesses = [
@@ -90,6 +91,7 @@ const departments = [
 ]
 
 export default function DirectorioPage() {
+  const { t } = useTranslations()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState('')
@@ -118,11 +120,9 @@ export default function DirectorioPage() {
       <div className="bg-gradient-to-r from-yellow-500 via-blue-500 to-red-500 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Directorio de Emprendimientos
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">{t('home.features.directory.title')}</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
-              Descubre productos únicos y servicios de emprendedores colombianos
+              {t('home.features.directory.desc')}
             </p>
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function DirectorioPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
                 type="text"
-                placeholder="Buscar emprendimientos, productos..."
+                placeholder={t('directory.search.placeholder', 'Buscar emprendimientos, productos...')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -150,7 +150,7 @@ export default function DirectorioPage() {
               className="lg:hidden flex items-center justify-center px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
             >
               <Filter className="h-5 w-5 mr-2" />
-              Filtros
+              {t('directory.filters', 'Filtros')}
             </button>
 
             {/* Desktop Filters */}
@@ -160,7 +160,7 @@ export default function DirectorioPage() {
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="">Todas las categorías</option>
+                <option value="">{t('directory.allCategories', 'Todas las categorías')}</option>
                 {categories.map(category => (
                   <option key={category} value={category}>
                     {category.charAt(0) + category.slice(1).toLowerCase()}
@@ -173,7 +173,7 @@ export default function DirectorioPage() {
                 onChange={(e) => setSelectedDepartment(e.target.value)}
                 className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="">Todos los departamentos</option>
+                <option value="">{t('directory.allDepartments', 'Todos los departamentos')}</option>
                 {departments.map(dept => (
                   <option key={dept} value={dept}>{dept}</option>
                 ))}
@@ -190,7 +190,7 @@ export default function DirectorioPage() {
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="">Todas las categorías</option>
+                  <option value="">{t('directory.allCategories', 'Todas las categorías')}</option>
                   {categories.map(category => (
                     <option key={category} value={category}>
                       {category.charAt(0) + category.slice(1).toLowerCase()}
@@ -203,7 +203,7 @@ export default function DirectorioPage() {
                   onChange={(e) => setSelectedDepartment(e.target.value)}
                   className="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="">Todos los departamentos</option>
+                  <option value="">{t('directory.allDepartments', 'Todos los departamentos')}</option>
                   {departments.map(dept => (
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
@@ -216,7 +216,7 @@ export default function DirectorioPage() {
         {/* Results */}
         <div className="mb-6 text-center">
           <p className="text-gray-600 dark:text-gray-400">
-            Mostrando {filteredBusinesses.length} emprendimientos
+            {t('directory.showing', 'Mostrando')} {filteredBusinesses.length} {t('directory.businesses', 'emprendimientos')}
           </p>
         </div>
 
@@ -228,7 +228,7 @@ export default function DirectorioPage() {
               <div className="h-48 bg-gradient-to-r from-yellow-400 via-blue-400 to-red-400 relative">
                 {business.featured && (
                   <div className="absolute top-4 left-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                    Destacado
+                    {t('directory.featured', 'Destacado')}
                   </div>
                 )}
                 <div className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 rounded-full p-2">
@@ -265,7 +265,7 @@ export default function DirectorioPage() {
                 {business.products.length > 0 && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                      Productos destacados:
+                      {t('directory.featuredProducts', 'Productos destacados:')}
                     </h4>
                     <div className="space-y-1">
                       {business.products.slice(0, 2).map((product, index) => (
@@ -288,7 +288,7 @@ export default function DirectorioPage() {
                       className="flex items-center px-3 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-lg text-sm hover:bg-green-200 dark:hover:bg-green-800 transition-colors"
                     >
                       <Phone className="h-4 w-4 mr-1" />
-                      Llamar
+                      {t('directory.call', 'Llamar')}
                     </a>
                   )}
                   {business.whatsapp && (
@@ -335,10 +335,10 @@ export default function DirectorioPage() {
               <Search className="h-16 w-16 mx-auto" />
             </div>
             <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-              No se encontraron emprendimientos
+              {t('directory.noResults.title', 'No se encontraron emprendimientos')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Intenta ajustar tus filtros de búsqueda
+              {t('directory.noResults.subtitle', 'Intenta ajustar tus filtros de búsqueda')}
             </p>
           </div>
         )}

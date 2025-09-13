@@ -3,9 +3,11 @@
 import React from 'react'
 import { Pause, Play, Volume2, VolumeX, Radio } from 'lucide-react'
 import { useAudio } from '@/components/providers/audio-provider'
+import { useTranslations } from '@/components/providers/language-provider'
 
 export function AudioPlayer() {
   const { isPlaying, isLoading, volume, muted, nowPlaying, currentStation, togglePlayPause, setVolume, toggleMute, error } = useAudio()
+  const { t } = useTranslations()
 
   return (
     <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.5rem)] sm:w-auto">
@@ -16,10 +18,10 @@ export function AudioPlayer() {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {currentStation?.name ?? 'Emisora'} {isPlaying && <span className="ml-2 inline-block align-middle text-[10px] px-1.5 py-0.5 rounded bg-red-600 text-white">LIVE</span>}
+              {currentStation?.name ?? t('audio.stationFallback', 'Emisora')} {isPlaying && <span className="ml-2 inline-block align-middle text-[10px] px-1.5 py-0.5 rounded bg-red-600 text-white">{t('audio.liveTag', 'LIVE')}</span>}
             </p>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate" aria-live="polite">
-              {isLoading ? 'Conectando…' : (nowPlaying?.title ? `${nowPlaying.title}${nowPlaying.artist ? ' — '+nowPlaying.artist : ''}` : 'Listo para reproducir')}
+              {isLoading ? t('audio.connecting', 'Conectando…') : (nowPlaying?.title ? `${nowPlaying.title}${nowPlaying.artist ? ' — '+nowPlaying.artist : ''}` : t('audio.ready', 'Listo para reproducir'))}
             </p>
           </div>
         </div>
@@ -29,7 +31,7 @@ export function AudioPlayer() {
             type="button"
             onClick={() => void togglePlayPause()}
             className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500"
-            aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+            aria-label={isPlaying ? t('audio.pause', 'Pausar') : t('audio.play', 'Reproducir')}
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
           </button>
@@ -39,7 +41,7 @@ export function AudioPlayer() {
               type="button"
               onClick={() => toggleMute()}
               className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
-              aria-label={muted ? 'Activar sonido' : 'Silenciar'}
+              aria-label={muted ? t('audio.unmute', 'Activar sonido') : t('audio.mute', 'Silenciar')}
             >
               {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
             </button>
@@ -50,7 +52,7 @@ export function AudioPlayer() {
               step={0.01}
               value={muted ? 0 : volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              aria-label="Volumen"
+              aria-label={t('audio.volumeLabel', 'Volumen')}
               className="w-28 accent-red-600"
             />
           </div>
