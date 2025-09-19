@@ -1,16 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
 /**
  * Simplified middleware for Edge Runtime compatibility
  * Basic security headers and routing
  */
 
-// Basic security headers
+// Basic + required security headers
 const securityHeaders = {
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
+  // Allow geolocation use on this origin; adjust as needed per environment
+  'Permissions-Policy': 'geolocation=(self)',
+  // Minimal CSP; allow API calls to Open-Meteo and ipwho.is
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self'",
+    "connect-src 'self' https://api.open-meteo.com https://ipwho.is",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests"
+  ].join('; ')
 }
 
 export async function middleware() {
