@@ -3,14 +3,24 @@
 import * as React from 'react'
 import { Languages } from 'lucide-react'
 import { useTranslations } from '@/components/providers/language-provider'
+import { useRouter } from 'next/navigation'
+import { getLocaleCookieName } from '@/lib/i18n'
 
 export function LanguageToggle() {
   const { locale, setLocale } = useTranslations()
+  const router = useRouter()
 
   const toggleLanguage = React.useCallback(() => {
     const newLang = locale === 'es' ? 'en' : 'es'
+    // Update context (client messages)
     void setLocale(newLang)
-  }, [locale, setLocale])
+    // Persist cookie immediately for server-rendered pages and refresh
+    try {
+      const name = getLocaleCookieName()
+      document.cookie = `${name}=${newLang}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`
+    } catch {}
+    router.refresh()
+  }, [locale, setLocale, router])
 
   return (
     <button

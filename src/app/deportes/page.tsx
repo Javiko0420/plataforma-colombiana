@@ -1,26 +1,56 @@
 import { Suspense } from 'react'
-import { fetchFixtures, fetchStandings, getDefaultSeason } from '@/lib/sports'
-import { LEAGUES } from '@/lib/leagues'
+import { fetchFixtures, fetchStandings, getDefaultSeason, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams } from '@/lib/sports'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
+import { translateText, type SupportedLang } from '@/lib/translation'
+import SportsFilters from './filters'
 
-async function LiveFixtures({ t }: { t: (k: string) => string }) {
-  // tz no longer needed for TheSportsDB client
-  const fixtures = await fetchFixtures({})
-  if (fixtures.length === 0) {
+async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: string) => string; date: string; leagueId?: number; liveOnly?: boolean; locale: 'es' | 'en' }) {
+  const params: { date: string; league?: number } = { date }
+  if (typeof leagueId === 'number' && Number.isFinite(leagueId) && leagueId > 0) {
+    params.league = leagueId
+  }
+  const fixtures = await fetchFixtures(params)
+  const filtered = liveOnly
+    ? fixtures.filter((fx) => {
+        const s = (fx.status || '').toLowerCase()
+        const finished = s.includes('finished') || s === 'ft'
+        const notStarted = s.includes('not started') || s === 'ns'
+        const live = s.includes('live') || s.includes('in play') || s.includes('playing') || s.includes('1h') || s.includes('2h') || s.includes('ht')
+        return !finished && !notStarted && live
+      })
+    : fixtures
+
+  // Translate league names and status for Live only (skip team cards per request)
+  let translatedLeagueNames = filtered.map((f) => f.league.name || '')
+  let translatedStatuses = filtered.map((f) => f.status || '')
+  const target: SupportedLang | null = locale === 'es' ? 'ES' : null
+  if (target && filtered.length > 0) {
+    try {
+      const [names, stats] = await Promise.all([
+        translateText(translatedLeagueNames, target) as Promise<string[]>,
+        translateText(translatedStatuses, target) as Promise<string[]>,
+      ])
+      translatedLeagueNames = names
+      translatedStatuses = stats
+    } catch {
+      // Fallback silently if translation is not configured or fails
+    }
+  }
+  if (filtered.length === 0) {
     return <p className="text-foreground/70">{t('sports.empty.live')}</p>
   }
   return (
     <ul className="space-y-3">
-      {fixtures.map((fx) => (
+      {filtered.map((fx, idx) => (
         <li key={fx.id} className="border border-border rounded-lg p-3">
-          <div className="text-sm text-foreground/70">{fx.league.name}</div>
+          <div className="text-sm text-foreground/70">{translatedLeagueNames[idx] || fx.league.name}</div>
           <div className="flex items-center justify-between text-lg font-semibold">
             <span>{fx.home.name}</span>
             <span>{fx.goals.home ?? '-'} : {fx.goals.away ?? '-'}</span>
             <span>{fx.away.name}</span>
           </div>
-          <div className="text-xs text-foreground/60">{fx.status}{fx.elapsed != null ? ` ${fx.elapsed}'` : ''}</div>
+          <div className="text-xs text-foreground/60">{translatedStatuses[idx] || fx.status}{fx.elapsed != null ? ` ${fx.elapsed}'` : ''}</div>
         </li>
       ))}
     </ul>
@@ -33,94 +63,123 @@ export default async function SportsPage({ searchParams }: { searchParams?: Reco
   const season = getDefaultSeason()
   // const tz = process.env.SPORTS_DEFAULT_TIMEZONE || 'America/Bogota'
   const sp = searchParams || {}
-  const searchLeague = typeof sp.league === 'string' ? sp.league : ''
-  const includeList = Array.isArray(sp.include)
-    ? (sp.include as string[]).map((s) => s.toLowerCase())
-    : (typeof sp.include === 'string'
-        ? (sp.include as string).split(',').map((s) => s.trim().toLowerCase())
-        : ['results', 'standings'])
-  const includeResults = includeList.includes('results')
-  const includeStandings = includeList.includes('standings')
   const dateParam = typeof sp.date === 'string' ? sp.date : new Date().toISOString().slice(0, 10)
   const liveParam = typeof sp.live === 'string' && (sp.live === 'all' || sp.live === '1' || sp.live === '0') ? (sp.live as 'all' | '1' | '0') : null
+  let teamParam = typeof sp.team === 'string' && /^\d+$/.test(sp.team) ? Number(sp.team) : undefined
+  const teamNameParam = typeof sp.teamName === 'string' ? sp.teamName.trim() : ''
+  // Resolve by name if id not provided but name is present
+  if (!teamParam && teamNameParam.length >= 2) {
+    const matches = await searchTeams(teamNameParam)
+    const exact = matches.find((t) => t.name.toLowerCase() === teamNameParam.toLowerCase())
+    const first = matches[0]
+    teamParam = (exact || first)?.id
+  }
   const leagueDefs = [
-    { alias: 'colombia', id: LEAGUES.COLOMBIA_PRIMERA_A, key: 'sports.league.co' },
-    { alias: 'spain', id: LEAGUES.LALIGA, key: 'sports.league.es' },
-    { alias: 'england', id: LEAGUES.PREMIER_LEAGUE, key: 'sports.league.en' },
-    { alias: 'italy', id: LEAGUES.SERIE_A, key: 'sports.league.it' },
-    { alias: 'france', id: LEAGUES.LIGUE_1, key: 'sports.league.fr' },
-    { alias: 'germany', id: LEAGUES.BUNDESLIGA, key: 'sports.league.de' },
-    { alias: 'ucl', id: LEAGUES.CHAMPIONS_LEAGUE, key: 'sports.league.ucl' },
-    { alias: 'europa', id: LEAGUES.EUROPA_LEAGUE, key: 'sports.league.uel' },
+    { alias: 'colombia', env: 'LEAGUE_COLOMBIA_ID', key: 'sports.league.co' },
+    { alias: 'spain', env: 'LEAGUE_SPAIN_ID', key: 'sports.league.es' },
+    { alias: 'england', env: 'LEAGUE_ENGLAND_ID', key: 'sports.league.en' },
+    { alias: 'italy', env: 'LEAGUE_ITALY_ID', key: 'sports.league.it' },
+    { alias: 'france', env: 'LEAGUE_FRANCE_ID', key: 'sports.league.fr' },
+    { alias: 'germany', env: 'LEAGUE_GERMANY_ID', key: 'sports.league.de' },
+    { alias: 'ucl', env: 'LEAGUE_CHAMPIONS_ID', key: 'sports.league.ucl' },
+    { alias: 'europa', env: 'LEAGUE_EUROPA_ID', key: 'sports.league.uel' },
   ] as const
 
   // Build all leagues with names (always show in dropdown)
   const leagueAll = leagueDefs
-    .map(def => ({ alias: def.alias, id: def.id, name: t(def.key) }))
-  // Options for the select input
-  const leagueSelect = leagueAll.map(({ alias, name }) => ({ alias, name }))
-
+    .map(def => ({ alias: def.alias, id: Number(process.env[def.env as keyof NodeJS.ProcessEnv] || 0), name: t(def.key) }))
   // Determine which leagues to fetch
-  const activeLeagues = searchLeague
-    ? leagueAll.filter(l => l.alias === searchLeague)
-    : leagueAll.filter(l => Number.isFinite(l.id) && l.id > 0)
+  const activeLeagues = leagueAll.filter(l => Number.isFinite(l.id) && l.id > 0)
 
   const data = await Promise.all(
     activeLeagues.map(async (lg) => {
       const idOk = Number.isFinite(lg.id) && lg.id > 0
       const [table, dayFx] = await Promise.all([
-        includeStandings && idOk ? fetchStandings(lg.id, season).catch(() => []) : Promise.resolve([]),
-        includeResults && idOk ? fetchFixtures({ league: lg.id, date: dateParam }).catch(() => []) : Promise.resolve([]),
+        idOk ? fetchStandings(lg.id, season).catch(() => []) : Promise.resolve([]),
+        idOk ? fetchFixtures({ league: lg.id, date: dateParam, team: teamParam }).catch(() => []) : Promise.resolve([]),
       ])
       return { league: lg, table, dayFx }
     })
   )
+
+  // Team next/last when team filter present
+  const [teamNext, teamLast] = teamParam
+    ? await Promise.all([
+        fetchTeamNextMatches(teamParam).catch(() => []),
+        fetchTeamLastMatches(teamParam).catch(() => []),
+      ])
+    : [[], []]
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-10 space-y-10">
       <section>
         <h1 className="text-3xl font-bold mb-2">{t('sports.title')}</h1>
         <p className="text-foreground/70">{t('sports.subtitle')}</p>
-        <form action="/deportes" method="GET" className="mt-6 grid gap-3 md:grid-cols-4 items-end">
-          <div className="flex flex-col">
-            <label htmlFor="league" className="text-sm text-foreground/70">{t('sports.filters.league')}</label>
-            <select id="league" name="league" defaultValue={searchLeague} className="border border-border rounded-md px-2 py-2 bg-background">
-              <option value="">{locale === 'es' ? 'Todas' : 'All'}</option>
-              {leagueSelect.map((l) => (
-                <option key={l.alias} value={l.alias}>{l.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="date" className="text-sm text-foreground/70">{t('sports.filters.date')}</label>
-            <input id="date" name="date" type="date" defaultValue={dateParam} className="border border-border rounded-md px-2 py-2 bg-background" />
-          </div>
-          <div className="flex gap-4 items-center">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="include" value="results" defaultChecked={includeResults} /> {t('sports.filters.include.results')}
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="include" value="standings" defaultChecked={includeStandings} /> {t('sports.filters.include.standings')}
-            </label>
-          </div>
-          <div className="flex gap-3 items-end">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="live" value="all" defaultChecked={liveParam === 'all'} /> {t('sports.filters.live')}
-            </label>
-            <button type="submit" className="ml-auto px-4 py-2 bg-foreground text-background rounded-md">{t('sports.filters.apply')}</button>
-          </div>
-        </form>
+        <SportsFilters defaultTeamId={teamParam} defaultLiveChecked={liveParam ? liveParam === 'all' : true} />
       </section>
 
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">{t('sports.live')}</h2>
         <Suspense fallback={<p>{t('sports.loading')}</p>}>
-          {includeResults ? <LiveFixtures t={t} /> : <p className="text-foreground/70">{t('sports.empty.live')}</p>}
+          {/* When entering this section we request other media to pause (e.g., radio) */}
+          {(() => { if (typeof window !== 'undefined') window.dispatchEvent(new Event('app:media:request-pause')); return null })()}
+          <LiveFixtures
+            t={t}
+            date={dateParam}
+            liveOnly={liveParam ? liveParam === 'all' : true}
+            locale={locale}
+          />
         </Suspense>
       </section>
 
+      {teamParam ? (
+        <section className="space-y-4">
+          <div className="grid gap-8 md:grid-cols-2">
+            <div>
+              <div className="font-semibold mb-2">{t('sports.team.next')}</div>
+              {teamNext.length === 0 ? (
+                <p className="text-foreground/70">{t('sports.empty.today')}</p>
+              ) : (
+                <ul className="space-y-3">
+                  {teamNext.map((fx) => (
+                    <li key={fx.id} className="border border-border rounded-lg p-3">
+                      <div className="text-sm text-foreground/70">{fx.league.name}</div>
+                      <div className="flex items-center justify-between text-lg font-semibold">
+                        <span>{fx.home.name}</span>
+                        <span>vs</span>
+                        <span>{fx.away.name}</span>
+                      </div>
+                      <div className="text-xs text-foreground/60">{new Date(fx.dateIso).toLocaleString(locale === 'es' ? 'es-CO' : 'en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <div className="font-semibold mb-2">{t('sports.team.last')}</div>
+              {teamLast.length === 0 ? (
+                <p className="text-foreground/70">{t('sports.empty.today')}</p>
+              ) : (
+                <ul className="space-y-3">
+                  {teamLast.map((fx) => (
+                    <li key={fx.id} className="border border-border rounded-lg p-3">
+                      <div className="text-sm text-foreground/70">{fx.league.name}</div>
+                      <div className="flex items-center justify-between text-lg font-semibold">
+                        <span>{fx.home.name}</span>
+                        <span>{fx.goals.home ?? '-'} : {fx.goals.away ?? '-'}</span>
+                        <span>{fx.away.name}</span>
+                      </div>
+                      <div className="text-xs text-foreground/60">{fx.status}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">{t('sports.today')}</h2>
         <div className="space-y-8">
           {data.map(({ league, dayFx }) => (
             <div key={league.id} className="space-y-2">
@@ -147,7 +206,6 @@ export default async function SportsPage({ searchParams }: { searchParams?: Reco
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">{t('sports.standings')}</h2>
         <div className="grid gap-8 md:grid-cols-2">
           {data.map(({ league, table }) => (
             <div key={league.id} className="border border-border rounded-lg">

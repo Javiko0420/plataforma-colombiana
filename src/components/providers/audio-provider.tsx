@@ -59,6 +59,16 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       audioRef.current.volume = muted ? 0 : volume
     }
   }, [volume, muted])
+  // Listen for global media pause requests (e.g., when video starts)
+  useEffect(() => {
+    const handler = () => {
+      try { if (audioRef.current) audioRef.current.pause() } catch {}
+      setIsPlaying(false)
+    }
+    window.addEventListener('app:media:request-pause', handler)
+    return () => window.removeEventListener('app:media:request-pause', handler)
+  }, [])
+
 
   // Persist volume
   useEffect(() => {
@@ -92,8 +102,12 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     // StreamTheWorld metadata endpoint often uses station call letters; here we attempt common patterns
     // When not available, we gracefully no-op
     try {
+      // If streamUrl is a redirect endpoint, try to pass mount or station id appropriately
       const url = new URL('https://playerservices.streamtheworld.com/api/metadata/nowplaying')
-      url.searchParams.set('mount', station.streamUrl)
+      // Try to extract mount from known redirect formats
+      const mountMatch = station.streamUrl.match(/livestream-redirect\/([^?.]+)/i)
+      const mount = mountMatch?.[1] || station.streamUrl
+      url.searchParams.set('mount', mount)
       url.searchParams.set('format', 'json')
       const res = await fetch(url.toString(), { cache: 'no-store' })
       if (!res.ok) return
@@ -133,7 +147,14 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       if (!audioRef.current) return
       if (!currentStation || currentStation.id !== station.id) {
         setCurrentStation(station)
-        audioRef.current.src = station.streamUrl
+        // Ensure we request mp3 when available to avoid codec issues and pause current stream first
+        try { audioRef.current.pause() } catch {}
+        const url = new URL(station.streamUrl)
+        if (!/\.mp3$/i.test(url.pathname)) {
+          if (!url.searchParams.has('dist')) url.searchParams.set('dist', 'web')
+          if (!url.searchParams.has('type')) url.searchParams.set('type', 'mp3')
+        }
+        audioRef.current.src = url.toString()
       }
       audioRef.current.crossOrigin = 'anonymous'
       audioRef.current.preload = 'none'
@@ -204,11 +225,11 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   // Cleanup on unmount
   useEffect(() => {
+    const audio = audioRef.current
     return () => {
       stopNowPlayingPolling()
-      const audio = audioRef.current
       if (audio) {
-        audio.pause()
+        try { audio.pause() } catch {}
       }
     }
   }, [stopNowPlayingPolling])
@@ -248,7 +269,7 @@ export const stations: Station[] = [
   {
     id: 'tropicana-bogota',
     name: 'Tropicana Bogotá',
-    streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TROPICANA_SC',
+    streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TROPICANA_SC.mp3',
     homepage: 'https://www.tropicanafm.com/'
   },
   {
@@ -260,7 +281,7 @@ export const stations: Station[] = [
   {
     id: 'tropicana-popayan',
     name: 'Tropicana Popayán',
-    streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TR_POPAYAN_SC',
+    streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TR_POPAYAN_SC.mp3',
     homepage: 'https://www.tropicanafm.com/'
   },
 ]
