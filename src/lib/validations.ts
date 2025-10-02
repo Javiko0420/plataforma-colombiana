@@ -188,6 +188,34 @@ export const fileUploadSchema = z.object({
   })
 })
 
+// Exchange rate validation schemas
+export const currencyCodeSchema = z
+  .string()
+  .length(3, 'El código de moneda debe tener 3 caracteres')
+  .regex(/^[A-Z]{3}$/, 'El código de moneda debe ser 3 letras mayúsculas (ISO 4217)')
+
+export const exchangeRateQuerySchema = z.object({
+  base: currencyCodeSchema.optional().default('COP'),
+  target: currencyCodeSchema.optional(),
+  amount: z
+    .string()
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
+      message: 'La cantidad debe ser un número positivo'
+    })
+    .optional(),
+  popular: z.enum(['0', '1']).optional(),
+})
+
+export const conversionSchema = z.object({
+  from: currencyCodeSchema,
+  to: currencyCodeSchema,
+  amount: z
+    .number()
+    .positive('La cantidad debe ser positiva')
+    .finite('La cantidad debe ser un número finito')
+    .max(1e15, 'La cantidad es demasiado grande'),
+})
+
 // API response schemas
 export const apiResponseSchema = z.object({
   success: z.boolean(),
@@ -205,4 +233,6 @@ export type ForumPostData = z.infer<typeof forumPostSchema>
 export type ForumCommentData = z.infer<typeof forumCommentSchema>
 export type SearchParams = z.infer<typeof searchSchema>
 export type FileUpload = z.infer<typeof fileUploadSchema>
+export type ExchangeRateQuery = z.infer<typeof exchangeRateQuerySchema>
+export type Conversion = z.infer<typeof conversionSchema>
 export type ApiResponse = z.infer<typeof apiResponseSchema>

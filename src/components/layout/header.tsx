@@ -109,6 +109,12 @@ export function Header() {
             >
               {t('nav.weather')}
             </Link>
+            <Link 
+              href="/tasas" 
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+            >
+              {t('nav.rates')}
+            </Link>
           </nav>
 
           {/* Right side controls */}
@@ -214,6 +220,16 @@ export function Header() {
                 }}
               >
                 {t('nav.weather')}
+              </Link>
+              <Link
+                href="/tasas"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  ScreenReader.announce(t('sr.nav.to.rates'), 'polite')
+                }}
+              >
+                {t('nav.rates')}
               </Link>
             </div>
           </div>
