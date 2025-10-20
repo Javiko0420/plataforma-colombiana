@@ -56,7 +56,12 @@ async function tsdbFetch<T>(pathAndQuery: string, options: TsdbFetchOptions<T> =
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
     try {
-      const res = await fetch(url, { cache: 'no-store', signal: controller.signal })
+      // Usar cache más agresivo para reducir llamadas a la API
+      const res = await fetch(url, { 
+        cache: 'default',
+        next: { revalidate: 300 }, // Cache de 5 minutos
+        signal: controller.signal 
+      })
       if (!res.ok) {
         // Retry on 429 or 5xx
         if (res.status === 429 || (res.status >= 500 && res.status <= 599)) {

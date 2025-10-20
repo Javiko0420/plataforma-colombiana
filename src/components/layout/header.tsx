@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { Menu, X, Search, User } from 'lucide-react'
+import { Menu, X, Search, User, LogOut, UserCircle, Settings } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 import { ScreenReader } from '@/lib/accessibility'
@@ -10,9 +11,13 @@ import { useTranslations } from '@/components/providers/language-provider'
 
 export function Header() {
   const { t } = useTranslations()
+  const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
+  const userMenuButtonRef = useRef<HTMLButtonElement>(null)
 
   // Handle mobile menu toggle with accessibility
   const toggleMobileMenu = () => {
@@ -25,6 +30,38 @@ export function Header() {
       'polite'
     )
   }
+
+  // Handle user menu toggle
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen)
+  }
+
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' })
+  }
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node) &&
+        userMenuButtonRef.current &&
+        !userMenuButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false)
+      }
+    }
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isUserMenuOpen])
 
   // Handle keyboard navigation for mobile menu
   useEffect(() => {
@@ -134,12 +171,83 @@ export function Header() {
             <LanguageToggle />
 
             {/* User menu */}
-            <button 
-              className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label={t('header.userMenu', 'Menú de usuario')}
-            >
-              <User className="h-5 w-5" aria-hidden="true" />
-            </button>
+            <div className="relative">
+              {status === 'loading' ? (
+                <div className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                  <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+                </div>
+              ) : session ? (
+                <>
+                  <button
+                    ref={userMenuButtonRef}
+                    onClick={toggleUserMenu}
+                    className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    aria-label={t('header.userMenu')}
+                    aria-expanded={isUserMenuOpen}
+                  >
+                    <User className="h-5 w-5" aria-hidden="true" />
+                  </button>
+
+                  {/* User dropdown menu */}
+                  {isUserMenuOpen && (
+                    <div
+                      ref={userMenuRef}
+                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                      role="menu"
+                    >
+                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {session.user?.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {session.user?.email}
+                        </p>
+                      </div>
+
+                      <Link
+                        href="/perfil"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        <UserCircle className="h-4 w-4" aria-hidden="true" />
+                        {t('auth.profile')}
+                      </Link>
+
+                      <Link
+                        href="/perfil/configuracion"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        <Settings className="h-4 w-4" aria-hidden="true" />
+                        {t('profile.settings.title')}
+                      </Link>
+
+                      <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
+
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        role="menuitem"
+                      >
+                        <LogOut className="h-4 w-4" aria-hidden="true" />
+                        {t('auth.logout')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href="/auth/signin"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                  aria-label={t('auth.login.title')}
+                >
+                  <User className="h-4 w-4" aria-hidden="true" />
+                  <span>{t('auth.login.title')}</span>
+                </Link>
+              )}
+            </div>
 
             {/* Mobile menu button */}
             <button
@@ -231,6 +339,58 @@ export function Header() {
               >
                 {t('nav.rates')}
               </Link>
+
+              {/* Mobile user menu */}
+              <div className="border-t border-border my-2" />
+              
+              {status === 'loading' ? (
+                <div className="px-4 py-3 flex items-center justify-center">
+                  <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+                </div>
+              ) : session ? (
+                <>
+                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                    {session.user?.name}
+                  </div>
+                  <Link
+                    href="/perfil"
+                    className="flex items-center gap-3 px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <UserCircle className="h-5 w-5" aria-hidden="true" />
+                    {t('auth.profile')}
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false)
+                      handleLogout()
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
+                  >
+                    <LogOut className="h-5 w-5" aria-hidden="true" />
+                    {t('auth.logout')}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/signin"
+                    className="flex items-center gap-3 px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="h-5 w-5" aria-hidden="true" />
+                    {t('auth.login.title')}
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="h-5 w-5" aria-hidden="true" />
+                    {t('auth.signup.title')}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

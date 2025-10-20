@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/renew-forums",
+      "schedule": "0 14 * * *"
+    }
+  ]
+}
+

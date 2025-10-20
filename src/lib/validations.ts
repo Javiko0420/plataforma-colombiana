@@ -32,6 +32,15 @@ export const userLoginSchema = z.object({
   password: z.string().min(1, 'La contraseña es requerida'),
 })
 
+export const userRegistrationWithConfirmSchema = userRegistrationSchema
+  .extend({
+    confirmPassword: z.string().min(1, 'Confirme su contraseña'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+  })
+
 // Business validation schemas
 export const businessSchema = z.object({
   name: z
@@ -145,6 +154,50 @@ export const forumCommentSchema = z.object({
   postId: z.string().cuid('ID de post inválido'),
 })
 
+// Daily forum post/comment schema (max 500 chars)
+export const forumDailyPostSchema = z.object({
+  content: z
+    .string()
+    .min(1, 'El contenido no puede estar vacío')
+    .max(500, 'El contenido no puede exceder 500 caracteres')
+    .trim()
+    .refine((val) => val.length > 0, {
+      message: 'El contenido no puede estar vacío',
+    }),
+})
+
+// Report schema
+export const reportSchema = z.object({
+  reason: z.enum([
+    'SPAM',
+    'HARASSMENT',
+    'HATE_SPEECH',
+    'INAPPROPRIATE_CONTENT',
+    'MISINFORMATION',
+    'OTHER',
+  ]),
+  details: z
+    .string()
+    .max(500, 'Los detalles no pueden exceder 500 caracteres')
+    .trim()
+    .optional(),
+})
+
+// Nickname schema
+export const nicknameSchema = z.object({
+  nickname: z
+    .string()
+    .min(3, 'El nickname debe tener al menos 3 caracteres')
+    .max(20, 'El nickname no puede exceder 20 caracteres')
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      'El nickname solo puede contener letras, números y guiones bajos'
+    )
+    .refine((val) => !val.includes('http') && !val.includes('www'), {
+      message: 'El nickname no puede contener URLs',
+    }),
+})
+
 // Search and filter schemas
 export const searchSchema = z.object({
   query: z
@@ -224,13 +277,87 @@ export const apiResponseSchema = z.object({
   error: z.string().optional(),
 })
 
+// Validation helper functions
+export function validateForumPostInput(data: unknown) {
+  try {
+    const validated = forumDailyPostSchema.parse(data);
+    return { success: true as const, data: validated, errors: null };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false as const,
+        data: null,
+        errors: error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      };
+    }
+    return {
+      success: false as const,
+      data: null,
+      errors: [{ field: 'unknown', message: 'Validation failed' }],
+    };
+  }
+}
+
+export function validateReportInput(data: unknown) {
+  try {
+    const validated = reportSchema.parse(data);
+    return { success: true as const, data: validated, errors: null };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false as const,
+        data: null,
+        errors: error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      };
+    }
+    return {
+      success: false as const,
+      data: null,
+      errors: [{ field: 'unknown', message: 'Validation failed' }],
+    };
+  }
+}
+
+export function validateNicknameInput(data: unknown) {
+  try {
+    const validated = nicknameSchema.parse(data);
+    return { success: true as const, data: validated, errors: null };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return {
+        success: false as const,
+        data: null,
+        errors: error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
+      };
+    }
+    return {
+      success: false as const,
+      data: null,
+      errors: [{ field: 'unknown', message: 'Validation failed' }],
+    };
+  }
+}
+
 // Type exports for TypeScript
 export type UserRegistration = z.infer<typeof userRegistrationSchema>
+export type UserRegistrationWithConfirm = z.infer<typeof userRegistrationWithConfirmSchema>
 export type UserLogin = z.infer<typeof userLoginSchema>
 export type BusinessData = z.infer<typeof businessSchema>
 export type ProductData = z.infer<typeof productSchema>
 export type ForumPostData = z.infer<typeof forumPostSchema>
 export type ForumCommentData = z.infer<typeof forumCommentSchema>
+export type ForumDailyPostData = z.infer<typeof forumDailyPostSchema>
+export type ReportData = z.infer<typeof reportSchema>
+export type NicknameData = z.infer<typeof nicknameSchema>
 export type SearchParams = z.infer<typeof searchSchema>
 export type FileUpload = z.infer<typeof fileUploadSchema>
 export type ExchangeRateQuery = z.infer<typeof exchangeRateQuerySchema>

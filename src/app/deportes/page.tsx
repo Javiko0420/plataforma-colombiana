@@ -91,16 +91,32 @@ export default async function SportsPage({ searchParams }: { searchParams?: Reco
   // Determine which leagues to fetch
   const activeLeagues = leagueAll.filter(l => Number.isFinite(l.id) && l.id > 0)
 
-  const data = await Promise.all(
-    activeLeagues.map(async (lg) => {
-      const idOk = Number.isFinite(lg.id) && lg.id > 0
-      const [table, dayFx] = await Promise.all([
-        idOk ? fetchStandings(lg.id, season).catch(() => []) : Promise.resolve([]),
-        idOk ? fetchFixtures({ league: lg.id, date: dateParam, team: teamParam }).catch(() => []) : Promise.resolve([]),
-      ])
-      return { league: lg, table, dayFx }
-    })
-  )
+  // Limitar llamadas simultáneas para evitar rate limiting
+  // Procesar ligas en lotes de 2 para reducir carga en la API
+  const data = []
+  for (let i = 0; i < activeLeagues.length; i += 2) {
+    const batch = activeLeagues.slice(i, i + 2)
+    const batchResults = await Promise.all(
+      batch.map(async (lg) => {
+        const idOk = Number.isFinite(lg.id) && lg.id > 0
+        try {
+          const [table, dayFx] = await Promise.all([
+            idOk ? fetchStandings(lg.id, season).catch(() => []) : Promise.resolve([]),
+            idOk ? fetchFixtures({ league: lg.id, date: dateParam, team: teamParam }).catch(() => []) : Promise.resolve([]),
+          ])
+          return { league: lg, table, dayFx }
+        } catch (error) {
+          console.error(`Error loading league ${lg.name}:`, error)
+          return { league: lg, table: [], dayFx: [] }
+        }
+      })
+    )
+    data.push(...batchResults)
+    // Pequeña pausa entre lotes para evitar rate limiting
+    if (i + 2 < activeLeagues.length) {
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
+  }
 
   // Team next/last when team filter present
   const [teamNext, teamLast] = teamParam
