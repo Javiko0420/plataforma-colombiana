@@ -48,7 +48,6 @@ export default function ForumClient({
     id: string;
   } | null>(null);
   const [nicknameInput, setNicknameInput] = React.useState('');
-  const [showNicknameForm, setShowNicknameForm] = React.useState(false);
 
   // Load posts
   React.useEffect(() => {
@@ -94,11 +93,6 @@ export default function ForumClient({
       return;
     }
 
-    if (!currentUser.nickname) {
-      setShowNicknameForm(true);
-      return;
-    }
-
     if (currentUser.isBanned) {
       alert(t.profileBanned);
       return;
@@ -128,11 +122,6 @@ export default function ForumClient({
   const handleCreateComment = async (postId: string, content: string) => {
     if (!currentUser) {
       router.push('/api/auth/signin');
-      return;
-    }
-
-    if (!currentUser.nickname) {
-      setShowNicknameForm(true);
       return;
     }
 
@@ -236,7 +225,6 @@ export default function ForumClient({
 
       if (data.success) {
         router.refresh();
-        setShowNicknameForm(false);
       } else {
         alert(data.error || t.nicknameTaken);
       }
@@ -283,13 +271,15 @@ export default function ForumClient({
 
   return (
     <div className="space-y-6">
-      {/* Nickname Form */}
-      {showNicknameForm && currentUser && !currentUser.nickname && (
+      {/* Nickname Form - Show automatically if user has no nickname */}
+      {currentUser && !currentUser.nickname && (
         <div className="p-6 bg-primary/10 border border-primary/20 rounded-lg">
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            {t.setNickname}
+            {t.setNickname || 'Configura tu nickname'}
           </h3>
-          <p className="text-sm text-foreground/70 mb-4">{t.nicknameRules}</p>
+          <p className="text-sm text-foreground/70 mb-4">
+            {t.nicknameRules || 'Para participar en los foros necesitas un nickname. Debe tener entre 3-20 caracteres (letras, números y guión bajo).'}
+          </p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -304,7 +294,7 @@ export default function ForumClient({
               disabled={!nicknameInput.trim()}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {t.nicknameSave}
+              {t.nicknameSave || 'Guardar'}
             </button>
           </div>
         </div>

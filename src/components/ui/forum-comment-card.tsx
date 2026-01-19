@@ -57,7 +57,7 @@ export function ForumCommentCard({
   if (comment.isDeleted) {
     return (
       <div className="ml-12 p-3 bg-background/30 rounded-lg">
-        <p className="text-foreground/50 italic text-sm">{t('forums.post.deleted')}</p>
+        <p className="text-foreground/50 italic text-sm">{t('postDeleted')}</p>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export function ForumCommentCard({
               </span>
               {comment.isEdited && (
                 <span className="text-xs text-foreground/50 italic">
-                  ({t('forums.post.edited')})
+                  ({t('postEdited')})
                 </span>
               )}
             </div>
@@ -94,7 +94,7 @@ export function ForumCommentCard({
       <div className="mb-2">
         {comment.isFlagged && (
           <div className="mb-2 p-1.5 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-600 dark:text-red-400">
-            ⚠️ {t('forums.post.flagged')}
+            ⚠️ {t('postFlagged')}
           </div>
         )}
         <p className="text-sm text-foreground whitespace-pre-wrap break-words">
@@ -126,7 +126,7 @@ export function ForumCommentCard({
           >
             <Flag className="w-4 h-4 text-foreground/50 group-hover:text-red-500" />
             <span className="text-xs text-foreground/70 group-hover:text-red-500">
-              {t('forums.post.report')}
+              {t('postReport')}
             </span>
           </button>
         )}

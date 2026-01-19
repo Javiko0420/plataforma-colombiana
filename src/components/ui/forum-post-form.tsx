@@ -64,7 +64,7 @@ export function ForumPostForm({
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder={placeholder || t('forums.post.write')}
+          placeholder={placeholder || t('postWrite')}
           disabled={disabled || isSubmitting}
           maxLength={maxLength + 50} // Allow typing over limit to show error
           className={`w-full min-h-[120px] px-4 py-3 rounded-lg border ${
@@ -91,7 +91,7 @@ export function ForumPostForm({
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <Send className="w-4 h-4" />
-          {isSubmitting ? t('forums.loading') : t('forums.post.submit')}
+          {isSubmitting ? t('loading') : t('postSubmit')}
         </button>
         
         {onCancel && (
@@ -102,12 +102,12 @@ export function ForumPostForm({
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-background/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <X className="w-4 h-4" />
-            {t('forums.post.cancel')}
+            {t('postCancel')}
           </button>
         )}
       </div>
 
-      <p className="text-xs text-foreground/50">{t('forums.post.maxChars')}</p>
+      <p className="text-xs text-foreground/50">{t('postMaxChars')}</p>
     </form>
   );
 }

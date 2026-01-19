@@ -73,7 +73,7 @@ async function ForumsList() {
                     options={{
                       hour: '2-digit',
                       minute: '2-digit',
-                      timeZone: 'Australia/Sydney',
+                      timeZone: 'Australia/Brisbane',
                     }}
                   />
                 </span>

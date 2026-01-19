@@ -49,19 +49,19 @@ export function ForumReportModal({
   };
 
   const reportReasons: { value: ReportReason; label: string }[] = [
-    { value: 'SPAM', label: t('forums.report.spam') },
-    { value: 'HARASSMENT', label: t('forums.report.harassment') },
-    { value: 'HATE_SPEECH', label: t('forums.report.hateSpeech') },
-    { value: 'INAPPROPRIATE_CONTENT', label: t('forums.report.inappropriate') },
-    { value: 'MISINFORMATION', label: t('forums.report.misinformation') },
-    { value: 'OTHER', label: t('forums.report.other') },
+    { value: 'SPAM', label: t('reportSpam') },
+    { value: 'HARASSMENT', label: t('reportHarassment') },
+    { value: 'HATE_SPEECH', label: t('reportHateSpeech') },
+    { value: 'INAPPROPRIATE_CONTENT', label: t('reportInappropriate') },
+    { value: 'MISINFORMATION', label: t('reportMisinformation') },
+    { value: 'OTHER', label: t('reportOther') },
   ];
 
   return (
     <AccessibleModal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('forums.report.title')}
+      title={t('reportTitle')}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -69,7 +69,7 @@ export function ForumReportModal({
             htmlFor="report-reason"
             className="block text-sm font-medium text-foreground mb-2"
           >
-            {t('forums.report.reason')}
+            {t('reportReason')}
           </label>
           <select
             id="report-reason"
@@ -91,7 +91,7 @@ export function ForumReportModal({
             htmlFor="report-details"
             className="block text-sm font-medium text-foreground mb-2"
           >
-            {t('forums.report.details')}
+            {t('reportDetails')}
           </label>
           <textarea
             id="report-details"
@@ -120,7 +120,7 @@ export function ForumReportModal({
             disabled={isSubmitting}
             className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isSubmitting ? t('forums.loading') : t('forums.report.submit')}
+            {isSubmitting ? t('loading') : t('reportSubmit')}
           </button>
           <button
             type="button"
@@ -128,7 +128,7 @@ export function ForumReportModal({
             disabled={isSubmitting}
             className="px-4 py-2 rounded-lg border border-border hover:bg-background/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {t('forums.post.cancel')}
+            {t('postCancel')}
           </button>
         </div>
       </form>

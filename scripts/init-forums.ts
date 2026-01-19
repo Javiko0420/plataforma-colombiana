@@ -1,6 +1,6 @@
 /**
- * Initialize Forums Script
- * Creates the first set of daily forums
+ * Initialize Forums Script (Dev Friendly Fix)
+ * Creates forums active NOW regardless of timezone
  */
 
 import { PrismaClient, ForumTopic } from '@prisma/client';
@@ -8,48 +8,35 @@ import { PrismaClient, ForumTopic } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🚀 Initializing forums...\n');
+  console.log('🚀 Initializing forums (Local Dev Mode)...\n');
 
-  // Get current time in Australia/Sydney timezone
+  // Usamos la hora LOCAL de tu máquina para evitar conflictos de zona horaria
   const now = new Date();
-  const sydneyTime = new Date(
-    now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' })
-  );
-
-  // Set start time to 00:00:00 today
-  const startDate = new Date(sydneyTime);
+  
+  // StartDate: Inicio del día actual (00:00 local)
+  const startDate = new Date(now);
   startDate.setHours(0, 0, 0, 0);
 
-  // Set end time to 23:59:59 today
-  const endDate = new Date(sydneyTime);
+  // EndDate: Final del día actual (23:59 local)
+  const endDate = new Date(now);
   endDate.setHours(23, 59, 59, 999);
 
-  const dateStr = sydneyTime.toISOString().split('T')[0];
+  const dateStr = now.toISOString().split('T')[0];
 
   try {
-    // Check if forums already exist
-    const existingForums = await prisma.forum.findMany({
-      where: {
-        isActive: true,
-      },
+    // 1. Limpieza preventiva: Desactivamos foros viejos para evitar conflictos
+    console.log('🧹 Archiving old active forums...');
+    await prisma.forum.updateMany({
+      where: { isActive: true },
+      data: { isActive: false, isArchived: true }
     });
 
-    if (existingForums.length > 0) {
-      console.log('⚠️  Active forums already exist:');
-      existingForums.forEach((forum) => {
-        console.log(`   - ${forum.name} (${forum.slug})`);
-      });
-      console.log('\nTo recreate forums, first archive the existing ones.\n');
-      return;
-    }
-
-    // Create Forum 1
+    // 2. Crear Foro 1
     const forum1 = await prisma.forum.create({
       data: {
-        name: 'Foro Diario 1',
-        description:
-          'Foro general para discusiones diarias sobre Colombia y la comunidad.',
-        slug: `daily-1-${dateStr}`,
+        name: 'Foro Diario 1 (Dev)',
+        description: 'Foro general de prueba (Hora Local).',
+        slug: `daily-1-dev-${Date.now()}`, // Slug único usando timestamp
         topic: ForumTopic.DAILY_1,
         startDate,
         endDate,
@@ -58,18 +45,14 @@ async function main() {
       },
     });
 
-    console.log('✅ Created Forum 1:');
-    console.log(`   ID: ${forum1.id}`);
-    console.log(`   Slug: ${forum1.slug}`);
-    console.log(`   Active: ${forum1.isActive}\n`);
+    console.log('✅ Created Forum 1:', forum1.name);
 
-    // Create Forum 2
+    // 3. Crear Foro 2
     const forum2 = await prisma.forum.create({
       data: {
-        name: 'Foro Diario 2',
-        description:
-          'Segundo foro para temas variados y conversaciones alternativas.',
-        slug: `daily-2-${dateStr}`,
+        name: 'Foro Diario 2 (Dev)',
+        description: 'Segundo foro de prueba (Hora Local).',
+        slug: `daily-2-dev-${Date.now()}`,
         topic: ForumTopic.DAILY_2,
         startDate,
         endDate,
@@ -78,14 +61,10 @@ async function main() {
       },
     });
 
-    console.log('✅ Created Forum 2:');
-    console.log(`   ID: ${forum2.id}`);
-    console.log(`   Slug: ${forum2.slug}`);
-    console.log(`   Active: ${forum2.isActive}\n`);
+    console.log('✅ Created Forum 2:', forum2.name);
+    console.log('\n🎉 Forums initialized successfully for YOUR timezone!');
+    console.log(`   Check them at: http://localhost:3000/foros\n`);
 
-    console.log('🎉 Forums initialized successfully!');
-    console.log(`\nYou can now access the forums at:`);
-    console.log(`   http://localhost:3000/foros\n`);
   } catch (error) {
     console.error('❌ Error initializing forums:', error);
     throw error;
@@ -99,4 +78,3 @@ main()
     console.error('Fatal error:', error);
     process.exit(1);
   });
-

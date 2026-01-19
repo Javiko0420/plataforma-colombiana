@@ -271,8 +271,330 @@ Para proyectos compartidos o CI/CD, recomiendo **Opción 4 (Docker)** porque:
 - ✅ Aislado del sistema
 - ✅ Fácil de limpiar
 
+
 ## Siguiente Documento
 
 Una vez PostgreSQL esté configurado, continúa con:
 → `SETUP_INSTRUCTIONS.md`
+
+---
+## Plantillas y configuración base (Auth, .env, correo, jobs)
+
+> Esta sección te deja **todo listo** para integrar autenticación social (Google), contraseñas seguras (opcional), manejo de secretos y correo transaccional. **No crea archivos automáticamente**: copia/pega los bloques en tu proyecto.
+
+### 1) `.env.example` (plantilla)
+Crea un archivo `.env.example` en la raíz con:
+
+```env
+# App
+NEXT_PUBLIC_APP_NAME=Plataforma Colombiana
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=changeme-32chars-min
+
+# DB
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/plataforma_colombiana
+
+# OAuth (Google)
+OAUTH_GOOGLE_ID=
+OAUTH_GOOGLE_SECRET=
+
+# Email (elige uno)
+RESEND_API_KEY=
+POSTMARK_TOKEN=
+EMAIL_FROM="Soporte Plataforma <no-reply@tudominio.com>"
+
+# Seguridad (passwords)
+PASSWORD_PEPPER=use-a-long-random-secret
+
+# Caches / rate limiting (opcional)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# Observabilidad (opcional)
+SENTRY_DSN=
+
+# APIs externas
+WEATHER_API_KEY=
+EXCHANGERATE_API_KEY=
+FOOTBALL_API_KEY=
+YOUTUBE_API_KEY=
+```
+
+> Copia `.env.example` a `.env.local` para desarrollo.
+
+---
+
+### 2) Prisma – modelos para Auth.js (NextAuth)
+Si aún no lo tienes, añade al `schema.prisma` los modelos estándar del **Prisma Adapter** (no borres tus modelos existentes; pega **debajo**):
+
+```prisma
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String?  @unique
+  emailVerified DateTime?
+  image         String?
+  role          String   @default("USER") // RBAC simple: USER | MODERATOR | ADMIN
+  passwordHash  String?  // opcional (si habilitas credenciales)
+
+  accounts      Account[]
+  sessions      Session[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+```
+
+Ejecuta:
+```bash
+# instala prisma si falta
+pnpm add -D prisma
+pnpm add @prisma/client
+pnpx prisma generate
+pnpx prisma migrate dev -n "auth_init"
+```
+
+---
+
+### 3) Paquetes para autenticación y seguridad
+```bash
+pnpm add next-auth @node-rs/argon2 zod
+# proveedores de correo (elige uno)
+pnpm add resend postmark
+# rate limiting / colas (opcional)
+pnpm add @upstash/ratelimit ioredis
+# observabilidad (opcional)
+pnpm add @sentry/nextjs
+```
+
+---
+
+### 4) NextAuth (App Router) – Handler con Google y credenciales opcionales
+
+Crea el archivo `src/app/api/auth/[...nextauth]/route.ts` con:
+
+```ts
+import NextAuth, { type NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+import { verify } from "@node-rs/argon2";
+
+const prisma = new PrismaClient();
+
+const credentialsSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "database" },
+  providers: [
+    GoogleProvider({
+      clientId: process.env.OAUTH_GOOGLE_ID!,
+      clientSecret: process.env.OAUTH_GOOGLE_SECRET!,
+      allowDangerousEmailAccountLinking: false,
+    }),
+    // Habilita credenciales solo si vas a usar contraseñas
+    Credentials({
+      name: "Email y contraseña",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Contraseña", type: "password" },
+      },
+      async authorize(raw) {
+        const input = credentialsSchema.safeParse(raw);
+        if (!input.success) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: input.data.email },
+        });
+        if (!user?.passwordHash) return null;
+
+        const ok = await verify(user.passwordHash, input.data.password);
+        return ok ? { id: user.id, email: user.email ?? undefined, name: user.name ?? undefined } : null;
+      },
+    }),
+  ],
+  pages: {
+    // Opcional: define rutas personalizadas si tienes UI propia: signIn: "/login"
+  },
+  callbacks: {
+    async session({ session, user }) {
+      if (session.user) {
+        (session.user as any).id = user.id;
+        (session.user as any).role = (user as any).role;
+      }
+      return session;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+};
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+```
+
+> Si no usarás credenciales locales, elimina el bloque `Credentials()` y el campo `passwordHash` del modelo.
+
+**Helper para registrar usuarios con contraseña (opcional)**: crea `src/lib/auth/createUserWithPassword.ts`:
+
+```ts
+import { PrismaClient } from "@prisma/client";
+import { hash } from "@node-rs/argon2";
+
+const prisma = new PrismaClient();
+
+export async function createUserWithPassword(email: string, password: string, name?: string) {
+  const pepper = process.env.PASSWORD_PEPPER ?? "";
+  const passwordHash = await hash(password + pepper, { memoryCost: 19456, timeCost: 2, parallelism: 1, type: 2 });
+  return prisma.user.create({ data: { email, name, passwordHash } });
+}
+```
+
+---
+
+### 5) Correo transaccional (elige **Resend** o **Postmark**)
+
+**Resend (simple con React Email)**
+```ts
+// src/lib/mail/send.ts
+import { Resend } from "resend";
+const resend = new Resend(process.env.RESEND_API_KEY!);
+
+export async function sendVerification(to: string, url: string) {
+  await resend.emails.send({
+    from: process.env.EMAIL_FROM!,
+    to,
+    subject: "Verifica tu correo",
+    html: `<p>Hola,</p><p>Haz clic para verificar: <a href="${url}">${url}</a></p>`,
+  });
+}
+```
+
+**Postmark**
+```ts
+// src/lib/mail/send.ts
+import postmark from "postmark";
+const client = new postmark.ServerClient(process.env.POSTMARK_TOKEN!);
+
+export async function sendVerification(to: string, url: string) {
+  await client.sendEmail({
+    From: process.env.EMAIL_FROM!,
+    To: to,
+    Subject: "Verifica tu correo",
+    HtmlBody: `<p>Hola,</p><p>Haz clic para verificar: <a href="${url}">${url}</a></p>`,
+    MessageStream: "outbound", // crea si usas streams
+  });
+}
+```
+
+> Configura en tu DNS: **SPF**, **DKIM** y **DMARC** para tu dominio.
+
+---
+
+### 6) Manejo de secretos con **Doppler** (recomendado)
+1. Crea proyecto en Doppler (`dev`, `staging`, `prod`).
+2. Importa tu `.env.example`.
+3. Instala el CLI y ejecuta la app con inyección de secretos:
+```bash
+brew install dopplerhq/cli/doppler
+doppler login
+doppler setup # selecciona proyecto y entorno
+doppler run -- pnpm dev
+```
+
+---
+
+### 7) Jobs/Crons (foro diario y clima cada 15 min)
+
+**Opción A: Vercel Cron Jobs**
+- Crea rutas:
+  - `src/app/api/cron/forum-reset/route.ts`
+  - `src/app/api/cron/weather-cache/route.ts`
+
+Ejemplo de handler (resumen):
+```ts
+// forum-reset: se ejecuta a las 00:00 America/Bogota
+import { NextResponse } from "next/server";
+export async function GET() {
+  // 1) cierra/archiva foro del día anterior
+  // 2) crea foro del día actual
+  return NextResponse.json({ ok: true });
+}
+```
+
+Configura en `vercel.json`:
+```json
+{
+  "crons": [
+    { "path": "/api/cron/forum-reset", "schedule": "0 0 * * *", "timezone": "America/Bogota" },
+    { "path": "/api/cron/weather-cache", "schedule": "*/15 * * * *", "timezone": "America/Bogota" }
+  ]
+}
+```
+
+**Opción B: Inngest**
+- Define funciones serverless con reintentos/observabilidad.
+
+---
+
+### 8) Rate limiting / seguridad
+- Aplica limitador en `/api/auth/*` y endpoints sensibles con Upstash o Redis.
+- Valida payloads con **Zod**.
+- Content-Security-Policy y `helmet`/headers en `next.config.js` o middleware.
+- Sanitiza HTML en foros (DOMPurify en server).
+
+---
+
+### 9) Checklist de verificación rápida
+- [ ] `.env.local` creado desde `.env.example`
+- [ ] `prisma migrate dev` ejecutado y `@prisma/client` generado
+- [ ] Ruta `api/auth/[...nextauth]` accesible
+- [ ] OAuth Google configurado (consent screen + credenciales)
+- [ ] Proveedor de correo funcional con DNS verificado
+- [ ] Crons desplegados (Vercel/Inngest) con TZ `America/Bogota`
+- [ ] RLS/roles si usas Supabase; en Postgres local, roles mínimos
+- [ ] Sentry/logs habilitados (opcional)
+
+---
 

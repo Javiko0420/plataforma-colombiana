@@ -46,7 +46,7 @@ export function ForumPostCard({
   if (post.isDeleted) {
     return (
       <div className="border border-border rounded-lg p-4 bg-background/50">
-        <p className="text-foreground/50 italic">{t('forums.post.deleted')}</p>
+        <p className="text-foreground/50 italic">{t('postDeleted')}</p>
       </div>
     );
   }
@@ -71,12 +71,12 @@ export function ForumPostCard({
               </span>
               {post.isEdited && (
                 <span className="text-xs text-foreground/50 italic">
-                  ({t('forums.post.edited')})
+                  ({t('postEdited')})
                 </span>
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-foreground/60">
-              <span>{t('forums.profile.reputation')}: {post.author.reputation}</span>
+              <span>{t('profileReputation')}: {post.author.reputation}</span>
             </div>
           </div>
         </div>
@@ -85,7 +85,7 @@ export function ForumPostCard({
           <button
             onClick={() => onReport?.(post.id)}
             className="p-1 hover:bg-background/50 rounded transition-colors"
-            aria-label={t('forums.post.report')}
+            aria-label={t('postReport')}
           >
             <MoreVertical className="w-5 h-5 text-foreground/50" />
           </button>
@@ -96,7 +96,7 @@ export function ForumPostCard({
       <div className="mb-4">
         {post.isFlagged && (
           <div className="mb-2 p-2 bg-red-500/10 border border-red-500/20 rounded text-sm text-red-600 dark:text-red-400">
-            ⚠️ {t('forums.post.flagged')}
+            ⚠️ {t('postFlagged')}
             {post.flagReason && `: ${post.flagReason}`}
           </div>
         )}
@@ -118,7 +118,7 @@ export function ForumPostCard({
             }`}
           />
           <span className="text-sm text-foreground/70 group-hover:text-foreground">
-            {post.likesCount} {t('forums.post.likes')}
+            {post.likesCount} {t('postLikes')}
           </span>
         </button>
 
@@ -129,7 +129,7 @@ export function ForumPostCard({
         >
           <MessageCircle className="w-5 h-5 text-foreground/50 group-hover:text-primary" />
           <span className="text-sm text-foreground/70 group-hover:text-foreground">
-            {post.commentsCount} {t('forums.post.replies')}
+            {post.commentsCount} {t('postReplies')}
           </span>
         </button>
 
@@ -140,7 +140,7 @@ export function ForumPostCard({
           >
             <Flag className="w-5 h-5 text-foreground/50 group-hover:text-red-500" />
             <span className="text-sm text-foreground/70 group-hover:text-red-500">
-              {t('forums.post.report')}
+              {t('postReport')}
             </span>
           </button>
         )}

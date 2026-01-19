@@ -1,6 +1,6 @@
 /**
  * Forum Renewal Cron Job
- * Runs daily at 00:00 Australia/Sydney time
+ * Runs daily at 00:00 Australia/Brisbane time
  * Archives old forums and creates new ones
  */
 
@@ -34,18 +34,18 @@ export async function POST(request: NextRequest) {
 
     logger.info('Starting forum renewal cron job');
 
-    // Get current time in Australia/Sydney timezone
+    // Get current time in Australia/Brisbane timezone
     const now = new Date();
-    const sydneyTime = new Date(
-      now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' })
+    const brisbaneTime = new Date(
+      now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' })
     );
 
     // Set start time to 00:00:00 today
-    const startDate = new Date(sydneyTime);
+    const startDate = new Date(brisbaneTime);
     startDate.setHours(0, 0, 0, 0);
 
     // Set end time to 23:59:59 today
-    const endDate = new Date(sydneyTime);
+    const endDate = new Date(brisbaneTime);
     endDate.setHours(23, 59, 59, 999);
 
     // Archive old active forums
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         name: 'Foro Diario 1',
         description:
           'Foro general para discusiones diarias sobre Colombia y la comunidad.',
-        slug: `daily-1-${sydneyTime.toISOString().split('T')[0]}`,
+        slug: `daily-1-${brisbaneTime.toISOString().split('T')[0]}`,
         topic: ForumTopic.DAILY_1,
         startDate,
         endDate,
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         name: 'Foro Diario 2',
         description:
           'Segundo foro para temas variados y conversaciones alternativas.',
-        slug: `daily-2-${sydneyTime.toISOString().split('T')[0]}`,
+        slug: `daily-2-${brisbaneTime.toISOString().split('T')[0]}`,
         topic: ForumTopic.DAILY_2,
         startDate,
         endDate,
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     logger.info('Created new daily forums', {
       forum1Id: forum1.id,
       forum2Id: forum2.id,
-      date: sydneyTime.toISOString().split('T')[0],
+      date: brisbaneTime.toISOString().split('T')[0],
     });
 
     return NextResponse.json({
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
             slug: forum2.slug,
           },
         ],
-        sydneyTime: sydneyTime.toISOString(),
+        brisbaneTime: brisbaneTime.toISOString(),
       },
       timestamp: new Date().toISOString(),
     });

@@ -82,7 +82,7 @@ export default async function ForumPage({ params }: ForumPageProps) {
               {new Date(forum.endDate).toLocaleString(locale, {
                 hour: '2-digit',
                 minute: '2-digit',
-                timeZone: 'Australia/Sydney',
+                timeZone: 'Australia/Brisbane',
               })}
             </span>
             <span>•</span>
