@@ -3,15 +3,16 @@ import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Error de Autenticación | Plataforma Colombiana',
+  title: 'Error de Autenticación | Latin Territory',
   description: 'Error al iniciar sesión',
 }
 
-export default function AuthErrorPage({
+export default async function AuthErrorPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }>
 }) {
+  const params = await searchParams
   const errorMessages: Record<string, string> = {
     Configuration: 'Error de configuración del servidor',
     AccessDenied: 'Acceso denegado',
@@ -19,7 +20,7 @@ export default function AuthErrorPage({
     Default: 'Ha ocurrido un error al iniciar sesión',
   }
 
-  const error = searchParams.error || 'Default'
+  const error = params.error || 'Default'
   const errorMessage = errorMessages[error] || errorMessages.Default
 
   return (

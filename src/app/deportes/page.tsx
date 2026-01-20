@@ -57,12 +57,12 @@ async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: st
   )
 }
 
-export default async function SportsPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
+export default async function SportsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const locale = await getServerLocale()
   const t = (k: string) => translate(k, { locale })
   const season = getDefaultSeason()
   // const tz = process.env.SPORTS_DEFAULT_TIMEZONE || 'America/Bogota'
-  const sp = searchParams || {}
+  const sp = (await searchParams) || {}
   const dateParam = typeof sp.date === 'string' ? sp.date : new Date().toISOString().slice(0, 10)
   const liveParam = typeof sp.live === 'string' && (sp.live === 'all' || sp.live === '1' || sp.live === '0') ? (sp.live as 'all' | '1' | '0') : null
   let teamParam = typeof sp.team === 'string' && /^\d+$/.test(sp.team) ? Number(sp.team) : undefined

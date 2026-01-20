@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -63,12 +64,12 @@ export default async function ForumPage({ params }: ForumPageProps) {
         {/* Forum Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-sm text-foreground/60 mb-2">
-            <a
+            <Link
               href="/foros"
               className="hover:text-primary transition-colors"
             >
               {t('forums.title')}
-            </a>
+            </Link>
             <span>/</span>
             <span>{forum.name}</span>
           </div>

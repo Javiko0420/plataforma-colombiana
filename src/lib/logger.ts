@@ -284,7 +284,7 @@ class PerformanceLogger {
     const startTime = Date.now()
 
     return {
-      end: (details?: Record<string, any>) => {
+      end: (details?: Record<string, unknown>) => {
         const duration = Date.now() - startTime
         
         this.logPerformance({
@@ -300,4 +300,4 @@ class PerformanceLogger {
 
 // Export the main logger instance
 export default logger
-export { SecurityLogger, AppLogger, ErrorLogger, PerformanceLogger }
+export { logger, SecurityLogger, AppLogger, ErrorLogger, PerformanceLogger }

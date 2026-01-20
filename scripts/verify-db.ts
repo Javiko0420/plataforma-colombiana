@@ -30,7 +30,8 @@ async function main() {
     
     for (const table of tables) {
       try {
-        const count = await table.model.count()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const count = await (table.model as any).count()
         console.log(`  ${table.name.padEnd(15)} ✓ ${count} registros`)
       } catch (error) {
         console.log(`  ${table.name.padEnd(15)} ✗ Error`)

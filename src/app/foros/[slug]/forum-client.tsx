@@ -22,6 +22,22 @@ interface UserProfile {
   isBanned: boolean;
 }
 
+interface CommentData {
+  id: string;
+  content: string;
+  isEdited: boolean;
+  isDeleted: boolean;
+  isFlagged: boolean;
+  flagReason: string | null;
+  likesCount: number;
+  createdAt: Date;
+  author: {
+    id: string;
+    nickname: string;
+    reputation: number;
+  };
+}
+
 interface ForumClientProps {
   forumId: string;
   currentUser: UserProfile | null;
@@ -32,7 +48,7 @@ interface ForumClientProps {
 export default function ForumClient({
   forumId,
   currentUser,
-  locale,
+  locale: _locale,
   translations: t,
 }: ForumClientProps) {
   const router = useRouter();
@@ -41,7 +57,7 @@ export default function ForumClient({
   const [error, setError] = React.useState<string | null>(null);
   const [showNewPost, setShowNewPost] = React.useState(false);
   const [expandedPost, setExpandedPost] = React.useState<string | null>(null);
-  const [comments, setComments] = React.useState<Record<string, any[]>>({});
+  const [comments, setComments] = React.useState<Record<string, CommentData[]>>({});
   const [reportModalOpen, setReportModalOpen] = React.useState(false);
   const [reportTarget, setReportTarget] = React.useState<{
     type: 'post' | 'comment';

@@ -212,7 +212,7 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                       {t('profile.info.member')}
                     </p>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      <DateDisplay date={user.createdAt} format="short" />
+                      <DateDisplay date={user.createdAt} options={{ year: 'numeric', month: 'short', day: 'numeric' }} />
                     </p>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                         {t('profile.info.lastLogin')}
                       </p>
                       <p className="font-medium text-gray-900 dark:text-white">
-                        <DateDisplay date={user.lastLoginAt} format="relative" />
+                        <DateDisplay date={user.lastLoginAt} options={{ year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
                       </p>
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                             {post.content}
                           </p>
                           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            <DateDisplay date={post.createdAt} format="relative" />
+                            <DateDisplay date={post.createdAt} options={{ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
                             <span className="flex items-center gap-1">
                               <ThumbsUp className="h-3 w-3" />
                               {post.likesCount}
@@ -294,7 +294,7 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                             {comment.content}
                           </p>
                           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                            <DateDisplay date={comment.createdAt} format="relative" />
+                            <DateDisplay date={comment.createdAt} options={{ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
                             <span className="flex items-center gap-1">
                               <ThumbsUp className="h-3 w-3" />
                               {comment.likesCount}

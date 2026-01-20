@@ -31,7 +31,7 @@ class AppError extends Error {
 }
 
 class ValidationError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, _details?: unknown) {
     super(message, 400, true, 'VALIDATION_ERROR')
     this.name = 'ValidationError'
   }
@@ -78,7 +78,7 @@ interface ErrorResponse {
   error: {
     message: string
     code?: string
-    details?: any
+    details?: unknown
     timestamp: string
     requestId?: string
   }
@@ -99,7 +99,7 @@ export class ErrorHandler {
     let statusCode = 500
     let message = 'Internal server error'
     let code = 'INTERNAL_ERROR'
-    let details: any = undefined
+    let details: unknown = undefined
 
     // Handle different error types
     if (error instanceof AppError) {
@@ -157,7 +157,7 @@ export class ErrorHandler {
   /**
    * Format Zod validation errors
    */
-  private static formatZodError(error: ZodError): any {
+  private static formatZodError(error: ZodError): { issues: Array<{ field: string; message: string; code: string }> } {
     return {
       issues: error.issues.map(issue => ({
         field: issue.path.join('.'),
@@ -220,9 +220,9 @@ export class ErrorHandler {
    * Async error wrapper for API routes
    */
   static asyncHandler(
-    handler: (req: Request, context?: any) => Promise<NextResponse>
+    handler: (req: Request, context?: unknown) => Promise<NextResponse>
   ) {
-    return async (req: Request, context?: any): Promise<NextResponse> => {
+    return async (req: Request, context?: unknown): Promise<NextResponse> => {
       try {
         return await handler(req, context)
       } catch (error) {
@@ -239,11 +239,11 @@ export class ErrorHandler {
    */
   static async validateRequest<T>(
     request: Request,
-    schema: any,
+    schema: { parse: (data: unknown) => T },
     source: 'body' | 'query' | 'params' = 'body'
   ): Promise<T> {
     try {
-      let data: any
+      let data: unknown
 
       switch (source) {
         case 'body':
@@ -298,7 +298,7 @@ function createSuccessResponse<T>(
 export class ErrorBoundary extends Error {
   constructor(
     public readonly originalError: Error,
-    public readonly errorInfo: any
+    public readonly errorInfo: unknown
   ) {
     super(originalError.message)
     this.name = 'ErrorBoundary'
@@ -310,7 +310,7 @@ const ClientErrorHandler = {
   /**
    * Handle client-side errors
    */
-  handleClientError(error: Error, errorInfo?: any) {
+  handleClientError(error: Error, errorInfo?: unknown) {
     console.error('Client error:', error, errorInfo)
     
     // In production, you might want to send this to an error tracking service
@@ -323,7 +323,7 @@ const ClientErrorHandler = {
   /**
    * Handle API call errors
    */
-  handleApiError(response: Response, data?: any) {
+  handleApiError(response: Response, data?: { error?: { message?: string } }) {
     const error = new Error(
       data?.error?.message || `API Error: ${response.status} ${response.statusText}`
     )
@@ -362,6 +362,9 @@ const ClientErrorHandler = {
   }
 }
 
+// Alias for ErrorHandler.handleError for convenient imports
+const handleApiError = ErrorHandler.handleError.bind(ErrorHandler)
+
 // Export all error classes and handlers
 export default ErrorHandler
 export {
@@ -373,5 +376,6 @@ export {
   ConflictError,
   RateLimitError,
   createSuccessResponse,
-  ClientErrorHandler
+  ClientErrorHandler,
+  handleApiError
 }

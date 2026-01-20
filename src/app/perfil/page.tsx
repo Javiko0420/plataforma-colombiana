@@ -3,10 +3,10 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import ProfileClient from './profile-client.tsx'
+import ProfileClient from './profile-client'
 
 export const metadata: Metadata = {
-  title: 'Mi Perfil | Plataforma Colombiana',
+  title: 'Mi Perfil | Latin Territory',
   description: 'Gestiona tu perfil y configuración',
 }
 

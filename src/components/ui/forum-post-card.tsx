@@ -58,13 +58,13 @@ export function ForumPostCard({
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
             <span className="text-lg font-semibold text-primary">
-              {post.author.nickname.charAt(0).toUpperCase()}
+              {(post.author.nickname || 'A').charAt(0).toUpperCase()}
             </span>
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground">
-                {post.author.nickname}
+                {post.author.nickname || 'Anónimo'}
               </span>
               <span className="text-xs text-foreground/50">
                 {new Date(post.createdAt).toLocaleString()}
