@@ -16,9 +16,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Plataforma Colombiana - Conectando Emprendedores",
-  description: "Descubre productos únicos, emprendimientos locales y mantente conectado con Colombia. Emisoras, clima, deportes y más.",
-  keywords: "Colombia, emprendimientos, productos locales, emisoras, clima, deportes, foros",
+  title: {
+    template: '%s | Latin Territory',
+    default: 'Latin Territory - Tu comunidad latina en Australia',
+  },
+  description: "El punto de encuentro para profesionales, estudiantes y emprendedores latinos en Australia. Empleo, alojamiento, noticias y conexión cultural.",
+  keywords: "Latinos en Australia, comunidad latina, colombianos en Australia, empleo, alojamiento, networking, Latin Territory",
+  openGraph: {
+    title: 'Latin Territory',
+    description: 'Tu comunidad latina en Australia',
+    type: 'website',
+    locale: 'es_AU', // Español en Australia
+    siteName: 'Latin Territory',
+  },
 };
 
 export default async function RootLayout({

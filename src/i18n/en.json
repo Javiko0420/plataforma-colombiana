@@ -1,5 +1,5 @@
 {
-  "app.name": "Colombian Platform",
+  "app.name": "Latin Territory",
   "nav.home": "Home",
   "nav.directory": "Directory",
   "nav.forums": "Forums",
@@ -17,7 +17,7 @@
   "sr.nav.to.weather": "Navigating to Weather",
   "sr.nav.to.rates": "Navigating to Exchange Rates",
   "home.skip": "Skip to main content",
-  "home.hero.tagline": "Connecting entrepreneurs, unique products and Colombian passion in one place",
+  "home.hero.tagline": "Your territory, your community. Connecting the Latin talent in Australia.",
   "home.cta.directory": "Explore Directory",
   "home.cta.forums": "Join the Forums",
   "home.stats.title": "Platform statistics",
@@ -119,7 +119,7 @@
   "home.cta.hero.title": "Are you a Colombian entrepreneur?",
   "home.cta.hero.desc": "Join our platform and showcase your business to thousands of Colombians",
   "home.cta.hero.link": "Register my business"
-  ,"footer.tagline": "Connecting entrepreneurs and consumers across Colombia. Discover unique products and support local talent.",
+  ,"footer.tagline": "Building the largest network of Latinos in Oceania. Supporting local talent and growing with your community.",
   "footer.quickLinks": "Quick Links",
   "footer.links.directory": "Business Directory",
   "footer.links.forums": "Discussion Forums",
