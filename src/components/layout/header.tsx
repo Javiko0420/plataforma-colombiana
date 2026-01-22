@@ -102,7 +102,7 @@ export function Header() {
                 className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full flex items-center justify-center"
                 aria-hidden="true"
               >
-                <span className="text-white font-bold text-sm">PC</span>
+                <span className="text-white font-bold text-sm">LT</span>
               </div>
               <span className="text-xl font-bold text-foreground">
                 {t('app.name')}

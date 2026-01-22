@@ -15,7 +15,7 @@ export function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">PC</span>
+                <span className="text-white font-bold text-sm">LT</span>
               </div>
               <span className="text-xl font-bold">{t('app.name')}</span>
             </div>
@@ -96,15 +96,15 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4" />
-                <span className="text-foreground/70">info@plataformacolombia.co</span>
+                <span className="text-foreground/70">javiguerreroz86@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4" />
-                <span className="text-foreground/70">+57 1 234 5678</span>
+                <span className="text-foreground/70">+61 0433560234</span>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-4 w-4" />
-                <span className="text-foreground/70">{t('footer.location')}</span>
+                <span className="text-foreground/70">Brisbane, Australia</span>
               </div>
             </div>
           </div>
