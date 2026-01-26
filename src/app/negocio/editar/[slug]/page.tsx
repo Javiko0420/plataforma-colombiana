@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import BusinessForm from "@/components/forms/business-form"; // Asegúrate de que la ruta sea correcta
 
-export default async function EditBusinessPage({ params }: { params: { slug: string } }) {
+export default async function EditBusinessPage({ params }: { params: Promise<{ slug: string }> }) {
   const session = await getServerSession(authOptions);
   const slug = (await params).slug; // Next.js 15 await
 

@@ -8,7 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 // 1. Metadata dinámica
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const slug = (await params).slug 
   
   const business = await prisma.business.findUnique({
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // 2. Página Principal
-export default async function BusinessDetailPage({ params }: { params: { slug: string } }) {
+export default async function BusinessDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug
   const session = await getServerSession(authOptions) // 👈 Obtenemos al usuario actual
 

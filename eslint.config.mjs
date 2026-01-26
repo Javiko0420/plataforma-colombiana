@@ -21,6 +21,10 @@ const eslintConfig = [
       "src/**/__tests__/**",
       "**/*.test.*",
     ],
+    // Fix para error de estructura circular en Vercel
+    linterOptions: {
+      reportUnusedDisableDirectives: "off",
+    },
   },
 ];
 
