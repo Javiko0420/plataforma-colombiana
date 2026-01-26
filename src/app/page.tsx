@@ -275,11 +275,13 @@ export default function Home() {
             </p>
             <div className="flex justify-center">
               <Link
-                href="/registro"
-                className="bg-white text-gray-900 px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center"
+                href="/registrar-negocio"
+                className="bg-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center group"
               >
-                {t('home.cta.hero.link')}
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <span className="bg-gradient-to-r from-yellow-600 via-blue-600 to-red-600 bg-clip-text text-transparent">
+                  {t('home.cta.hero.link')}
+                </span>
+                <ArrowRight className="ml-2 h-5 w-5 text-blue-600 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>

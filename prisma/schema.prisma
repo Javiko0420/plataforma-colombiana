@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "darwin-arm64"]
@@ -12,22 +9,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth.js models
 model Account {
   id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -41,30 +36,29 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String    @unique
-  nickname      String?   @unique // Nickname for forums
+  email         String         @unique
+  nickname      String?        @unique
   emailVerified DateTime?
   image         String?
-  password      String? // Hashed password
-  role          UserRole  @default(USER)
-  isActive      Boolean   @default(true)
-  isBanned      Boolean   @default(false) // For forum moderation
-  reputation    Int       @default(0) // User reputation score
+  password      String?
+  role          UserRole       @default(USER)
+  isActive      Boolean        @default(true)
+  isBanned      Boolean        @default(false)
+  reputation    Int            @default(0)
   lastLoginAt   DateTime?
-  loginAttempts Int       @default(0)
+  loginAttempts Int            @default(0)
   lockedUntil   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   accounts      Account[]
-  sessions      Session[]
-  businesses    Business[]
-  forumPosts    ForumPost[]
-  forumComments ForumComment[]
-  reports       Report[] // Reports created by this user
   auditLogs     AuditLog[]
+  businesses    Business[]
+  forumComments ForumComment[]
+  forumPosts    ForumPost[]
+  reports       Report[]
+  sessions      Session[]
 
   @@index([email])
   @@index([nickname])
@@ -80,41 +74,45 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Business models
 model Business {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
-  description String   @db.Text
-  category    Category
-  city        String
-  department  String
-  phone       String?
-  email       String?
+  description String
+  city        String?
+  phone       String
+  email       String
   website     String?
   whatsapp    String?
   instagram   String?
   facebook    String?
-  logo        String?
   images      String[]
-  featured    Boolean  @default(false)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  ownerId     String
+  address     String?
+  isActive    Boolean      @default(true)
+  isVerified  Boolean      @default(false)
+  latitude    Float?
+  logoUrl     String?
+  longitude   Float?
+  plan        BusinessPlan @default(FREE)
+  ranking     Int          @default(0)
+  slug        String       @unique
+  state       String?
+  tiktok      String?
+  category    String
+  owner       User         @relation(fields: [ownerId], references: [id])
+  products    Product[]
 
-  owner    User      @relation(fields: [ownerId], references: [id])
-  ownerId  String
-  products Product[]
-
-  @@index([category])
   @@index([city])
-  @@index([department])
-  @@index([featured])
+  @@index([category])
+  @@index([plan])
 }
 
 model Product {
   id          String   @id @default(cuid())
   name        String
-  description String   @db.Text
+  description String
   price       Float?
   currency    String   @default("COP")
   image       String?
@@ -122,29 +120,26 @@ model Product {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  businessId String
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   @@index([featured])
   @@index([businessId])
 }
 
-// Forum models - Daily forums that reset at 00:00 Australia time
 model Forum {
-  id          String     @id @default(cuid())
+  id          String      @id @default(cuid())
   name        String
-  description String     @db.Text
-  slug        String     @unique
-  topic       ForumTopic // DAILY_1 or DAILY_2
-  startDate   DateTime // Forum start time (00:00 Australia time)
-  endDate     DateTime // Forum end time (23:59:59 Australia time)
-  isActive    Boolean    @default(true)
-  isArchived  Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  posts ForumPost[]
+  description String
+  slug        String      @unique
+  topic       ForumTopic
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean     @default(true)
+  isArchived  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  posts       ForumPost[]
 
   @@index([topic])
   @@index([isActive])
@@ -153,25 +148,23 @@ model Forum {
 }
 
 model ForumPost {
-  id              String   @id @default(cuid())
-  content         String   @db.Text // Max 500 characters validated in app
-  isEdited        Boolean  @default(false)
-  isDeleted       Boolean  @default(false)
-  isFlagged       Boolean  @default(false) // Flagged by moderation
-  flagReason      String? // Reason for flagging
-  moderationScore Float? // OpenAI moderation score
-  likesCount      Int      @default(0)
-  reportsCount    Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String
-  forum    Forum  @relation(fields: [forumId], references: [id], onDelete: Cascade)
-  forumId  String
-
-  comments ForumComment[]
-  reports  Report[]
+  id              String         @id @default(cuid())
+  content         String
+  isEdited        Boolean        @default(false)
+  isDeleted       Boolean        @default(false)
+  isFlagged       Boolean        @default(false)
+  flagReason      String?
+  moderationScore Float?
+  likesCount      Int            @default(0)
+  reportsCount    Int            @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  authorId        String
+  forumId         String
+  comments        ForumComment[]
+  author          User           @relation(fields: [authorId], references: [id])
+  forum           Forum          @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  reports         Report[]
 
   @@index([forumId])
   @@index([authorId])
@@ -181,24 +174,22 @@ model ForumPost {
 }
 
 model ForumComment {
-  id              String   @id @default(cuid())
-  content         String   @db.Text // Max 500 characters validated in app
-  isEdited        Boolean  @default(false)
-  isDeleted       Boolean  @default(false)
-  isFlagged       Boolean  @default(false) // Flagged by moderation
-  flagReason      String? // Reason for flagging
-  moderationScore Float? // OpenAI moderation score
-  likesCount      Int      @default(0)
-  reportsCount    Int      @default(0)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  author   User      @relation(fields: [authorId], references: [id])
-  authorId String
-  post     ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId   String
-
-  reports Report[]
+  id              String    @id @default(cuid())
+  content         String
+  isEdited        Boolean   @default(false)
+  isDeleted       Boolean   @default(false)
+  isFlagged       Boolean   @default(false)
+  flagReason      String?
+  moderationScore Float?
+  likesCount      Int       @default(0)
+  reportsCount    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  authorId        String
+  postId          String
+  author          User      @relation(fields: [authorId], references: [id])
+  post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reports         Report[]
 
   @@index([postId])
   @@index([authorId])
@@ -207,25 +198,21 @@ model ForumComment {
   @@index([isDeleted])
 }
 
-// Report system for user moderation
 model Report {
-  id         String       @id @default(cuid())
+  id         String        @id @default(cuid())
   reason     ReportReason
-  details    String?      @db.Text
-  status     ReportStatus @default(PENDING)
-  reviewedBy String? // Admin who reviewed
-  reviewNote String?      @db.Text
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-
-  reporter   User   @relation(fields: [reporterId], references: [id])
+  details    String?
+  status     ReportStatus  @default(PENDING)
+  reviewedBy String?
+  reviewNote String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
   reporterId String
-
-  // Can report either a post or comment
-  post      ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  postId    String?
-  comment   ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId String?
+  postId     String?
+  commentId  String?
+  comment    ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post       ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reporter   User          @relation(fields: [reporterId], references: [id])
 
   @@index([status])
   @@index([reporterId])
@@ -234,20 +221,18 @@ model Report {
   @@index([createdAt])
 }
 
-// Audit Log model for security tracking
 model AuditLog {
   id         String   @id @default(cuid())
-  action     String // CREATE, UPDATE, DELETE, LOGIN, etc.
-  resource   String // User, Business, Product, etc.
+  action     String
+  resource   String
   resourceId String?
   oldValues  Json?
   newValues  Json?
   ip         String?
   userAgent  String?
   createdAt  DateTime @default(now())
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
 
   @@index([action])
   @@index([resource])
@@ -255,17 +240,15 @@ model AuditLog {
   @@index([userId])
 }
 
-// Security Log model for tracking security events
 model SecurityLog {
   id        String   @id @default(cuid())
-  event     String // FAILED_LOGIN, RATE_LIMIT, SUSPICIOUS_INPUT, etc.
-  severity  String // LOW, MEDIUM, HIGH, CRITICAL
+  event     String
+  severity  String
   ip        String?
   userAgent String?
   details   Json?
   createdAt DateTime @default(now())
-
-  userId String?
+  userId    String?
 
   @@index([event])
   @@index([severity])
@@ -273,7 +256,6 @@ model SecurityLog {
   @@index([ip])
 }
 
-// Enums
 enum UserRole {
   USER
   BUSINESS_OWNER
@@ -298,8 +280,8 @@ enum Category {
 }
 
 enum ForumTopic {
-  DAILY_1 // First daily forum
-  DAILY_2 // Second daily forum
+  DAILY_1
+  DAILY_2
 }
 
 enum ReportReason {
@@ -316,4 +298,11 @@ enum ReportStatus {
   REVIEWED
   RESOLVED
   DISMISSED
+}
+
+enum BusinessPlan {
+  FREE
+  BASIC
+  PREMIUM
+  SPONSOR
 }

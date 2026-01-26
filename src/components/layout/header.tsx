@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { Menu, X, Search, User, LogOut, UserCircle, Settings } from 'lucide-react'
+import { Menu, X, Search, User, LogOut, UserCircle, Settings, Building2, PlusCircle } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
@@ -224,6 +224,16 @@ export function Header() {
                         {t('profile.settings.title')}
                       </Link>
 
+                      <Link
+                        href="/registrar-negocio"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors font-medium"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        role="menuitem"
+                      >
+                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        Registrar mi Negocio
+                      </Link>
+
                       <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
 
                       <button
@@ -359,6 +369,14 @@ export function Header() {
                   >
                     <UserCircle className="h-5 w-5" aria-hidden="true" />
                     {t('auth.profile')}
+                  </Link>
+                  <Link
+                    href="/registrar-negocio"
+                    className="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Building2 className="h-5 w-5" aria-hidden="true" />
+                    Registrar Negocio
                   </Link>
                   <button
                     onClick={() => {

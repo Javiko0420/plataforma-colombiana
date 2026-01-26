@@ -1,8 +1,23 @@
 'use client'
 
 import { useTranslations } from '@/components/providers/language-provider'
-import { Calendar, Mail, User as UserIcon, MessageSquare, ThumbsUp, Award, Settings } from 'lucide-react'
+import { 
+  Building2, 
+  MapPin, 
+  PlusCircle, 
+  CheckCircle2, 
+  Edit,          // 👈 Nuevo
+  ExternalLink,  // 👈 Nuevo
+  Calendar, 
+  Mail, 
+  User as UserIcon, 
+  MessageSquare, 
+  ThumbsUp, 
+  Award, 
+  Settings 
+} from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image' // 👈 Agregado
 import { DateDisplay } from '@/components/ui/date-display'
 
 interface ProfileUser {
@@ -18,6 +33,16 @@ interface ProfileUser {
   postsCount: number
   commentsCount: number
   totalLikes: number
+  businesses: Array<{
+    id: string
+    name: string
+    slug: string
+    category: string
+    city: string | null
+    isVerified: boolean
+    images: string[]  // 👈 Agregado para mostrar miniatura
+    createdAt: Date
+  }>
 }
 
 interface RecentPost {
@@ -106,12 +131,12 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
               </div>
 
               {/* Edit Button */}
-              <Link
-                href="/perfil/configuracion"
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors"
+              <Link 
+                href="/perfil/editar"
+                className="flex items-center gap-2 bg-slate-700/50 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600"
               >
-                <Settings className="h-4 w-4" />
-                <span>{t('profile.edit')}</span>
+                <Settings className="w-4 h-4" />
+                Editar perfil
               </Link>
             </div>
           </div>
@@ -186,6 +211,119 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* SECCIÓN: MIS NEGOCIOS */}
+          <div className="lg:col-span-3 mb-8"> {/* Ocupa todo el ancho */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-blue-500" />
+                  Mis Territorios (Negocios)
+                </h2>
+                <Link 
+                  href="/registrar-negocio" 
+                  className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Nuevo Negocio
+                </Link>
+              </div>
+
+              {user.businesses.length === 0 ? (
+                <div className="text-center py-8 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                  <Building2 className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">Aún no tienes negocios</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4 max-w-md mx-auto">
+                    ¡Es hora de conquistar el mercado! Registra tu emprendimiento y llega a miles de latinos en Australia.
+                  </p>
+                  <Link 
+                    href="/registrar-negocio" 
+                    className="text-blue-600 hover:text-blue-500 font-medium"
+                  >
+                    Comenzar ahora &rarr;
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {user.businesses.map((business) => (
+                    <div key={business.id} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 bg-white dark:bg-slate-900 group flex flex-col">
+                      
+                      {/* Cabecera de color (Clickeable: lleva al público) */}
+                      <Link href={`/negocio/${business.slug}`} className="block h-24 bg-gradient-to-r from-blue-600 to-purple-600 relative cursor-pointer">
+                        {business.isVerified && (
+                          <span className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-sm z-10">
+                            <CheckCircle2 className="h-3 w-3" /> Verificado
+                          </span>
+                        )}
+                      </Link>
+
+                      <div className="p-4 pt-0 relative flex-1 flex flex-col">
+                        {/* BLOQUE NUEVO (Miniatura inteligente) */}
+                        <Link 
+                          href={`/negocio/${business.slug}`} 
+                          className="w-16 h-16 bg-white dark:bg-slate-800 rounded-lg border-4 border-white dark:border-slate-800 absolute -top-8 overflow-hidden shadow-md transition-transform group-hover:scale-110 relative"
+                        >
+                          {/* Si hay fotos, mostramos la primera */}
+                          {business.images && business.images.length > 0 ? (
+                            <Image
+                              src={business.images[0]}
+                              alt={business.name}
+                              fill
+                              className="object-cover"
+                              sizes="64px" // Optimización para imágenes pequeñas
+                            />
+                          ) : (
+                            // Si no hay fotos, mostramos el icono por defecto
+                            <div className="w-full h-full flex items-center justify-center text-2xl">
+                              🏢
+                            </div>
+                          )}
+                        </Link>
+
+                        <div className="mt-10 flex-1">
+                          <Link href={`/negocio/${business.slug}`} className="hover:text-blue-500 transition-colors">
+                            <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight">
+                              {business.name}
+                            </h3>
+                          </Link>
+                          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mt-1">
+                            {business.category}
+                          </p>
+                          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                            <MapPin className="h-3 w-3" />
+                            {business.city || 'Australia'}
+                          </div>
+                        </div>
+                        
+                        {/* 👇 NUEVA ZONA DE BOTONES DE ACCIÓN */}
+                        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
+                          
+                          {/* Botón 1: Ver Público */}
+                          <Link 
+                            href={`/negocio/${business.slug}`} 
+                            className="flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Ver Público
+                          </Link>
+
+                          {/* Botón 2: EDITAR (La clave) */}
+                          <Link 
+                            href={`/negocio/editar/${business.slug}`} 
+                            className="flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm shadow-blue-500/20"
+                          >
+                            <Edit className="w-3 h-3" />
+                            Gestionar
+                          </Link>
+                        </div>
+
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* User Information */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
