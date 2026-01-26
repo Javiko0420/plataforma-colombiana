@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { businessSchema } from "@/lib/validations/business";
 import { z } from "zod";
+import { Category } from "@prisma/client";
 
 // Definición correcta de tipos para Next.js 15
 export async function PUT(
@@ -49,7 +50,7 @@ export async function PUT(
         name: validatedData.name,
         // No actualizamos el slug para no romper el SEO/URLs existentes
         description: validatedData.description,
-        category: validatedData.category,
+        category: validatedData.category as Category,
         
         email: validatedData.email,
         phone: validatedData.phone,

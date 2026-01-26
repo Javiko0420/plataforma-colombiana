@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"; // Asegúrate de que esta ruta sea cor
 import { prisma } from "@/lib/prisma";
 import { businessSchema } from "@/lib/validations/business";
 import { z } from "zod";
+import { Category } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
         name: validatedData.name,
         slug,
         description: validatedData.description,
-        category: validatedData.category,
+        category: validatedData.category as Category,
         email: validatedData.email,
         phone: validatedData.phone,
         website: validatedData.website || null,
