@@ -3,9 +3,10 @@ import { notFound } from 'next/navigation'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
-import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, Share2, ArrowLeft, ImageIcon, Edit } from 'lucide-react'
+import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import ShareButton from "@/components/ui/share-button"
 
 // 1. Metadata dinámica
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -116,9 +117,10 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
                     </div>
                 </div>
 
-                <button className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
-                    <Share2 className="w-5 h-5" />
-                </button>
+                <ShareButton 
+                  title={business.name}
+                  text={`Mira este negocio: ${business.name}`}
+                />
               </div>
 
               <hr className="border-slate-100 dark:border-slate-800 my-8" />
