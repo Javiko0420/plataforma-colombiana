@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from 'react'
-import { topColombiaCities } from '@/lib/cities'
+import { topColombiaCities, internationalCities } from '@/lib/cities'
 import { useTranslations } from '@/components/providers/language-provider'
 import { cn } from '@/lib/utils'
 
@@ -51,13 +51,16 @@ function useWeather(params: string) {
   return { data, loading, error }
 }
 
-function CityWeatherCard({ city }: { city: { slug: string; name: string } }) {
+function CityWeatherCard({ city }: { city: { slug: string; name: string; country?: string } }) {
   const { data, loading, error } = useWeather(`city=${encodeURIComponent(city.slug)}`)
 
   return (
     <div className="rounded-xl border p-4 bg-white dark:bg-gray-800">
       <div className="flex items-baseline justify-between">
-        <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{city.name}</h3>
+        <div>
+          <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{city.name}</h3>
+          {city.country && <span className="text-xs text-gray-500 dark:text-gray-400">{city.country}</span>}
+        </div>
         {loading && <span className="text-xs text-gray-500">Cargando…</span>}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -172,11 +175,22 @@ export default function WeatherPage() {
         </div>
       </section>
 
-      {/* Principales ciudades */}
+      {/* Principales ciudades Colombia */}
       <section className="mt-10">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{t('weather.topCities', 'Principales ciudades')}</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{t('weather.topCities', 'Principales ciudades de Colombia')}</h2>
         <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {topColombiaCities.map(c => (
+            <CityWeatherCard key={c.slug} city={c} />
+          ))}
+        </div>
+      </section>
+
+      {/* Ciudades internacionales */}
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{t('weather.internationalCities', 'Ciudades internacionales')}</h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('weather.internationalDesc', 'Para colombianos en el exterior')}</p>
+        <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {internationalCities.map(c => (
             <CityWeatherCard key={c.slug} city={c} />
           ))}
         </div>
