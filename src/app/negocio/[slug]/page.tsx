@@ -3,10 +3,12 @@ import { notFound } from 'next/navigation'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
-import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit } from 'lucide-react'
+import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit, Star } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ShareButton from "@/components/ui/share-button"
+import ReviewForm from "@/components/reviews/review-form"
+import ReviewsList from "@/components/reviews/reviews-list"
 
 // 1. Metadata dinámica
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -36,11 +38,22 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
   const business = await prisma.business.findUnique({
     where: { slug },
     include: {
-      owner: { select: { name: true, image: true } }
+      owner: { select: { name: true, image: true } },
+      reviews: {
+        include: {
+          user: { select: { name: true, image: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+      }
     }
   })
 
   if (!business) notFound()
+
+  // Cálculo de promedio simple
+  const averageRating = business?.reviews.length 
+    ? (business.reviews.reduce((acc, review) => acc + review.rating, 0) / business.reviews.length).toFixed(1)
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
@@ -115,6 +128,14 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
                         <MapPin className="w-4 h-4" />
                         <span>{business.city || 'Australia'} {business.state && `, ${business.state}`}</span>
                     </div>
+                    {/* Promedio de Estrellas */}
+                    {averageRating && (
+                      <div className="flex items-center gap-1 text-yellow-500 font-bold bg-yellow-500/10 px-2 py-0.5 rounded-md">
+                        <Star className="w-4 h-4 fill-yellow-500" />
+                        <span>{averageRating}</span>
+                        <span className="text-slate-400 text-xs font-normal">({business.reviews.length})</span>
+                      </div>
+                    )}
                 </div>
 
                 <ShareButton 
@@ -152,6 +173,25 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
                   </div>
                 </div>
               )}
+
+              <hr className="border-slate-100 dark:border-slate-800 my-8" />
+
+              <div className="grid md:grid-cols-2 gap-12">
+                {/* Columna Izquierda: Lista de Reseñas */}
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+                    Opiniones ({business.reviews.length})
+                  </h2>
+                  <ReviewsList reviews={business.reviews} />
+                </div>
+
+                {/* Columna Derecha: Formulario (Sticky) */}
+                <div>
+                  <div className="sticky top-24">
+                    <ReviewForm businessId={business.id} />
+                  </div>
+                </div>
+              </div>
 
             </div>
           </div>

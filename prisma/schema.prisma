@@ -58,6 +58,7 @@ model User {
   forumComments ForumComment[]
   forumPosts    ForumPost[]
   reports       Report[]
+  reviews       Review[]
   sessions      Session[]
 
   @@index([email])
@@ -103,6 +104,7 @@ model Business {
   category    String
   owner       User         @relation(fields: [ownerId], references: [id])
   products    Product[]
+  reviews     Review[]
 
   @@index([city])
   @@index([category])
@@ -305,4 +307,22 @@ enum BusinessPlan {
   BASIC
   PREMIUM
   SPONSOR
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      // Del 1 al 5
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+
+  // Relación con el Negocio
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  // Relación con el Usuario (Autor)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([userId])
 }
