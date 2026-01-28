@@ -10,9 +10,25 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
+
+    // 👇 INICIO DEL BLOQUE DE SEGURIDAD AUSTRALIA 👇
+    // Solo activamos esto en producción (cuando está subido en Vercel)
+    if (process.env.NODE_ENV === 'production') {
+      const country = req.headers.get("x-vercel-ip-country");
+      
+      // Si Vercel detecta el país y NO es Australia (AU)
+      if (country && country !== 'AU') {
+        console.warn(`⛔ Registro bloqueado desde: ${country}`);
+        return NextResponse.json(
+          { error: "El registro de negocios solo está permitido para usuarios ubicados en Australia 🇦🇺." },
+          { status: 403 }
+        );
+      }
+    }
+    // 👆 FIN DEL BLOQUE DE SEGURIDAD 👆
 
     const body = await req.json();
 
