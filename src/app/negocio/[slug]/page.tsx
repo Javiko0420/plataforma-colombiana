@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
-import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit, Star } from 'lucide-react'
+import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit, Star, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ShareButton from "@/components/ui/share-button"
@@ -201,6 +201,28 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-6 sticky top-24">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Contacto Directo</h3>
                 <div className="space-y-4">
+                    {/* Botón de Cómo Llegar */}
+                    {business.address && (
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address + ", " + (business.city || "Australia"))}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors group"
+                      >
+                          <div className="bg-white dark:bg-slate-900 p-3 rounded-full shadow-sm text-red-500 group-hover:scale-110 transition-transform">
+                              <MapPin className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs text-slate-500 font-bold uppercase mb-0.5">Dirección</p>
+                            <p className="font-medium text-slate-900 dark:text-white text-sm leading-tight mb-1">
+                              {business.address}
+                            </p>
+                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1">
+                              Abrir Mapa <ExternalLink className="w-3 h-3" />
+                            </span>
+                          </div>
+                      </a>
+                    )}
                     {business.whatsapp && (
                         <a 
                             href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}`}

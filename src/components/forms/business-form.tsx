@@ -146,6 +146,15 @@ export default function BusinessForm({ initialData }: BusinessFormProps) {
           {/* Contacto */}
           <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800 space-y-4">
             <h2 className="text-xl font-semibold flex items-center gap-2 text-slate-100"><MapPin className="w-5 h-5 text-green-400" /> Contacto</h2>
+            <div className="mb-4">
+              <label className="text-sm font-medium text-slate-300">Dirección Física (Opcional)</label>
+              <input 
+                {...form.register("address")} 
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white placeholder-slate-600 focus:ring-2 focus:ring-blue-500 outline-none" 
+                placeholder="Ej: 123 Queen St, Brisbane City" 
+              />
+              <p className="text-xs text-slate-500 mt-1">Si la pones, crearemos un botón de 'Cómo llegar' automático.</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
                <div>
                   <label className="text-sm font-medium text-slate-300">Ciudad</label>
