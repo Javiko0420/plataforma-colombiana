@@ -78,3 +78,44 @@ export async function PUT(
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: Request,
+  props: { params: Promise<{ id: string }> } // Tipado para Next.js 15
+) {
+  try {
+    const params = await props.params;
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    // 1. Verificar que el negocio existe y pertenece al usuario
+    const existingBusiness = await prisma.business.findUnique({
+      where: { id: params.id },
+      select: { ownerId: true },
+    });
+
+    if (!existingBusiness) {
+      return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 });
+    }
+
+    if (existingBusiness.ownerId !== session.user.id) {
+      return NextResponse.json({ error: "Prohibido: No eres el dueño" }, { status: 403 });
+    }
+
+    // 2. Eliminar el negocio
+    // Prisma se encarga de borrar las reseñas asociadas si configuramos "onDelete: Cascade" en el schema
+    // Si no, solo borramos el negocio.
+    await prisma.business.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({ message: "Negocio eliminado correctamente" });
+
+  } catch (error) {
+    console.error("Error eliminando negocio:", error);
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  }
+}

@@ -1,23 +1,26 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from '@/components/providers/language-provider'
 import { 
   Building2, 
   MapPin, 
   PlusCircle, 
   CheckCircle2, 
-  Edit,          // 👈 Nuevo
-  ExternalLink,  // 👈 Nuevo
+  Edit,
+  ExternalLink,
   Calendar, 
   Mail, 
   User as UserIcon, 
   MessageSquare, 
   ThumbsUp, 
   Award, 
-  Settings 
+  Settings,
+  Trash2
 } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image' // 👈 Agregado
+import Image from 'next/image'
 import { DateDisplay } from '@/components/ui/date-display'
 
 interface ProfileUser {
@@ -77,7 +80,34 @@ interface ProfileClientProps {
 }
 
 export default function ProfileClient({ user, recentPosts, recentComments }: ProfileClientProps) {
+  const router = useRouter()
   const { t } = useTranslations()
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDeleteBusiness = async (businessId: string, businessName: string) => {
+    // Confirmación de seguridad (Nivel Browser)
+    const confirmed = window.confirm(
+      `⚠️ ¿Estás seguro de que quieres eliminar "${businessName}"?\n\nEsta acción no se puede deshacer y borrará todas las fotos y reseñas asociadas.`
+    )
+
+    if (!confirmed) return
+
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/businesses/${businessId}`, {
+        method: 'DELETE',
+      })
+
+      if (!res.ok) throw new Error('Error al eliminar')
+
+      alert('Negocio eliminado correctamente.')
+      router.refresh()
+    } catch {
+      alert('Hubo un error al intentar eliminar el negocio.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   const roleNames: Record<string, string> = {
     USER: 'Usuario',
@@ -294,26 +324,38 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                           </div>
                         </div>
                         
-                        {/* 👇 NUEVA ZONA DE BOTONES DE ACCIÓN */}
-                        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-3">
-                          
-                          {/* Botón 1: Ver Público */}
+                        {/* ZONA DE BOTONES DE ACCIÓN */}
+                        <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-2">
+
+                          {/* Botón 1: Ver Público (Gris) */}
                           <Link 
                             href={`/negocio/${business.slug}`} 
-                            className="flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                            title="Ver página pública"
                           >
                             <ExternalLink className="w-3 h-3" />
-                            Ver Público
+                            Ver
                           </Link>
 
-                          {/* Botón 2: EDITAR (La clave) */}
+                          {/* Botón 2: EDITAR (Azul) */}
                           <Link 
                             href={`/negocio/editar/${business.slug}`} 
-                            className="flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm shadow-blue-500/20"
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors shadow-sm shadow-blue-500/20"
                           >
                             <Edit className="w-3 h-3" />
-                            Gestionar
+                            Editar
                           </Link>
+
+                          {/* Botón 3: ELIMINAR (Rojo) */}
+                          <button
+                            onClick={() => handleDeleteBusiness(business.id, business.name)}
+                            disabled={isDeleting}
+                            className="flex items-center justify-center px-3 py-2 text-red-500 hover:text-white bg-red-50 dark:bg-red-900/10 hover:bg-red-600 rounded-lg transition-colors border border-red-200 dark:border-red-900/50"
+                            title="Eliminar Negocio"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+
                         </div>
 
                       </div>

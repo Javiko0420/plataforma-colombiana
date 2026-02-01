@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { User, Camera, Save, ArrowLeft } from "lucide-react";
+import { User, Camera, Save, ArrowLeft, Trash2, AlertTriangle } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
@@ -45,6 +45,31 @@ export default function EditProfilePage() {
       });
     }
   }, [session, form]);
+
+  const handleDeleteAccount = async () => {
+    // Doble confirmación para evitar accidentes
+    const confirm1 = window.confirm("⚠️ ¿Estás seguro de que quieres eliminar tu cuenta permanentemente?");
+    if (!confirm1) return;
+
+    const confirm2 = window.confirm("⛔ ESTA ACCIÓN ES IRREVERSIBLE.\n\nSe borrarán todos tus negocios, fotos y reseñas. ¿Estás absolutamente seguro?");
+    if (!confirm2) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/users/me", {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Error al eliminar cuenta");
+
+      // Cerrar sesión y mandar al home
+      await signOut({ callbackUrl: "/" });
+
+    } catch (error) {
+      alert("Hubo un error al intentar eliminar tu cuenta.");
+      setIsSubmitting(false);
+    }
+  };
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
@@ -169,6 +194,32 @@ export default function EditProfilePage() {
             </button>
 
           </form>
+
+          <hr className="my-8 border-slate-700" />
+
+          {/* ZONA DE PELIGRO */}
+          <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-red-900/30 rounded-full text-red-400">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-red-400 mb-1">Eliminar Cuenta</h3>
+                <p className="text-sm text-red-400/70 mb-4">
+                  Si eliminas tu cuenta, perderás acceso a todos tus negocios y reseñas. Esta acción no se puede deshacer.
+                </p>
+                <button
+                  onClick={handleDeleteAccount}
+                  type="button"
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Sí, eliminar mi cuenta definitivamente
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
