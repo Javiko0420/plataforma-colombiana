@@ -593,7 +593,12 @@ export async function getUserProfile(userId: string) {
       where: { id: userId },
       select: {
         id: true,
+        name: true,
+        email: true,
         nickname: true,
+        image: true,
+        phoneNumber: true,
+        dateOfBirth: true,
         reputation: true,
         isBanned: true,
         createdAt: true,
@@ -612,7 +617,12 @@ export async function getUserProfile(userId: string) {
 
     return {
       id: user.id,
+      name: user.name,
+      email: user.email,
       nickname: user.nickname,
+      image: user.image,
+      phoneNumber: user.phoneNumber,
+      dateOfBirth: user.dateOfBirth,
       reputation: user.reputation,
       isBanned: user.isBanned,
       createdAt: user.createdAt,

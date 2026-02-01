@@ -43,6 +43,10 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  
+  // Campos para configuración de usuario
+  phoneNumber   String?
+  dateOfBirth   DateTime?
   role          UserRole       @default(USER)
   isActive      Boolean        @default(true)
   isBanned      Boolean        @default(false)
@@ -102,7 +106,7 @@ model Business {
   state       String?
   tiktok      String?
   category    String
-  owner       User         @relation(fields: [ownerId], references: [id])
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products    Product[]
   reviews     Review[]
 
@@ -164,7 +168,7 @@ model ForumPost {
   authorId        String
   forumId         String
   comments        ForumComment[]
-  author          User           @relation(fields: [authorId], references: [id])
+  author          User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
   forum           Forum          @relation(fields: [forumId], references: [id], onDelete: Cascade)
   reports         Report[]
 
@@ -189,7 +193,7 @@ model ForumComment {
   updatedAt       DateTime  @updatedAt
   authorId        String
   postId          String
-  author          User      @relation(fields: [authorId], references: [id])
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   post            ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
   reports         Report[]
 
@@ -214,7 +218,7 @@ model Report {
   commentId  String?
   comment    ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   post       ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  reporter   User          @relation(fields: [reporterId], references: [id])
+  reporter   User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@index([reporterId])
