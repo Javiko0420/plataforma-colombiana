@@ -5,6 +5,19 @@ import { z } from 'zod'
  * Using Zod for runtime type validation and security
  */
 
+// Helper function to calculate age from date of birth
+function calculateAge(dateOfBirth: Date): number {
+  const today = new Date()
+  let age = today.getFullYear() - dateOfBirth.getFullYear()
+  const monthDiff = today.getMonth() - dateOfBirth.getMonth()
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+    age--
+  }
+  
+  return age
+}
+
 // User validation schemas
 export const userRegistrationSchema = z.object({
   name: z
@@ -25,6 +38,30 @@ export const userRegistrationSchema = z.object({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       'La contraseña debe contener al menos: 1 minúscula, 1 mayúscula, 1 número y 1 carácter especial'
     ),
+  dateOfBirth: z
+    .string()
+    .refine((val) => {
+      const date = new Date(val)
+      return !isNaN(date.getTime())
+    }, 'Fecha de nacimiento inválida')
+    .refine((val) => {
+      const date = new Date(val)
+      return date <= new Date()
+    }, 'La fecha de nacimiento no puede ser en el futuro')
+    .refine((val) => {
+      const date = new Date(val)
+      const age = calculateAge(date)
+      return age >= 16
+    }, 'Debes tener al menos 16 años para registrarte')
+    .refine((val) => {
+      const date = new Date(val)
+      const age = calculateAge(date)
+      return age <= 120
+    }, 'Fecha de nacimiento inválida'),
+  contractAcceptedAt: z
+    .string()
+    .datetime()
+    .optional(),
 })
 
 export const userLoginSchema = z.object({

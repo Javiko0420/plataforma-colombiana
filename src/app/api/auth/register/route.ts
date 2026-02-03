@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
+        dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
         role: 'USER',
         isActive: true,
       },
