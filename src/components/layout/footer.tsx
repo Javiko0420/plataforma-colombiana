@@ -96,7 +96,7 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Mail className="h-4 w-4" />
-                <span className="text-foreground/70">javiguerreroz86@gmail.com</span>
+                <span className="text-foreground/70">privacy@latinterritory.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-4 w-4" />
@@ -107,6 +107,13 @@ export function Footer() {
                 <span className="text-foreground/70">Brisbane, Australia</span>
               </div>
             </div>
+            <ul className="space-x-3 mt-3">
+              <li>
+                <Link href="/soporte" className="hover:text-blue-400 transition-colors flex items-center gap-2">
+                  Soporte y Reclamos
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 

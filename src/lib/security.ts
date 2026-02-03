@@ -208,12 +208,12 @@ export const securityHeaders = {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https: https://res.cloudinary.com",
     "font-src 'self'",
-    "connect-src 'self' https: https://playerservices.streamtheworld.com https://*.streamtheworld.com https://api.cloudinary.com",
+    "connect-src 'self' https: https://playerservices.streamtheworld.com https://*.streamtheworld.com https://api.cloudinary.com https://formspree.io",
     "media-src 'self' https://playerservices.streamtheworld.com https://*.streamtheworld.com",
     "frame-src https://upload-widget.cloudinary.com",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    "form-action 'self' https://formspree.io",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests"
   ].join('; ')
