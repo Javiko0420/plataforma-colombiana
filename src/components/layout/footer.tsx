@@ -8,7 +8,7 @@ export function Footer() {
   const { t } = useTranslations()
   const year = new Date().getFullYear()
   return (
-    <footer className="bg-background text-foreground border-t border-border">
+    <footer className="bg-background text-foreground border-t border-border pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -117,17 +117,39 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-border mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-foreground/70 text-sm">© {year} {t('app.name')}. {t('footer.rights')}</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/privacidad" className="text-foreground/70 hover:text-foreground text-sm transition-colors">
+        <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          {/* Izquierda: Copyright + Links legales */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p className="text-foreground/60 text-sm">
+              © {year} {t('app.name')}. {t('footer.rights')}
+            </p>
+            <span className="hidden sm:inline text-foreground/30">|</span>
+            <div className="flex space-x-4">
+              <Link href="/privacidad" className="text-foreground/60 hover:text-foreground text-sm transition-colors">
                 {t('footer.privacy')}
               </Link>
-              <Link href="/terminos" className="text-foreground/70 hover:text-foreground text-sm transition-colors">
+              <Link href="/terminos" className="text-foreground/60 hover:text-foreground text-sm transition-colors">
                 {t('footer.terms')}
               </Link>
             </div>
+          </div>
+
+          {/* Derecha: Datos de la Empresa */}
+          <div className="text-center md:text-right">
+            <p className="text-foreground/50 text-xs font-medium">
+              Operado por{" "}
+              <a 
+                href="https://javiwarrior.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-foreground/80 hover:text-foreground transition-colors hover:underline"
+              >
+                JaviWarrior Studio
+              </a>
+            </p>
+            <p className="text-foreground/40 text-[10px] tracking-wider mt-0.5">
+              ABN: 34 656 367 780
+            </p>
           </div>
         </div>
       </div>
