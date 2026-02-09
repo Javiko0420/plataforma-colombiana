@@ -20,6 +20,13 @@ interface FormData {
   dateOfBirth: string
 }
 
+// Document versions — update these when legal documents change
+const LEGAL_VERSIONS = {
+  contract: '2026-02-03',
+  terms: '2026-01-31',
+  privacy: '2026-01-31',
+} as const
+
 // Helper function to calculate age from date of birth
 function calculateAge(dateOfBirth: Date): number {
   const today = new Date()
@@ -132,6 +139,9 @@ export default function RegisterForm({ className = '' }: RegisterFormProps) {
           password: pendingData.password,
           dateOfBirth: pendingData.dateOfBirth,
           contractAcceptedAt: new Date().toISOString(),
+          contractVersion: LEGAL_VERSIONS.contract,
+          termsVersion: LEGAL_VERSIONS.terms,
+          privacyVersion: LEGAL_VERSIONS.privacy,
         }),
       })
 

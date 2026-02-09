@@ -60,8 +60,19 @@ export const userRegistrationSchema = z.object({
     }, 'Fecha de nacimiento inválida'),
   contractAcceptedAt: z
     .string()
-    .datetime()
-    .optional(),
+    .datetime('Timestamp de aceptación inválido'),
+  contractVersion: z
+    .string()
+    .min(1, 'Versión del contrato requerida')
+    .max(20),
+  termsVersion: z
+    .string()
+    .min(1, 'Versión de términos requerida')
+    .max(20),
+  privacyVersion: z
+    .string()
+    .min(1, 'Versión de privacidad requerida')
+    .max(20),
 })
 
 export const userLoginSchema = z.object({

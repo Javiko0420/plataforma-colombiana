@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       validatedData.password
     )
 
-    // Create user
+    // Create user with legal acceptance evidence
     const user = await prisma.user.create({
       data: {
         name: validatedData.name,
@@ -85,6 +85,15 @@ export async function POST(req: NextRequest) {
         dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
         role: 'USER',
         isActive: true,
+        // Legal acceptance fields
+        contractAcceptedAt: validatedData.contractAcceptedAt
+          ? new Date(validatedData.contractAcceptedAt)
+          : new Date(),
+        contractVersion: validatedData.contractVersion,
+        termsVersion: validatedData.termsVersion,
+        privacyVersion: validatedData.privacyVersion,
+        acceptanceIp: ip,
+        acceptanceUa: userAgent,
       },
       select: {
         id: true,
@@ -105,7 +114,7 @@ export async function POST(req: NextRequest) {
       success: true,
     })
 
-    // Log audit trail
+    // Log audit trail with legal acceptance evidence
     await prisma.auditLog.create({
       data: {
         action: 'CREATE',
@@ -116,6 +125,12 @@ export async function POST(req: NextRequest) {
           name: user.name,
           email: user.email,
           role: user.role,
+          legalAcceptance: {
+            contractAcceptedAt: validatedData.contractAcceptedAt,
+            contractVersion: validatedData.contractVersion,
+            termsVersion: validatedData.termsVersion,
+            privacyVersion: validatedData.privacyVersion,
+          },
         },
         ip,
         userAgent,

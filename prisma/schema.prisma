@@ -54,6 +54,15 @@ model User {
   lastLoginAt   DateTime?
   loginAttempts Int            @default(0)
   lockedUntil   DateTime?
+
+  // Evidencia de aceptación legal (auditoría y compliance)
+  contractAcceptedAt DateTime?  // Timestamp exacto de aceptación
+  contractVersion    String?    // Versión del Contrato de Usuario aceptado
+  termsVersion       String?    // Versión de los Términos de Uso aceptados
+  privacyVersion     String?    // Versión de la Política de Privacidad aceptada
+  acceptanceIp       String?    // IP desde la cual aceptó
+  acceptanceUa       String?    // User-Agent del navegador al aceptar
+
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   accounts      Account[]
