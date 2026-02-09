@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { getLocaleCookieName, getSupportedLocales, type SupportedLocale } from '@/lib/i18n'
+import { getLocaleCookieName, getMessages, getSupportedLocales, type SupportedLocale } from '@/lib/i18n'
 
 type MessagesMap = Record<string, string>
 
@@ -24,7 +24,8 @@ async function fetchMessages(locale: SupportedLocale): Promise<MessagesMap> {
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = React.useState<SupportedLocale>('es')
-  const [messages, setMessages] = React.useState<MessagesMap>({})
+  // Pre-populate with static translations so keys render immediately
+  const [messages, setMessages] = React.useState<MessagesMap>(() => getMessages('es'))
   const [mounted, setMounted] = React.useState(false)
 
   // Initialize from cookie on mount
@@ -35,13 +36,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const validLocales = getSupportedLocales()
     const startLocale = validLocales.includes(initial) ? initial : 'es'
     setLocaleState(startLocale)
+    // Load static messages for the resolved locale immediately
+    setMessages(getMessages(startLocale))
     setMounted(true)
   }, [])
 
-  // Load messages when locale changes
+  // Refresh messages from API when locale changes (picks up auto-translated keys)
   React.useEffect(() => {
     if (!mounted) return
-    fetchMessages(locale).then(setMessages).catch(() => setMessages({}))
+    fetchMessages(locale).then(setMessages).catch(() => {
+      // Fallback to static messages if API fails
+      setMessages(getMessages(locale))
+    })
     // Update cookie client-side
     const cookieName = getLocaleCookieName()
     document.cookie = `${cookieName}=${locale}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`
@@ -59,6 +65,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   )
 
   const setLocale = React.useCallback(async (newLocale: SupportedLocale) => {
+    // Load static messages immediately to avoid showing raw keys
+    setMessages(getMessages(newLocale))
     setLocaleState(newLocale)
   }, [])
 
