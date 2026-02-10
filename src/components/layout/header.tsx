@@ -9,6 +9,10 @@ import { LanguageToggle } from '@/components/ui/language-toggle'
 import { ScreenReader } from '@/lib/accessibility'
 import { useTranslations } from '@/components/providers/language-provider'
 
+// Dominios corporativos autorizados para ver el enlace al panel de administración.
+// Capa visual de Defense in Depth — el middleware bloquea igualmente si se manipula el cliente.
+const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
+
 export function Header() {
   const { t } = useTranslations()
   const { data: session, status } = useSession()
@@ -18,6 +22,12 @@ export function Header() {
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
   const userMenuButtonRef = useRef<HTMLButtonElement>(null)
+
+  // Defense in Depth: ocultar visualmente el enlace de admin si no cumple rol + dominio
+  const userEmail = session?.user?.email || ''
+  const hasAdminRole = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR'
+  const hasCorporateEmail = ALLOWED_ADMIN_DOMAINS.some(domain => userEmail.endsWith(domain))
+  const showAdminPanel = hasAdminRole && hasCorporateEmail
 
   // Handle mobile menu toggle with accessibility
   const toggleMobileMenu = () => {
@@ -204,8 +214,8 @@ export function Header() {
                         </p>
                       </div>
 
-                      {/* Panel de Control (solo ADMIN y MODERATOR) */}
-                      {(session.user?.role === 'ADMIN' || session.user?.role === 'MODERATOR') && (
+                      {/* Panel de Control (solo visible para personal autorizado) */}
+                      {showAdminPanel && (
                         <>
                           <Link
                             href="/admin"
@@ -379,8 +389,8 @@ export function Header() {
                     {session.user?.name}
                   </div>
 
-                  {/* Panel de Control mobile (solo ADMIN y MODERATOR) */}
-                  {(session.user?.role === 'ADMIN' || session.user?.role === 'MODERATOR') && (
+                  {/* Panel de Control mobile (solo visible para personal autorizado) */}
+                  {showAdminPanel && (
                     <Link
                       href="/admin"
                       className="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] transition-colors"
