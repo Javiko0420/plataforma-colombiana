@@ -5,13 +5,13 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Debes iniciar sesión" }, { status: 401 });
 
-    const reviewId = params.id;
+    const { id: reviewId } = await params;
     const { reason, details } = await req.json();
 
     // 1. Verificar si ya reportó esta reseña
