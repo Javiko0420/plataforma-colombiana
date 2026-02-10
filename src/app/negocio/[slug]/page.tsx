@@ -7,6 +7,7 @@ import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, Ima
 import Link from 'next/link'
 import Image from 'next/image'
 import ShareButton from "@/components/ui/share-button"
+import { ReportBusinessButton } from "@/components/ui/report-business-button"
 import ReviewForm from "@/components/reviews/review-form"
 import ReviewsList from "@/components/reviews/reviews-list"
 
@@ -138,10 +139,13 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
                     )}
                 </div>
 
-                <ShareButton 
-                  title={business.name}
-                  text={`Mira este negocio: ${business.name}`}
-                />
+                <div className="flex flex-col items-end gap-2">
+                  <ShareButton 
+                    title={business.name}
+                    text={`Mira este negocio: ${business.name}`}
+                  />
+                  <ReportBusinessButton businessId={business.id} />
+                </div>
               </div>
 
               <hr className="border-slate-100 dark:border-slate-800 my-8" />

@@ -36,44 +36,44 @@ model Session {
 }
 
 model User {
-  id            String         @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String         @unique
-  nickname      String?        @unique
+  email         String    @unique
+  nickname      String?   @unique
   emailVerified DateTime?
   image         String?
   password      String?
-  
+
   // Campos para configuración de usuario
   phoneNumber   String?
   dateOfBirth   DateTime?
-  role          UserRole       @default(USER)
-  isActive      Boolean        @default(true)
-  isBanned      Boolean        @default(false)
-  reputation    Int            @default(0)
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  isBanned      Boolean   @default(false)
+  reputation    Int       @default(0)
   lastLoginAt   DateTime?
-  loginAttempts Int            @default(0)
+  loginAttempts Int       @default(0)
   lockedUntil   DateTime?
 
   // Evidencia de aceptación legal (auditoría y compliance)
-  contractAcceptedAt DateTime?  // Timestamp exacto de aceptación
-  contractVersion    String?    // Versión del Contrato de Usuario aceptado
-  termsVersion       String?    // Versión de los Términos de Uso aceptados
-  privacyVersion     String?    // Versión de la Política de Privacidad aceptada
-  acceptanceIp       String?    // IP desde la cual aceptó
-  acceptanceUa       String?    // User-Agent del navegador al aceptar
+  contractAcceptedAt DateTime? // Timestamp exacto de aceptación
+  contractVersion    String? // Versión del Contrato de Usuario aceptado
+  termsVersion       String? // Versión de los Términos de Uso aceptados
+  privacyVersion     String? // Versión de la Política de Privacidad aceptada
+  acceptanceIp       String? // IP desde la cual aceptó
+  acceptanceUa       String? // User-Agent del navegador al aceptar
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  accounts        Account[]
-  auditLogs       AuditLog[]
-  businesses      Business[]
-  forumComments   ForumComment[]
-  forumPosts      ForumPost[]
-  moderationLogs  ModerationLog[]
-  reports         Report[]
-  reviews         Review[]
-  sessions        Session[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  accounts       Account[]
+  auditLogs      AuditLog[]
+  businesses     Business[]
+  forumComments  ForumComment[]
+  forumPosts     ForumPost[]
+  moderationLogs ModerationLog[]
+  reports        Report[]
+  reviews        Review[]
+  sessions       Session[]
 
   @@index([email])
   @@index([nickname])
@@ -90,39 +90,44 @@ model VerificationToken {
 }
 
 model Business {
-  id          String       @id @default(cuid())
-  name        String
-  description String
-  city        String?
-  phone       String
-  email       String
-  website     String?
-  whatsapp    String?
-  instagram   String?
-  facebook    String?
-  images      String[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  ownerId     String
-  address     String?
-  isActive    Boolean      @default(true)
-  isVerified  Boolean      @default(false)
-  latitude    Float?
-  logoUrl     String?
-  longitude   Float?
-  plan        BusinessPlan @default(FREE)
-  ranking     Int          @default(0)
-  slug        String       @unique
-  state       String?
-  tiktok      String?
-  category    String
-  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products    Product[]
-  reviews     Review[]
+  id               String       @id @default(cuid())
+  name             String
+  description      String
+  city             String?
+  phone            String
+  email            String
+  website          String?
+  whatsapp         String?
+  instagram        String?
+  facebook         String?
+  images           String[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  ownerId          String
+  address          String?
+  isActive         Boolean      @default(true)
+  isVerified       Boolean      @default(false)
+  latitude         Float?
+  logoUrl          String?
+  longitude        Float?
+  plan             BusinessPlan @default(FREE)
+  ranking          Int          @default(0)
+  slug             String       @unique
+  state            String?
+  tiktok           String?
+  category         String
+  verificationDocs Json? // URLs de RUT, Cámara de Comercio, etc.
+  adminNotes       String? // Notas internas del moderador
+  moderationStatus String       @default("PENDING") // PENDING, APPROVED, REJECTED, CHANGES_REQUESTED
+  owner            User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products         Product[]
+  reports          Report[]
+  reviews          Review[]
 
   @@index([city])
   @@index([category])
   @@index([plan])
+  @@index([moderationStatus])
 }
 
 model Product {
@@ -227,9 +232,11 @@ model Report {
   postId     String?
   commentId  String?
   reviewId   String?
+  businessId String?
   comment    ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   post       ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
   review     Review?       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  business   Business?     @relation(fields: [businessId], references: [id], onDelete: Cascade)
   reporter   User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@unique([reviewId, reporterId]) // Un usuario solo puede reportar una reseña una vez
@@ -238,7 +245,23 @@ model Report {
   @@index([postId])
   @@index([commentId])
   @@index([reviewId])
+  @@index([businessId])
   @@index([createdAt])
+}
+
+// Integración con n8n y herramientas externas
+model ApiKey {
+  id          String    @id @default(cuid())
+  key         String    @unique // Se almacenará hasheada en producción
+  name        String // Ej: "n8n-prod", "script-mantenimiento"
+  permissions String[] // Ej: ["READ_USERS", "WRITE_BUSINESS", "MODERATE_REVIEWS"]
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  createdBy   String
+
+  @@index([key])
 }
 
 model AuditLog {
@@ -329,16 +352,16 @@ enum BusinessPlan {
 
 // Auditoría de moderación de reseñas (defensa legal)
 model ModerationLog {
-  id          String   @id @default(cuid())
-  action      String   // "HIDE", "RESTORE", "ARCHIVE", "FLAG"
-  reason      String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  action    String // "HIDE", "RESTORE", "ARCHIVE", "FLAG"
+  reason    String?
+  createdAt DateTime @default(now())
 
-  reviewId    String
-  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId String
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   moderatorId String
-  moderator   User     @relation(fields: [moderatorId], references: [id])
+  moderator   User   @relation(fields: [moderatorId], references: [id])
 
   @@index([reviewId])
   @@index([moderatorId])
@@ -348,18 +371,18 @@ model ModerationLog {
 
 // Estado de moderación de reseñas
 enum ReviewStatus {
-  VISIBLE   // Visible al público (default)
-  HIDDEN    // Oculta manualmente por admin
-  FLAGGED   // Oculta automáticamente por reportes (En Revisión)
-  ARCHIVED  // Eliminada pero guardada en histórico
+  VISIBLE // Visible al público (default)
+  HIDDEN // Oculta manualmente por admin
+  FLAGGED // Oculta automáticamente por reportes (En Revisión)
+  ARCHIVED // Eliminada pero guardada en histórico
 }
 
 model Review {
-  id          String   @id @default(cuid())
-  rating      Int
-  comment     String   @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Campos de control de moderación
   status      ReviewStatus @default(VISIBLE)

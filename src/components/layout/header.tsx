@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { Menu, X, Search, User, LogOut, UserCircle, Settings, Building2, PlusCircle } from 'lucide-react'
+import { Menu, X, Search, User, LogOut, UserCircle, Settings, Building2, PlusCircle, Shield } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
@@ -204,6 +204,22 @@ export function Header() {
                         </p>
                       </div>
 
+                      {/* Panel de Control (solo ADMIN y MODERATOR) */}
+                      {(session.user?.role === 'ADMIN' || session.user?.role === 'MODERATOR') && (
+                        <>
+                          <Link
+                            href="/admin"
+                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                            onClick={() => setIsUserMenuOpen(false)}
+                            role="menuitem"
+                          >
+                            <Shield className="h-4 w-4" aria-hidden="true" />
+                            Panel de Control
+                          </Link>
+                          <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                        </>
+                      )}
+
                       <Link
                         href="/perfil"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -362,6 +378,19 @@ export function Header() {
                   <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
                     {session.user?.name}
                   </div>
+
+                  {/* Panel de Control mobile (solo ADMIN y MODERATOR) */}
+                  {(session.user?.role === 'ADMIN' || session.user?.role === 'MODERATOR') && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Shield className="h-5 w-5" aria-hidden="true" />
+                      Panel de Control
+                    </Link>
+                  )}
+
                   <Link
                     href="/perfil"
                     className="flex items-center gap-3 px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
