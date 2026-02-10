@@ -2,58 +2,51 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 
-// Validación de datos
-const reviewSchema = z.object({
-  businessId: z.string(),
-  rating: z.number().min(1).max(5),
-  comment: z.string().min(2, "El comentario es muy corto").max(500, "Máximo 500 caracteres"),
-});
+// Configuración: Máximo 5 reseñas por día por usuario
+const DAILY_REVIEW_LIMIT = 5;
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Debes iniciar sesión para opinar" }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { businessId, rating, comment } = reviewSchema.parse(body);
+    const { businessId, rating, comment } = body;
 
-    // 🛡️ REGLA: Un usuario solo puede dejar UNA reseña por negocio
-    // (Evita spam y manipulación de estrellas)
-    const existingReview = await prisma.review.findFirst({
+    // 1. RATE LIMITING (Basado en DB para V1)
+    // Contamos cuántas reseñas ha hecho este usuario en las últimas 24 horas
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+
+    const recentReviews = await prisma.review.count({
       where: {
         userId: session.user.id,
-        businessId: businessId,
+        createdAt: { gte: oneDayAgo },
       },
     });
 
-    if (existingReview) {
+    if (recentReviews >= DAILY_REVIEW_LIMIT) {
       return NextResponse.json(
-        { error: "Ya has publicado una reseña para este negocio." },
-        { status: 400 }
+        { error: "Has alcanzado el límite diario de reseñas. Intenta mañana." },
+        { status: 429 } // Too Many Requests
       );
     }
 
-    // Crear la reseña
-    const newReview = await prisma.review.create({
+    // 2. Validación existente + Creación
+    const review = await prisma.review.create({
       data: {
+        businessId,
         rating,
         comment,
-        businessId,
         userId: session.user.id,
+        // status defaults to VISIBLE via Prisma schema
       },
     });
 
-    return NextResponse.json(newReview);
-
+    return NextResponse.json(review);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
-    }
-    return NextResponse.json({ error: "Error al publicar la reseña" }, { status: 500 });
+    console.error(error);
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

@@ -65,14 +65,15 @@ model User {
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  accounts      Account[]
-  auditLogs     AuditLog[]
-  businesses    Business[]
-  forumComments ForumComment[]
-  forumPosts    ForumPost[]
-  reports       Report[]
-  reviews       Review[]
-  sessions      Session[]
+  accounts        Account[]
+  auditLogs       AuditLog[]
+  businesses      Business[]
+  forumComments   ForumComment[]
+  forumPosts      ForumPost[]
+  moderationLogs  ModerationLog[]
+  reports         Report[]
+  reviews         Review[]
+  sessions        Session[]
 
   @@index([email])
   @@index([nickname])
@@ -216,7 +217,7 @@ model ForumComment {
 model Report {
   id         String        @id @default(cuid())
   reason     ReportReason
-  details    String?
+  details    String?       @db.Text
   status     ReportStatus  @default(PENDING)
   reviewedBy String?
   reviewNote String?
@@ -225,14 +226,18 @@ model Report {
   reporterId String
   postId     String?
   commentId  String?
+  reviewId   String?
   comment    ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   post       ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  review     Review?       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   reporter   User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
+  @@unique([reviewId, reporterId]) // Un usuario solo puede reportar una reseña una vez
   @@index([status])
   @@index([reporterId])
   @@index([postId])
   @@index([commentId])
+  @@index([reviewId])
   @@index([createdAt])
 }
 
@@ -322,11 +327,43 @@ enum BusinessPlan {
   SPONSOR
 }
 
+// Auditoría de moderación de reseñas (defensa legal)
+model ModerationLog {
+  id          String   @id @default(cuid())
+  action      String   // "HIDE", "RESTORE", "ARCHIVE", "FLAG"
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  reviewId    String
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  moderatorId String
+  moderator   User     @relation(fields: [moderatorId], references: [id])
+
+  @@index([reviewId])
+  @@index([moderatorId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+// Estado de moderación de reseñas
+enum ReviewStatus {
+  VISIBLE   // Visible al público (default)
+  HIDDEN    // Oculta manualmente por admin
+  FLAGGED   // Oculta automáticamente por reportes (En Revisión)
+  ARCHIVED  // Eliminada pero guardada en histórico
+}
+
 model Review {
-  id        String   @id @default(cuid())
-  rating    Int      // Del 1 al 5
-  comment   String   @db.Text
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  rating      Int
+  comment     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Campos de control de moderación
+  status      ReviewStatus @default(VISIBLE)
+  reportCount Int          @default(0)
 
   // Relación con el Negocio
   businessId String
@@ -336,6 +373,12 @@ model Review {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Relación con reportes y auditoría
+  reports Report[]
+  logs    ModerationLog[]
+
+  @@unique([businessId, userId]) // Un usuario solo puede dejar 1 reseña por negocio
   @@index([businessId])
   @@index([userId])
+  @@index([status])
 }
