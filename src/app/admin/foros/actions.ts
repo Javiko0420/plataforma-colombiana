@@ -61,3 +61,72 @@ export async function moderateForumContent(
     return { success: false, error: 'Failed to process moderation request' }
   }
 }
+
+/**
+ * Actualizar nombre y descripción de un foro activo.
+ * Solo ADMIN puede modificar la configuración de foros.
+ */
+export async function updateForumDetails(
+  forumId: string,
+  name: string,
+  description: string,
+) {
+  const session = await getServerSession(authOptions)
+
+  if (!session || session.user.role !== 'ADMIN') {
+    throw new Error('Unauthorized')
+  }
+
+  // Validación de inputs
+  const trimmedName = name.trim()
+  const trimmedDescription = description.trim()
+
+  if (trimmedName.length < 3 || trimmedName.length > 100) {
+    return { success: false, error: 'El nombre debe tener entre 3 y 100 caracteres.' }
+  }
+
+  if (trimmedDescription.length < 3 || trimmedDescription.length > 300) {
+    return { success: false, error: 'La descripción debe tener entre 3 y 300 caracteres.' }
+  }
+
+  try {
+    const forum = await prisma.forum.findUnique({
+      where: { id: forumId },
+      select: { id: true, name: true, description: true, isActive: true },
+    })
+
+    if (!forum) {
+      return { success: false, error: 'Foro no encontrado.' }
+    }
+
+    if (!forum.isActive) {
+      return { success: false, error: 'Solo se pueden editar foros activos.' }
+    }
+
+    const oldValues = { name: forum.name, description: forum.description }
+
+    await prisma.forum.update({
+      where: { id: forumId },
+      data: { name: trimmedName, description: trimmedDescription },
+    })
+
+    // Registro de Auditoría
+    await prisma.auditLog.create({
+      data: {
+        action: 'FORUM_DETAILS_UPDATE',
+        resource: 'Forum',
+        resourceId: forumId,
+        userId: session.user.id,
+        oldValues,
+        newValues: { name: trimmedName, description: trimmedDescription },
+      },
+    })
+
+    revalidatePath('/admin/foros')
+    revalidatePath('/foros')
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating forum details:', error)
+    return { success: false, error: 'Error al actualizar el foro.' }
+  }
+}

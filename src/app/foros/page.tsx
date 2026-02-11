@@ -48,9 +48,7 @@ async function ForumsList() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">
-                    {forum.topic === 'DAILY_1'
-                      ? t('forums.daily1')
-                      : t('forums.daily2')}
+                    {forum.name}
                   </h3>
                   <p className="text-foreground/70 text-sm">
                     {forum.description}

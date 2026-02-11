@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
     const endDate = new Date(tomorrow);
     endDate.setHours(23, 59, 59, 999);
 
-    // 1. Get IDs of forums that will be archived
+    // 1. Get forums that will be archived (preserve their custom names/descriptions)
     const forumsToArchive = await prisma.forum.findMany({
       where: { isActive: true },
-      select: { id: true, slug: true },
+      select: { id: true, slug: true, name: true, description: true, topic: true },
     });
 
     const forumIds = forumsToArchive.map((f) => f.id);
@@ -107,11 +107,15 @@ export async function POST(request: NextRequest) {
 
     logger.info('Archived old forums', { count: archivedResult.count });
 
-    // 4. Create new forums for tomorrow
+    // 4. Create new forums for tomorrow, carrying over custom names/descriptions
+    const previousDaily1 = forumsToArchive.find((f) => f.topic === ForumTopic.DAILY_1);
+    const previousDaily2 = forumsToArchive.find((f) => f.topic === ForumTopic.DAILY_2);
+
     const forum1 = await prisma.forum.create({
       data: {
-        name: 'Foro Diario 1',
+        name: previousDaily1?.name || 'Foro Diario 1',
         description:
+          previousDaily1?.description ||
           'Foro general para discusiones diarias sobre Colombia y la comunidad.',
         slug: `daily-1-${tomorrow.toISOString().split('T')[0]}`,
         topic: ForumTopic.DAILY_1,
@@ -124,8 +128,9 @@ export async function POST(request: NextRequest) {
 
     const forum2 = await prisma.forum.create({
       data: {
-        name: 'Foro Diario 2',
+        name: previousDaily2?.name || 'Foro Diario 2',
         description:
+          previousDaily2?.description ||
           'Segundo foro para temas variados y conversaciones alternativas.',
         slug: `daily-2-${tomorrow.toISOString().split('T')[0]}`,
         topic: ForumTopic.DAILY_2,
