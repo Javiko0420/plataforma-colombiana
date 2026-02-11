@@ -13,6 +13,7 @@ import { MessageSquare, Calendar, Users } from 'lucide-react';
 import Link from 'next/link';
 import { RetryButton } from '@/components/ui/retry-button';
 import { DateDisplay } from '@/components/ui/date-display';
+import { ForumGuidelinesBanner } from '@/components/foros/forum-guidelines-banner';
 
 // Force dynamic rendering for forums
 export const dynamic = 'force-dynamic';
@@ -42,57 +43,53 @@ async function ForumsList() {
     return (
       <div className="grid gap-6 md:grid-cols-2">
         {forums.map((forum) => (
-          <div
-            key={forum.id}
-            className="border border-border rounded-xl p-6 bg-background hover:bg-background/80 transition-all hover:shadow-lg"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">
-                  {forum.topic === 'DAILY_1'
-                    ? t('forums.daily1')
-                    : t('forums.daily2')}
-                </h3>
-                <p className="text-foreground/70 text-sm">
-                  {forum.description}
-                </p>
+          <ForumGuidelinesBanner key={forum.id} targetUrl={`/foros/${forum.slug}`}>
+            <div className="border border-border rounded-xl p-6 bg-background hover:bg-background/80 transition-all hover:shadow-lg h-full">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    {forum.topic === 'DAILY_1'
+                      ? t('forums.daily1')
+                      : t('forums.daily2')}
+                  </h3>
+                  <p className="text-foreground/70 text-sm">
+                    {forum.description}
+                  </p>
+                </div>
+                <div className="p-3 rounded-full bg-primary/10">
+                  <MessageSquare className="w-6 h-6 text-primary" />
+                </div>
               </div>
-              <div className="p-3 rounded-full bg-primary/10">
-                <MessageSquare className="w-6 h-6 text-primary" />
-              </div>
-            </div>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-2 text-sm text-foreground/70">
-                <Calendar className="w-4 h-4" />
-                <span>
-                  {t('forums.activeUntil')}:{' '}
-                  <DateDisplay 
-                    date={forum.endDate} 
-                    locale={locale}
-                    options={{
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      timeZone: 'Australia/Brisbane',
-                    }}
-                  />
-                </span>
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-2 text-sm text-foreground/70">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {t('forums.activeUntil')}:{' '}
+                    <DateDisplay 
+                      date={forum.endDate} 
+                      locale={locale}
+                      options={{
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZone: 'Australia/Brisbane',
+                      }}
+                    />
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground/70">
+                  <Users className="w-4 h-4" />
+                  <span>
+                    {forum.postsCount} {t('forums.postsCount')}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-foreground/70">
-                <Users className="w-4 h-4" />
-                <span>
-                  {forum.postsCount} {t('forums.postsCount')}
-                </span>
-              </div>
-            </div>
 
-            <Link
-              href={`/foros/${forum.slug}`}
-              className="block w-full py-3 px-4 rounded-lg bg-primary text-primary-foreground text-center font-semibold hover:bg-primary/90 transition-colors"
-            >
-              {t('forums.enter')}
-            </Link>
-          </div>
+              <span className="block w-full py-3 px-4 rounded-lg bg-primary text-primary-foreground text-center font-semibold hover:bg-primary/90 transition-colors">
+                {t('forums.enter')}
+              </span>
+            </div>
+          </ForumGuidelinesBanner>
         ))}
       </div>
     );

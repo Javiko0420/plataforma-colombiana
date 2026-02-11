@@ -131,6 +131,9 @@ export function Footer() {
               <Link href="/terminos" className="text-foreground/60 hover:text-foreground text-sm transition-colors">
                 {t('footer.terms')}
               </Link>
+              <Link href="/normas-comunidad" className="text-foreground/60 hover:text-foreground text-sm transition-colors">
+                Normas de la Comunidad
+              </Link>
             </div>
           </div>
 
