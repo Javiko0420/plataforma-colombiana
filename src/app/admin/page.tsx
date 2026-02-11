@@ -4,15 +4,22 @@ export const dynamic = 'force-dynamic' // Siempre datos frescos
 
 async function getDashboardStats() {
   // Ejecutamos consultas en paralelo para velocidad
-  const [usersCount, businessesCount, pendingReviews, flaggedPosts] =
+  const [usersCount, businessesCount, pendingReviews, flaggedPosts, reportedBusinesses] =
     await Promise.all([
       prisma.user.count(),
       prisma.business.count(),
-      prisma.review.count({ where: { status: 'FLAGGED' } }),
+      // Reseñas con al menos 1 reporte O estado FLAGGED
+      prisma.review.count({
+        where: { OR: [{ status: 'FLAGGED' }, { reportCount: { gt: 0 } }] },
+      }),
       prisma.forumPost.count({ where: { isFlagged: true } }),
+      // Negocios con reportes pendientes
+      prisma.business.count({
+        where: { reports: { some: { status: 'PENDING' } } },
+      }),
     ])
 
-  return { usersCount, businessesCount, pendingReviews, flaggedPosts }
+  return { usersCount, businessesCount, pendingReviews, flaggedPosts, reportedBusinesses }
 }
 
 export default async function AdminDashboard() {
@@ -28,7 +35,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatCard
           title="Usuarios Totales"
           value={stats.usersCount}
@@ -40,6 +47,13 @@ export default async function AdminDashboard() {
           value={stats.businessesCount}
           icon="🏪"
           description="Directorio oficial"
+        />
+        <StatCard
+          title="Negocios Reportados"
+          value={stats.reportedBusinesses}
+          icon="🏴"
+          trend="requires_action"
+          description="Reportes pendientes de revisión"
         />
         <StatCard
           title="Reseñas por Moderar"

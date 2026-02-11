@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
-// Acción para APROBAR una reseña (se vuelve visible)
+// Acción para APROBAR una reseña (se vuelve visible, reportes descartados)
 export async function approveReview(reviewId: string) {
   const session = await getServerSession(authOptions)
 
@@ -14,17 +14,26 @@ export async function approveReview(reviewId: string) {
   }
 
   try {
-    // 1. Actualizar estado de la reseña
+    // 1. Aprobar reseña: restaurar visibilidad y resetear contador de reportes
     await prisma.review.update({
       where: { id: reviewId },
       data: {
         status: 'VISIBLE',
-        // Opcional: Podríamos resetear reportCount si decidimos que es un falso positivo
-        // reportCount: 0
+        reportCount: 0,
       },
     })
 
-    // 2. Crear Log de Moderación (Vital para auditoría)
+    // 2. Descartar todos los reportes pendientes de esta reseña
+    await prisma.report.updateMany({
+      where: { reviewId, status: 'PENDING' },
+      data: {
+        status: 'DISMISSED',
+        reviewedBy: session.user.id,
+        reviewNote: 'Reseña aprobada por moderador: falso positivo',
+      },
+    })
+
+    // 3. Crear Log de Moderación
     await prisma.moderationLog.create({
       data: {
         action: 'RESTORE',
@@ -34,7 +43,7 @@ export async function approveReview(reviewId: string) {
       },
     })
 
-    // 3. Actualizar la UI inmediatamente
+    // 4. Actualizar la UI inmediatamente
     revalidatePath('/admin/resenas')
     return { success: true }
   } catch (error) {
@@ -43,7 +52,7 @@ export async function approveReview(reviewId: string) {
   }
 }
 
-// Acción para OCULTAR/RECHAZAR una reseña
+// Acción para OCULTAR/RECHAZAR una reseña (reportes resueltos)
 export async function hideReview(reviewId: string, reason: string) {
   const session = await getServerSession(authOptions)
 
@@ -52,15 +61,30 @@ export async function hideReview(reviewId: string, reason: string) {
   }
 
   try {
+    // 1. Ocultar reseña y resetear contador
     await prisma.review.update({
       where: { id: reviewId },
-      data: { status: 'HIDDEN' },
+      data: {
+        status: 'HIDDEN',
+        reportCount: 0,
+      },
     })
 
+    // 2. Resolver todos los reportes pendientes de esta reseña
+    await prisma.report.updateMany({
+      where: { reviewId, status: 'PENDING' },
+      data: {
+        status: 'RESOLVED',
+        reviewedBy: session.user.id,
+        reviewNote: reason,
+      },
+    })
+
+    // 3. Crear Log de Moderación
     await prisma.moderationLog.create({
       data: {
         action: 'HIDE',
-        reason: reason, // Ej: "Lenguaje ofensivo", "Spam"
+        reason: reason,
         reviewId: reviewId,
         moderatorId: session.user.id,
       },

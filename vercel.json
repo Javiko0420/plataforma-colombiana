@@ -2,7 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/renew-forums",
-      "schedule": "0 14 * * *"
+      "schedule": "59 13 * * *"
+    },
+    {
+      "path": "/api/cron/purge-forum-content",
+      "schedule": "0 17 * * 0"
     }
   ]
 }

@@ -58,6 +58,7 @@ export async function POST(
       details: validation.data.details,
       reporterId: session.user.id,
       postId,
+      userRole: session.user.role,
     });
 
     return NextResponse.json(

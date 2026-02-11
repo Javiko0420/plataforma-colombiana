@@ -52,7 +52,14 @@ export function ReportModal({
         body: JSON.stringify({ reason, details: details.trim() || undefined }),
       })
 
-      if (!res.ok) throw new Error('Error al enviar reporte')
+      if (!res.ok) {
+        // Duplicate report (409 Conflict)
+        if (res.status === 409) {
+          setError('Ya reportaste este contenido anteriormente. Nuestro equipo lo revisará pronto.')
+          return
+        }
+        throw new Error('Error al enviar reporte')
+      }
 
       // Reset y cierre
       setReason('')

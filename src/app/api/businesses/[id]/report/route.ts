@@ -30,6 +30,28 @@ export async function POST(
     const json = await req.json()
     const body = reportSchema.parse(json)
 
+    // Verificar si ya reportó este negocio
+    const isPrivileged = session.user.role === 'ADMIN' || session.user.role === 'MODERATOR'
+
+    const existingReport = await prisma.report.findFirst({
+      where: {
+        reporterId: session.user.id,
+        businessId,
+      },
+    })
+
+    if (existingReport) {
+      // ADMIN/MODERATOR: eliminar reporte anterior para poder re-testear el flujo
+      if (isPrivileged) {
+        await prisma.report.delete({ where: { id: existingReport.id } })
+      } else {
+        return NextResponse.json(
+          { error: 'Ya has reportado este negocio' },
+          { status: 409 }
+        )
+      }
+    }
+
     // Crear el reporte vinculado al negocio
     await prisma.report.create({
       data: {

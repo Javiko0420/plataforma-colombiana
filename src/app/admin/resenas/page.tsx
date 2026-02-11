@@ -5,10 +5,13 @@ export const dynamic = 'force-dynamic'
 
 export default async function ReviewsModerationPage() {
   // Obtener reseñas que requieren atención
-  // Prioridad 1: FLAGGED (Ocultas automáticamente por reportes)
+  // Incluye: FLAGGED (auto-ocultas por 3+ reportes) y cualquiera con al menos 1 reporte
   const flaggedReviews = await prisma.review.findMany({
     where: {
-      status: 'FLAGGED',
+      OR: [
+        { status: 'FLAGGED' },
+        { reportCount: { gt: 0 } },
+      ],
     },
     include: {
       user: {
@@ -21,9 +24,11 @@ export default async function ReviewsModerationPage() {
         select: { reason: true, details: true },
       },
     },
-    orderBy: {
-      createdAt: 'asc', // Las más antiguas primero para evitar backlog
-    },
+    orderBy: [
+      { status: 'asc' }, // FLAGGED primero (prioridad alta)
+      { reportCount: 'desc' }, // Más reportes = más urgente
+      { createdAt: 'asc' }, // Las más antiguas primero para evitar backlog
+    ],
   })
 
   return (
@@ -34,7 +39,7 @@ export default async function ReviewsModerationPage() {
             Moderación de Reseñas
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Reseñas ocultas preventivamente debido a reportes de usuarios.
+            Reseñas reportadas por usuarios que requieren revisión.
           </p>
         </div>
         <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium">

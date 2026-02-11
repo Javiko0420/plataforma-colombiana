@@ -1,7 +1,7 @@
 /**
  * Forum Renewal Cron Job
- * Runs daily at 00:00 Australia/Brisbane time
- * Archives old forums and creates new ones
+ * Runs daily at 23:59 Australia/Brisbane time (13:59 UTC)
+ * Deletes forum content, archives old forums, and creates new ones for the next day
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -40,15 +40,61 @@ export async function POST(request: NextRequest) {
       now.toLocaleString('en-US', { timeZone: 'Australia/Brisbane' })
     );
 
-    // Set start time to 00:00:00 today
-    const startDate = new Date(brisbaneTime);
+    // New forums are for TOMORROW (cron runs at 23:59, still "today")
+    const tomorrow = new Date(brisbaneTime);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Set start time to 00:00:00 tomorrow
+    const startDate = new Date(tomorrow);
     startDate.setHours(0, 0, 0, 0);
 
-    // Set end time to 23:59:59 today
-    const endDate = new Date(brisbaneTime);
+    // Set end time to 23:59:59 tomorrow
+    const endDate = new Date(tomorrow);
     endDate.setHours(23, 59, 59, 999);
 
-    // Archive old active forums
+    // 1. Get IDs of forums that will be archived
+    const forumsToArchive = await prisma.forum.findMany({
+      where: { isActive: true },
+      select: { id: true, slug: true },
+    });
+
+    const forumIds = forumsToArchive.map((f) => f.id);
+
+    // 2. Soft delete all content from expiring forums (retained 30 days for legal/audit, then hard deleted)
+    if (forumIds.length > 0) {
+      const softDeleteTimestamp = new Date();
+
+      const softDeletedPosts = await prisma.forumPost.updateMany({
+        where: {
+          forumId: { in: forumIds },
+          isDeleted: false,
+        },
+        data: {
+          isDeleted: true,
+          deletedAt: softDeleteTimestamp,
+        },
+      });
+
+      const softDeletedComments = await prisma.forumComment.updateMany({
+        where: {
+          post: { forumId: { in: forumIds } },
+          isDeleted: false,
+        },
+        data: {
+          isDeleted: true,
+          deletedAt: softDeleteTimestamp,
+        },
+      });
+
+      logger.info('Soft-deleted forum content', {
+        forums: forumIds.length,
+        postsSoftDeleted: softDeletedPosts.count,
+        commentsSoftDeleted: softDeletedComments.count,
+        retentionDays: 30,
+      });
+    }
+
+    // 3. Archive old active forums
     const archivedResult = await prisma.forum.updateMany({
       where: {
         isActive: true,
@@ -61,13 +107,13 @@ export async function POST(request: NextRequest) {
 
     logger.info('Archived old forums', { count: archivedResult.count });
 
-    // Create new forums for today
+    // 4. Create new forums for tomorrow
     const forum1 = await prisma.forum.create({
       data: {
         name: 'Foro Diario 1',
         description:
           'Foro general para discusiones diarias sobre Colombia y la comunidad.',
-        slug: `daily-1-${brisbaneTime.toISOString().split('T')[0]}`,
+        slug: `daily-1-${tomorrow.toISOString().split('T')[0]}`,
         topic: ForumTopic.DAILY_1,
         startDate,
         endDate,
@@ -81,7 +127,7 @@ export async function POST(request: NextRequest) {
         name: 'Foro Diario 2',
         description:
           'Segundo foro para temas variados y conversaciones alternativas.',
-        slug: `daily-2-${brisbaneTime.toISOString().split('T')[0]}`,
+        slug: `daily-2-${tomorrow.toISOString().split('T')[0]}`,
         topic: ForumTopic.DAILY_2,
         startDate,
         endDate,
@@ -93,12 +139,14 @@ export async function POST(request: NextRequest) {
     logger.info('Created new daily forums', {
       forum1Id: forum1.id,
       forum2Id: forum2.id,
-      date: brisbaneTime.toISOString().split('T')[0],
+      date: tomorrow.toISOString().split('T')[0],
     });
 
     return NextResponse.json({
       success: true,
       data: {
+        contentDeleted: forumIds.length > 0,
+        forumsCleanedUp: forumIds.length,
         archived: archivedResult.count,
         created: [
           {

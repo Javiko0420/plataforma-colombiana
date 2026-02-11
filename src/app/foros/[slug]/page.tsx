@@ -54,6 +54,7 @@ export default async function ForumPage({ params }: ForumPageProps) {
         nickname: true,
         reputation: true,
         isBanned: true,
+        role: true,
       },
     });
   }

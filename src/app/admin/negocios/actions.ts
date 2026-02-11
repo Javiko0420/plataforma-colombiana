@@ -39,6 +39,95 @@ export async function verifyBusiness(businessId: string) {
   }
 }
 
+// Descartar reportes de un negocio (falso positivo)
+export async function dismissBusinessReport(
+  businessId: string,
+  reportIds: string[],
+) {
+  const session = await getServerSession(authOptions)
+
+  if (
+    !session ||
+    (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')
+  ) {
+    throw new Error('Unauthorized')
+  }
+
+  try {
+    // Marcar reportes como revisados/descartados
+    await prisma.report.updateMany({
+      where: { id: { in: reportIds } },
+      data: {
+        status: 'DISMISSED',
+        reviewedBy: session.user.id,
+        reviewNote: 'Descartado por moderador: contenido verificado',
+      },
+    })
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'BUSINESS_REPORTS_DISMISSED',
+        resource: 'Business',
+        resourceId: businessId,
+        userId: session.user.id,
+        newValues: { dismissedReports: reportIds.length },
+      },
+    })
+
+    revalidatePath('/admin/negocios')
+    return { success: true }
+  } catch (error) {
+    console.error('Error dismissing business reports:', error)
+    return { success: false, error: 'Failed to dismiss reports' }
+  }
+}
+
+// Desactivar un negocio reportado y resolver los reportes
+export async function deactivateReportedBusiness(businessId: string) {
+  const session = await getServerSession(authOptions)
+
+  if (
+    !session ||
+    (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')
+  ) {
+    throw new Error('Unauthorized')
+  }
+
+  try {
+    // Desactivar el negocio y resolver todos sus reportes pendientes
+    await prisma.$transaction([
+      prisma.business.update({
+        where: { id: businessId },
+        data: { isActive: false },
+      }),
+      prisma.report.updateMany({
+        where: { businessId, status: 'PENDING' },
+        data: {
+          status: 'RESOLVED',
+          reviewedBy: session.user.id,
+          reviewNote: 'Negocio desactivado por reportes de la comunidad',
+        },
+      }),
+    ])
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'BUSINESS_DEACTIVATE',
+        resource: 'Business',
+        resourceId: businessId,
+        userId: session.user.id,
+        newValues: { isActive: false, reason: 'community_reports' },
+      },
+    })
+
+    revalidatePath('/admin/negocios')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deactivating reported business:', error)
+    return { success: false, error: 'Failed to deactivate business' }
+  }
+}
+
 // Desactivar/Activar un negocio (Soft Ban)
 export async function toggleBusinessStatus(
   businessId: string,

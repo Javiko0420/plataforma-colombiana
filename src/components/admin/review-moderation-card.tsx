@@ -20,23 +20,23 @@ interface ReviewCardProps {
 
 export function ReviewModerationCard({ review }: ReviewCardProps) {
   const [isPending, startTransition] = useTransition()
-  const [isRejected, setIsRejected] = useState(false)
+  const [isResolved, setIsResolved] = useState(false)
 
   const handleApprove = () => {
     startTransition(async () => {
       await approveReview(review.id)
+      setIsResolved(true)
     })
   }
 
   const handleReject = () => {
-    // En una implementación real, aquí abrirías un modal para pedir la razón
     startTransition(async () => {
       await hideReview(review.id, 'Contenido inapropiado confirmado por moderador')
-      setIsRejected(true)
+      setIsResolved(true)
     })
   }
 
-  if (isRejected) return null
+  if (isResolved) return null
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">

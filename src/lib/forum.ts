@@ -6,6 +6,7 @@
 import { prisma } from './prisma';
 import { ForumTopic, ReportReason, ReportStatus } from '@prisma/client';
 import logger from './logger';
+import { ConflictError } from './error-handler';
 
 // Types
 export interface CreatePostInput {
@@ -26,6 +27,8 @@ export interface CreateReportInput {
   reporterId: string;
   postId?: string;
   commentId?: string;
+  /** User role — ADMIN/MODERATOR bypass duplicate report restriction */
+  userRole?: string;
 }
 
 export interface ForumWithPosts {
@@ -459,7 +462,8 @@ export async function likeComment(commentId: string, userId: string) {
  * Report a post or comment
  */
 export async function createReport(input: CreateReportInput) {
-  const { reason, details, reporterId, postId, commentId } = input;
+  const { reason, details, reporterId, postId, commentId, userRole } = input;
+  const isPrivileged = userRole === 'ADMIN' || userRole === 'MODERATOR';
 
   try {
     if (!postId && !commentId) {
@@ -479,7 +483,12 @@ export async function createReport(input: CreateReportInput) {
     });
 
     if (existingReport) {
-      throw new Error('You have already reported this content');
+      // ADMIN/MODERATOR: delete previous report to allow re-testing the flow
+      if (isPrivileged) {
+        await prisma.report.delete({ where: { id: existingReport.id } });
+      } else {
+        throw new ConflictError('You have already reported this content');
+      }
     }
 
     // Create report

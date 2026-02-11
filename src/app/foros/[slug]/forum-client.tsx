@@ -20,6 +20,7 @@ interface UserProfile {
   nickname: string | null;
   reputation: number;
   isBanned: boolean;
+  role?: string;
 }
 
 interface CommentData {
@@ -356,6 +357,7 @@ export default function ForumClient({
                 post={post}
                 t={(key) => t[key] || key}
                 currentUserId={currentUser?.id}
+                userRole={currentUser?.role}
                 onLike={handleLikePost}
                 onReport={(postId) => {
                   setReportTarget({ type: 'post', id: postId });
@@ -390,6 +392,7 @@ export default function ForumClient({
                           comment={comment}
                           t={(key) => t[key] || key}
                           currentUserId={currentUser?.id}
+                          userRole={currentUser?.role}
                           onLike={handleLikeComment}
                           onReport={(commentId) => {
                             setReportTarget({ type: 'comment', id: commentId });

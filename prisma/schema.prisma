@@ -173,6 +173,7 @@ model ForumPost {
   content         String
   isEdited        Boolean        @default(false)
   isDeleted       Boolean        @default(false)
+  deletedAt       DateTime?      // Timestamp for soft delete retention policy (hard delete after 30 days)
   isFlagged       Boolean        @default(false)
   flagReason      String?
   moderationScore Float?
@@ -192,6 +193,7 @@ model ForumPost {
   @@index([createdAt])
   @@index([isFlagged])
   @@index([isDeleted])
+  @@index([deletedAt])
 }
 
 model ForumComment {
@@ -199,6 +201,7 @@ model ForumComment {
   content         String
   isEdited        Boolean   @default(false)
   isDeleted       Boolean   @default(false)
+  deletedAt       DateTime? // Timestamp for soft delete retention policy (hard delete after 30 days)
   isFlagged       Boolean   @default(false)
   flagReason      String?
   moderationScore Float?
@@ -217,6 +220,7 @@ model ForumComment {
   @@index([createdAt])
   @@index([isFlagged])
   @@index([isDeleted])
+  @@index([deletedAt])
 }
 
 model Report {

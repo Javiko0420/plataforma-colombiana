@@ -15,6 +15,8 @@ export async function POST(
     const { reason, details } = await req.json();
 
     // 1. Verificar si ya reportó esta reseña
+    const isPrivileged = session.user.role === 'ADMIN' || session.user.role === 'MODERATOR';
+
     const existingReport = await prisma.report.findUnique({
       where: {
         reviewId_reporterId: {
@@ -25,7 +27,12 @@ export async function POST(
     });
 
     if (existingReport) {
-      return NextResponse.json({ error: "Ya has reportado esta reseña" }, { status: 400 });
+      // ADMIN/MODERATOR: eliminar reporte anterior para poder re-testear el flujo
+      if (isPrivileged) {
+        await prisma.report.delete({ where: { id: existingReport.id } });
+      } else {
+        return NextResponse.json({ error: "Ya has reportado esta reseña" }, { status: 409 });
+      }
     }
 
     // 2. Crear el reporte y actualizar contador en una transacción

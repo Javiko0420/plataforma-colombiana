@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { BusinessTable } from '@/components/admin/business-table'
+import { BusinessReportCard } from '@/components/admin/business-report-card'
 import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -18,27 +19,24 @@ export default async function AdminBusinessesPage({
   // Construcción dinámica del filtro WHERE
   const whereClause: Prisma.BusinessWhereInput = {
     AND: [
-      // Filtro de búsqueda (Texto)
       query
         ? {
             OR: [
               { name: { contains: query, mode: 'insensitive' } },
               { email: { contains: query, mode: 'insensitive' } },
               { city: { contains: query, mode: 'insensitive' } },
-              // Búsqueda profunda por email del dueño
               { owner: { email: { contains: query, mode: 'insensitive' } } },
             ],
           }
         : {},
-      // Filtros de estado
       filter === 'pending' ? { isVerified: false } : {},
       filter === 'verified' ? { isVerified: true } : {},
       filter === 'inactive' ? { isActive: false } : {},
     ],
   }
 
-  // Ejecución paralela (Count + Data) para paginación
-  const [totalItems, businesses] = await Promise.all([
+  // Ejecución paralela: directorio + reportes pendientes de negocios
+  const [totalItems, businesses, reportedBusinesses] = await Promise.all([
     prisma.business.count({ where: whereClause }),
     prisma.business.findMany({
       where: whereClause,
@@ -51,36 +49,92 @@ export default async function AdminBusinessesPage({
         },
       },
     }),
+    // Negocios con reportes pendientes de moderación
+    prisma.business.findMany({
+      where: {
+        reports: {
+          some: { status: 'PENDING' },
+        },
+      },
+      include: {
+        owner: { select: { name: true, email: true } },
+        reports: {
+          where: { status: 'PENDING' },
+          select: {
+            id: true,
+            reason: true,
+            details: true,
+            createdAt: true,
+            reporter: { select: { name: true, email: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        _count: {
+          select: {
+            reports: { where: { status: 'PENDING' } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
   ])
 
   const totalPages = Math.ceil(totalItems / pageSize)
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Gestión de Negocios
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Administra el directorio, verifica empresas y gestiona la
-            visibilidad.
-          </p>
-        </div>
-        <div className="text-right text-xs text-gray-500">
-          Total:{' '}
-          <span className="font-bold text-gray-900 dark:text-white">
-            {totalItems}
-          </span>{' '}
-          negocios encontrados
-        </div>
-      </div>
+    <div className="space-y-8">
+      {/* Sección: Negocios Reportados (prioridad alta) */}
+      {reportedBusinesses.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-bold text-red-600 dark:text-red-400">
+                Negocios Reportados
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Negocios con reportes pendientes de revisión por la comunidad.
+              </p>
+            </div>
+            <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg text-sm font-medium">
+              {reportedBusinesses.length} pendiente{reportedBusinesses.length !== 1 ? 's' : ''}
+            </div>
+          </div>
 
-      <BusinessTable
-        businesses={businesses}
-        totalPages={totalPages}
-        currentPage={page}
-      />
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {reportedBusinesses.map((business) => (
+              <BusinessReportCard key={business.id} business={business} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sección: Gestión General del Directorio */}
+      <div className="space-y-6">
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Gestión de Negocios
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Administra el directorio, verifica empresas y gestiona la
+              visibilidad.
+            </p>
+          </div>
+          <div className="text-right text-xs text-gray-500">
+            Total:{' '}
+            <span className="font-bold text-gray-900 dark:text-white">
+              {totalItems}
+            </span>{' '}
+            negocios encontrados
+          </div>
+        </div>
+
+        <BusinessTable
+          businesses={businesses}
+          totalPages={totalPages}
+          currentPage={page}
+        />
+      </div>
     </div>
   )
 }

@@ -30,6 +30,8 @@ interface ForumCommentCardProps {
   onLike?: (commentId: string) => Promise<void>;
   onReport?: (commentId: string) => void;
   currentUserId?: string;
+  /** User role — ADMIN/MODERATOR can report any content including their own */
+  userRole?: string;
 }
 
 export function ForumCommentCard({
@@ -38,6 +40,7 @@ export function ForumCommentCard({
   onLike,
   onReport,
   currentUserId,
+  userRole,
 }: ForumCommentCardProps) {
   const [isLiking, setIsLiking] = React.useState(false);
 
@@ -119,7 +122,7 @@ export function ForumCommentCard({
           </span>
         </button>
 
-        {currentUserId && currentUserId !== comment.author.id && (
+        {currentUserId && (currentUserId !== comment.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR') && (
           <button
             onClick={() => onReport?.(comment.id)}
             className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-red-500/10 transition-colors group"
