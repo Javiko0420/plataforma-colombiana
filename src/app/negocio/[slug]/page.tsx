@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
-import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit, Star, ExternalLink } from 'lucide-react'
+import { MapPin, Globe, Phone, Mail, MessageCircle, CheckCircle2, ArrowLeft, ImageIcon, Edit, Star, ExternalLink, Instagram } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ShareButton from "@/components/ui/share-button"
@@ -268,6 +268,22 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
                           <div>
                             <p className="text-xs text-slate-500 font-bold uppercase">Sitio Web</p>
                             <p className="font-medium text-slate-900 dark:text-white truncate max-w-[180px]">{business.website}</p>
+                          </div>
+                      </a>
+                    )}
+                    {business.instagram && (
+                      <a 
+                        href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors group"
+                      >
+                          <div className="bg-white dark:bg-slate-900 p-2 rounded-full shadow-sm text-pink-500 group-hover:scale-110 transition-transform">
+                              <Instagram className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 font-bold uppercase">Instagram</p>
+                            <p className="font-medium text-slate-900 dark:text-white">@{business.instagram.replace(/^@/, '')}</p>
                           </div>
                       </a>
                     )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Filter, MapPin, Phone, MessageCircle, Building2 } from 'lucide-react'
+import { Search, Filter, MapPin, Phone, MessageCircle, Building2, Instagram } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -18,6 +18,7 @@ interface Business {
   email: string
   website: string | null
   whatsapp: string | null
+  instagram: string | null
   images: string[]
   isVerified: boolean
 }
@@ -209,7 +210,7 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
                   </a>
                 )}
                 
-                {/* Si no tiene WhatsApp, mostramos botón de llamar o web */}
+                {/* Si no tiene WhatsApp, mostramos botón de llamar */}
                 {!business.whatsapp && business.phone && (
                    <a
                     href={`tel:${business.phone}`}
@@ -217,6 +218,19 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
                   >
                     <Phone className="h-4 w-4 mr-2" />
                     Llamar
+                  </a>
+                )}
+
+                {/* Si no tiene WhatsApp ni teléfono, mostramos Instagram */}
+                {!business.whatsapp && !business.phone && business.instagram && (
+                  <a
+                    href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    <Instagram className="h-4 w-4 mr-2" />
+                    Instagram
                   </a>
                 )}
 

@@ -32,6 +32,7 @@ export default async function DirectorioPage() {
       email: true,
       website: true,
       whatsapp: true,
+      instagram: true,
       images: true,
       isVerified: true,
       // No seleccionamos campos sensibles del dueño
