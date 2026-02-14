@@ -9,6 +9,7 @@ import { AccessibleInput } from './accessible-input'
 import { Eye, EyeOff, UserPlus, Loader2, CheckCircle, FileText, X, Calendar } from 'lucide-react'
 
 interface RegisterFormProps {
+  callbackUrl?: string
   className?: string
 }
 
@@ -40,7 +41,7 @@ function calculateAge(dateOfBirth: Date): number {
   return age
 }
 
-export default function RegisterForm({ className = '' }: RegisterFormProps) {
+export default function RegisterForm({ callbackUrl, className = '' }: RegisterFormProps) {
   const router = useRouter()
   const { t } = useTranslations()
   const [isLoading, setIsLoading] = useState(false)
@@ -164,13 +165,17 @@ export default function RegisterForm({ className = '' }: RegisterFormProps) {
         return
       }
 
-      // Éxito
+      // Éxito — redirigir al login preservando el destino original
       setShowContractModal(false)
       setSuccess(true)
       setIsLoading(false)
       
+      const signinUrl = callbackUrl
+        ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`
+        : '/auth/signin'
+      
       setTimeout(() => {
-        router.push('/auth/signin')
+        router.push(signinUrl)
       }, 2000)
     } catch (err) {
       console.error('Registration error:', err)
@@ -435,7 +440,7 @@ export default function RegisterForm({ className = '' }: RegisterFormProps) {
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {t('auth.signup.hasAccount')}{' '}
             <Link
-              href="/auth/signin"
+              href={callbackUrl ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/signin'}
               className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               {t('auth.signup.signIn')}

@@ -9,18 +9,23 @@ export const metadata: Metadata = {
   description: 'Crea tu cuenta en Plataforma Colombiana',
 }
 
-export default async function SignUpPage() {
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>
+}) {
+  const params = await searchParams
   // Check if user is already logged in
   const session = await getServerSession(authOptions)
   
   if (session) {
-    redirect('/')
+    redirect(params.callbackUrl || '/')
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
-        <RegisterForm />
+        <RegisterForm callbackUrl={params.callbackUrl} />
       </div>
     </main>
   )

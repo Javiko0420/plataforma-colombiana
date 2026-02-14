@@ -37,7 +37,19 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // ── 2. Protección de API Routes para n8n (External Access) ─────────────
+  // ── 2. Protección de rutas autenticadas (/registrar-negocio, /perfil) ──
+  const protectedRoutes = ['/registrar-negocio', '/perfil']
+  if (protectedRoutes.some(route => path.startsWith(route))) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+    if (!token) {
+      const url = new URL('/auth/signin', req.url)
+      url.searchParams.set('callbackUrl', path)
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // ── 3. Protección de API Routes para n8n (External Access) ─────────────
   if (path.startsWith('/api/admin')) {
     const apiKey = req.headers.get('x-api-key')
 
@@ -49,7 +61,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // ── 3. Headers de Seguridad (Security Hardening) ───────────────────────
+  // ── 4. Headers de Seguridad (Security Hardening) ───────────────────────
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-XSS-Protection', '1; mode=block')
@@ -78,6 +90,8 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*', // Protege todas las rutas de UI de admin
+    '/registrar-negocio', // Requiere autenticación para registrar negocio
+    '/perfil/:path*', // Requiere autenticación para ver perfil
     '/api/admin/:path*', // Protege endpoints de automatización
     '/((?!_next/static|_next/image|favicon.ico|public/).*)', // Aplica headers a todo lo demás
   ],

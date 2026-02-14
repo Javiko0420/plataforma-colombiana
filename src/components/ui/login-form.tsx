@@ -176,7 +176,7 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {t('auth.login.noAccount')}{' '}
             <Link
-              href="/auth/signup"
+              href={callbackUrl && callbackUrl !== '/' ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/signup'}
               className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               {t('auth.login.signUp')}
