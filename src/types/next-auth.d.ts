@@ -8,6 +8,7 @@ declare module 'next-auth' {
       name?: string | null
       image?: string | null
       role: UserRole
+      hasCompletedProfile: boolean
     }
   }
 
@@ -19,5 +20,6 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     role: UserRole
+    hasCompletedProfile: boolean
   }
 }

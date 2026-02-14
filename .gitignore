@@ -45,3 +45,6 @@ next-env.d.ts
 .env
 .env.*
 logs/*
+
+# Google OAuth credentials (never commit secrets)
+client_secret_*.json

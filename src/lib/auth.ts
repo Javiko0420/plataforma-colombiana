@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from './prisma'
 import { PasswordSecurity } from './password-security'
 import { SecurityUtils } from './security'
@@ -10,6 +11,10 @@ import { userLoginSchema } from './validations'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -120,11 +125,33 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, user, account }) {
-      // Add user role to token
+    async jwt({ token, user, account, trigger }) {
+      // Initial sign-in: populate token with user data
       if (user) {
         token.role = user.role
         token.lastLogin = Date.now()
+
+        // Derive profile completion status from the database.
+        // This covers both credential users (always complete) and
+        // Google users (may need to complete DOB + legal acceptance).
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { dateOfBirth: true, contractAcceptedAt: true }
+        })
+        token.hasCompletedProfile = !!(dbUser?.dateOfBirth && dbUser?.contractAcceptedAt)
+      }
+
+      // Token refresh: triggered by `await update()` from useSession()
+      // after the user completes their profile on /perfil/completar.
+      if (trigger === 'update') {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub! },
+          select: { dateOfBirth: true, contractAcceptedAt: true, role: true }
+        })
+        if (dbUser) {
+          token.hasCompletedProfile = !!(dbUser.dateOfBirth && dbUser.contractAcceptedAt)
+          token.role = dbUser.role
+        }
       }
       
       // Rotate token periodically for security
@@ -142,11 +169,18 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         session.user.id = token.sub!
         session.user.role = token.role
+        session.user.hasCompletedProfile = token.hasCompletedProfile
       }
       return session
     },
     async signIn({ user, account, profile }) {
-      // Additional security checks can be added here
+      // For Google: only allow if email is verified by Google
+      if (account?.provider === 'google') {
+        const googleProfile = profile as { email_verified?: boolean }
+        if (!googleProfile?.email_verified) {
+          return false
+        }
+      }
       return true
     },
     async redirect({ url, baseUrl }) {
@@ -162,7 +196,7 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user, account, profile }) {
-      // Log successful sign in
+      // Log successful sign in (both credentials and Google)
       SecurityLogger.logAuthEvent({
         type: 'login',
         userId: user.id,

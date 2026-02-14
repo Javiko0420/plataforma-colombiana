@@ -13,14 +13,21 @@ export default async function AuthErrorPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const params = await searchParams
+
+  const error = params.error || 'Default'
+
+  // Error-specific messages and whether to show the "use credentials" hint
+  const isAccountNotLinked = error === 'OAuthAccountNotLinked'
+
   const errorMessages: Record<string, string> = {
+    OAuthAccountNotLinked:
+      'Este correo ya está registrado con usuario y contraseña. Por favor, inicia sesión con tus credenciales.',
     Configuration: 'Error de configuración del servidor',
     AccessDenied: 'Acceso denegado',
     Verification: 'El enlace de verificación ha expirado o ya fue usado',
     Default: 'Ha ocurrido un error al iniciar sesión',
   }
 
-  const error = params.error || 'Default'
   const errorMessage = errorMessages[error] || errorMessages.Default
 
   return (
@@ -32,7 +39,7 @@ export default async function AuthErrorPage({
           </div>
           
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Error de Autenticación
+            {isAccountNotLinked ? 'Cuenta ya registrada' : 'Error de Autenticación'}
           </h1>
           
           <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -44,7 +51,7 @@ export default async function AuthErrorPage({
               href="/auth/signin"
               className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
             >
-              Intentar nuevamente
+              {isAccountNotLinked ? 'Iniciar sesión con credenciales' : 'Intentar nuevamente'}
             </Link>
             
             <Link
@@ -59,4 +66,3 @@ export default async function AuthErrorPage({
     </main>
   )
 }
-

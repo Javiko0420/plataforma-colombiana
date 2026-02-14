@@ -8,6 +8,7 @@ import { useTranslations } from '@/components/providers/language-provider'
 import { AccessibleButton } from './accessible-button'
 import { AccessibleInput } from './accessible-input'
 import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react'
+import { GoogleSignInButton } from './google-sign-in-button'
 
 interface LoginFormProps {
   callbackUrl?: string
@@ -73,6 +74,21 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
           <p className="text-gray-600 dark:text-gray-400">
             {t('auth.login.subtitle')}
           </p>
+        </div>
+
+        {/* Google Sign-In Button */}
+        <GoogleSignInButton callbackUrl={callbackUrl} />
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+              o con tu correo
+            </span>
+          </div>
         </div>
 
         {error && (

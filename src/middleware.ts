@@ -35,6 +35,11 @@ export async function middleware(req: NextRequest) {
     if (!isAuthorizedRole || !isAuthorizedDomain) {
       return NextResponse.redirect(new URL('/', req.url))
     }
+
+    // E. Perfil incompleto → redirigir a completar perfil
+    if (token.hasCompletedProfile === false) {
+      return NextResponse.redirect(new URL('/perfil/completar', req.url))
+    }
   }
 
   // ── 2. Protección de rutas autenticadas (/registrar-negocio, /perfil) ──
@@ -46,6 +51,14 @@ export async function middleware(req: NextRequest) {
       const url = new URL('/auth/signin', req.url)
       url.searchParams.set('callbackUrl', path)
       return NextResponse.redirect(url)
+    }
+
+    // Perfil incompleto → redirigir a /perfil/completar.
+    // Usamos `=== false` (no falsy) para no afectar tokens existentes
+    // creados antes de esta feature (donde hasCompletedProfile es undefined).
+    // Solo tokens nuevos que explícitamente tengan `false` serán redirigidos.
+    if (token.hasCompletedProfile === false && !path.startsWith('/perfil/completar')) {
+      return NextResponse.redirect(new URL('/perfil/completar', req.url))
     }
   }
 
@@ -72,7 +85,7 @@ export async function middleware(req: NextRequest) {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://upload-widget.cloudinary.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https: https://media.api-sports.io https://media-3.api-sports.io https://res.cloudinary.com",
+      "img-src 'self' data: https: https://media.api-sports.io https://media-3.api-sports.io https://res.cloudinary.com https://lh3.googleusercontent.com",
       "font-src 'self'",
       "connect-src 'self' https://api.open-meteo.com https://ipwho.is https://api-football-v1.p.rapidapi.com https://v3.football.api-sports.io https://widgets.api-sports.io https://widgets.api-football.com https://playerservices.streamtheworld.com https://*.streamtheworld.com https://api.cloudinary.com https://formspree.io",
       "media-src 'self' https: data: https://playerservices.streamtheworld.com https://*.streamtheworld.com",
