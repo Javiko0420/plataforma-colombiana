@@ -84,6 +84,8 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
     return { success: true };
   } catch (error) {
     console.error("Error al enviar el correo con Zoho:", error);
-    throw new Error("No se pudo enviar el correo de recuperación.");
+    // TODO: Remover detalle después de diagnosticar producción
+    const detail = error instanceof Error ? error.message : "Error desconocido";
+    throw new Error(`No se pudo enviar el correo: ${detail}`);
   }
 };
