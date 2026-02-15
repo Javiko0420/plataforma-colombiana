@@ -49,10 +49,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error en forgot-password:", error);
-    // TODO: Remover detalle del error después de diagnosticar producción
-    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
     return NextResponse.json(
-      { error: "Error interno del servidor", debug: errorMessage },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }
