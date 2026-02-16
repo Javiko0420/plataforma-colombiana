@@ -59,7 +59,7 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
                 </tr>
               </table>
               
-              <p style="color: #6b7280; font-size: 14px; line-height: 20px; margin: 30px 0 0;">Este enlace es único y expirará en <strong>1 hora</strong>. Si no solicitaste este cambio, puedes ignorar este mensaje de forma segura.</p>
+              <p style="color: #6b7280; font-size: 14px; line-height: 20px; margin: 30px 0 0;">Este enlace es único y expirará en <strong>15 minutos</strong>. Si no solicitaste este cambio, puedes ignorar este mensaje de forma segura.</p>
             </td>
           </tr>
           
