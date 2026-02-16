@@ -4,7 +4,8 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import ProfileClient from './profile-client' // Asegúrate que la importación no tenga .tsx
+import { getUserJobOffers } from '@/app/actions/jobActions'
+import ProfileClient from './profile-client'
 
 export const metadata: Metadata = {
   title: 'Mi Perfil | Latin Territory',
@@ -82,6 +83,10 @@ export default async function ProfilePage() {
   const totalLikes = recentPosts.reduce((s, p) => s + p.likesCount, 0) + 
                      recentComments.reduce((s, c) => s + c.likesCount, 0)
 
+  // Obtener los empleos publicados por el usuario
+  const userJobsResult = await getUserJobOffers()
+  const userJobs = userJobsResult.data || []
+
   return (
     <ProfileClient
       user={{
@@ -94,6 +99,7 @@ export default async function ProfilePage() {
       }}
       recentPosts={recentPosts}
       recentComments={recentComments}
+      userJobs={userJobs}
     />
   )
 }

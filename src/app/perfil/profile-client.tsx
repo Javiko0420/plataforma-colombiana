@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from '@/components/providers/language-provider'
 import { 
+  Briefcase,
   Building2, 
   MapPin, 
   PlusCircle, 
@@ -22,6 +23,8 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 import { DateDisplay } from '@/components/ui/date-display'
+import UserJobOffers from '@/components/jobs/UserJobOffers'
+import { JobOffer } from '@prisma/client'
 
 interface ProfileUser {
   id: string
@@ -77,9 +80,10 @@ interface ProfileClientProps {
   user: ProfileUser
   recentPosts: RecentPost[]
   recentComments: RecentComment[]
+  userJobs: JobOffer[]
 }
 
-export default function ProfileClient({ user, recentPosts, recentComments }: ProfileClientProps) {
+export default function ProfileClient({ user, recentPosts, recentComments, userJobs }: ProfileClientProps) {
   const router = useRouter()
   const { t } = useTranslations()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -239,12 +243,37 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
           </div>
         </div>
 
+        {/* Action Bar */}
+        <div className="mb-8 flex flex-wrap gap-4 justify-end">
+          <Link 
+            href="/empleos/publicar" 
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-bold px-6 py-3 hover:from-yellow-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
+          >
+            <PlusCircle className="w-5 h-5" />
+            Publicar Oferta de Empleo
+          </Link>
+        </div>
+
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* SECCIÓN: MIS NEGOCIOS */}
-          <div className="lg:col-span-3 mb-8"> {/* Ocupa todo el ancho */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-6">
+
+          {/* Columna Principal (Full Width) */}
+          <div className="lg:col-span-3 mb-8 space-y-8">
+
+            {/* SECCIÓN: MIS OFERTAS DE EMPLEO */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Briefcase className="h-6 w-6 text-yellow-500" />
+                  Mis Ofertas de Empleo
+                </h2>
+              </div>
+              <UserJobOffers initialJobs={userJobs} />
+            </div>
+
+            {/* SECCIÓN: MIS NEGOCIOS */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Building2 className="h-5 w-5 text-blue-500" />
                   Mis Territorios (Negocios)
@@ -287,22 +316,20 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                       </Link>
 
                       <div className="p-4 pt-0 relative flex-1 flex flex-col">
-                        {/* BLOQUE NUEVO (Miniatura inteligente) */}
+                        {/* Miniatura inteligente */}
                         <Link 
                           href={`/negocio/${business.slug}`} 
                           className="w-16 h-16 bg-white dark:bg-slate-800 rounded-lg border-4 border-white dark:border-slate-800 absolute -top-8 overflow-hidden shadow-md transition-transform group-hover:scale-110 relative"
                         >
-                          {/* Si hay fotos, mostramos la primera */}
                           {business.images && business.images.length > 0 ? (
                             <Image
                               src={business.images[0]}
                               alt={business.name}
                               fill
                               className="object-cover"
-                              sizes="64px" // Optimización para imágenes pequeñas
+                              sizes="64px"
                             />
                           ) : (
-                            // Si no hay fotos, mostramos el icono por defecto
                             <div className="w-full h-full flex items-center justify-center text-2xl">
                               🏢
                             </div>
@@ -364,6 +391,7 @@ export default function ProfileClient({ user, recentPosts, recentComments }: Pro
                 </div>
               )}
             </div>
+
           </div>
 
           {/* User Information */}

@@ -71,6 +71,7 @@ model User {
   forumComments  ForumComment[]
   forumPosts     ForumPost[]
   moderationLogs ModerationLog[]
+  jobOffers      JobOffer[]
   reports        Report[]
   reviews        Review[]
   sessions       Session[]
@@ -418,4 +419,36 @@ model Review {
   @@index([businessId])
   @@index([userId])
   @@index([status])
+}
+
+model JobOffer {
+  id           String    @id @default(cuid())
+  title        String
+  category     String
+  description  String    @db.Text
+  location     String
+  jobType      String    // Ej: "Full-time", "Part-time", "Freelance"
+
+  // Campos de contacto
+  email        String?
+  phone        String?
+  externalLink String?
+
+  // Seguridad y moderación
+  isVerified   Boolean   @default(false)
+  reportCount  Int       @default(0)
+
+  // Control de tiempo
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
+  deletedAt    DateTime? // Para Soft Delete
+
+  // Relación con el usuario autor
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([deletedAt])
+  @@index([category, isVerified])
+  @@index([userId])
 }
