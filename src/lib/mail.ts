@@ -42,7 +42,7 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
           
           <tr>
             <td style="padding: 40px 40px 20px; text-align: center;">
-              <h1 style="color: #171717; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">Plataforma Colombiana</h1>
+              <h1 style="color: #171717; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">Latin Territory</h1>
             </td>
           </tr>
           
