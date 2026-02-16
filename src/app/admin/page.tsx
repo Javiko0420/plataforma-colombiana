@@ -4,22 +4,45 @@ export const dynamic = 'force-dynamic' // Siempre datos frescos
 
 async function getDashboardStats() {
   // Ejecutamos consultas en paralelo para velocidad
-  const [usersCount, businessesCount, pendingReviews, flaggedPosts, reportedBusinesses] =
-    await Promise.all([
-      prisma.user.count(),
-      prisma.business.count(),
-      // Reseñas con al menos 1 reporte O estado FLAGGED
-      prisma.review.count({
-        where: { OR: [{ status: 'FLAGGED' }, { reportCount: { gt: 0 } }] },
-      }),
-      prisma.forumPost.count({ where: { isFlagged: true } }),
-      // Negocios con reportes pendientes
-      prisma.business.count({
-        where: { reports: { some: { status: 'PENDING' } } },
-      }),
-    ])
+  const [
+    usersCount,
+    businessesCount,
+    pendingReviews,
+    flaggedPosts,
+    reportedBusinesses,
+    totalJobOffers,
+    reportedJobOffers,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.business.count(),
+    // Reseñas con al menos 1 reporte O estado FLAGGED
+    prisma.review.count({
+      where: { OR: [{ status: 'FLAGGED' }, { reportCount: { gt: 0 } }] },
+    }),
+    prisma.forumPost.count({ where: { isFlagged: true } }),
+    // Negocios con reportes pendientes
+    prisma.business.count({
+      where: { reports: { some: { status: 'PENDING' } } },
+    }),
+    // Ofertas de empleo activas (no eliminadas y no expiradas)
+    prisma.jobOffer.count({
+      where: { deletedAt: null, expiresAt: { gt: new Date() } },
+    }),
+    // Ofertas de empleo con reportes pendientes de moderación
+    prisma.jobOffer.count({
+      where: { deletedAt: null, reportCount: { gt: 0 } },
+    }),
+  ])
 
-  return { usersCount, businessesCount, pendingReviews, flaggedPosts, reportedBusinesses }
+  return {
+    usersCount,
+    businessesCount,
+    pendingReviews,
+    flaggedPosts,
+    reportedBusinesses,
+    totalJobOffers,
+    reportedJobOffers,
+  }
 }
 
 export default async function AdminDashboard() {
@@ -35,7 +58,7 @@ export default async function AdminDashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Usuarios Totales"
           value={stats.usersCount}
@@ -47,6 +70,12 @@ export default async function AdminDashboard() {
           value={stats.businessesCount}
           icon="🏪"
           description="Directorio oficial"
+        />
+        <StatCard
+          title="Ofertas de Empleo"
+          value={stats.totalJobOffers}
+          icon="💼"
+          description="Publicaciones activas"
         />
         <StatCard
           title="Negocios Reportados"
@@ -68,6 +97,13 @@ export default async function AdminDashboard() {
           icon="🚩"
           trend="requires_action"
           description="Contenido potencialmente sensible"
+        />
+        <StatCard
+          title="Empleos por Moderar"
+          value={stats.reportedJobOffers}
+          icon="📋"
+          trend="requires_action"
+          description="Ofertas reportadas por la comunidad"
         />
       </div>
 

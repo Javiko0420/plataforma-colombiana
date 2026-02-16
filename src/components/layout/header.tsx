@@ -139,6 +139,12 @@ export function Header() {
               {t('nav.directory')}
             </Link>
             <Link 
+              href="/empleos" 
+              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
+            >
+              {t('nav.jobs')}
+            </Link>
+            <Link 
               href="/foros" 
               className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
             >
@@ -334,6 +340,16 @@ export function Header() {
                 }}
               >
                 {t('nav.directory')}
+              </Link>
+              <Link
+                href="/empleos"
+                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  ScreenReader.announce(t('sr.nav.to.jobs'), 'polite')
+                }}
+              >
+                {t('nav.jobs')}
               </Link>
               <Link
                 href="/foros"
