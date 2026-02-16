@@ -200,13 +200,25 @@ export default function BusinessForm({ initialData }: BusinessFormProps) {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "Guardando..." : action}
-          </button>
+          <div className="flex gap-4">
+            {initialData && (
+              <button
+                type="button"
+                onClick={() => router.push("/perfil")}
+                disabled={isSubmitting}
+                className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-4 rounded-xl border border-slate-700 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancelar
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={`${initialData ? "flex-1" : "w-full"} bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {isSubmitting ? "Guardando..." : action}
+            </button>
+          </div>
         </form>
       </div>
 
