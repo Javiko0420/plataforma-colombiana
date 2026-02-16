@@ -66,11 +66,24 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const profile = await getUserProfile(session.user.id);
+    const [profile, authInfo] = await Promise.all([
+      getUserProfile(session.user.id),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+          password: true,
+          accounts: { select: { provider: true } },
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       success: true,
-      data: profile,
+      data: {
+        ...profile,
+        hasPassword: !!authInfo?.password,
+        isGoogleUser: authInfo?.accounts.some((a) => a.provider === 'google') ?? false,
+      },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

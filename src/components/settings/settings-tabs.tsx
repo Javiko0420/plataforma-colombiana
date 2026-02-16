@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { User, Lock, CreditCard, Save, ShieldCheck } from "lucide-react";
+import { User, Lock, CreditCard, Save, ShieldCheck, Eye, EyeOff, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 
@@ -27,11 +27,59 @@ const settingsSchema = z.object({
 
 type SettingsValues = z.infer<typeof settingsSchema>;
 
+// Password change validation (mirrors backend schema)
+const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, "La contraseña actual es requerida"),
+    newPassword: z
+      .string()
+      .min(8, "La nueva contraseña debe tener al menos 8 caracteres")
+      .max(128, "La contraseña no puede exceder 128 caracteres")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        "Debe contener al menos: 1 minúscula, 1 mayúscula, 1 número y 1 carácter especial (@$!%*?&)"
+      ),
+    confirmPassword: z.string().min(1, "Confirma tu nueva contraseña"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "La nueva contraseña debe ser diferente a la actual",
+    path: ["newPassword"],
+  });
+
+type PasswordChangeValues = z.infer<typeof passwordChangeSchema>;
+
+/** Evaluate password strength for the visual indicator */
+function getPasswordStrength(password: string) {
+  const checks = [
+    { label: "Mínimo 8 caracteres", passed: password.length >= 8 },
+    { label: "Una letra minúscula", passed: /[a-z]/.test(password) },
+    { label: "Una letra mayúscula", passed: /[A-Z]/.test(password) },
+    { label: "Un número", passed: /\d/.test(password) },
+    { label: "Un carácter especial (@$!%*?&)", passed: /[@$!%*?&]/.test(password) },
+  ];
+  const score = checks.filter((c) => c.passed).length;
+  return { checks, score };
+}
+
 export default function SettingsTabs() {
   const { data: session, update } = useSession();
   const [activeTab, setActiveTab] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Password change state
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [hasPassword, setHasPassword] = useState(false);
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
 
   const form = useForm<SettingsValues>({
     resolver: zodResolver(settingsSchema),
@@ -44,6 +92,18 @@ export default function SettingsTabs() {
       image: "",
     },
   });
+
+  const passwordForm = useForm<PasswordChangeValues>({
+    resolver: zodResolver(passwordChangeSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const watchedNewPassword = passwordForm.watch("newPassword");
+  const passwordStrength = getPasswordStrength(watchedNewPassword || "");
 
   // Cargar datos desde la API al iniciar
   useEffect(() => {
@@ -68,6 +128,10 @@ export default function SettingsTabs() {
           dateOfBirth: dob,
           image: user.image || "",
         });
+
+        // Auth info for security tab
+        setHasPassword(user.hasPassword ?? false);
+        setIsGoogleUser(user.isGoogleUser ?? false);
       } catch (error) {
         console.error("Error cargando datos del usuario:", error);
       } finally {
@@ -79,6 +143,35 @@ export default function SettingsTabs() {
       fetchUserData();
     }
   }, [session, form]);
+
+  const onPasswordSubmit = async (data: PasswordChangeValues) => {
+    setPasswordSubmitting(true);
+    setPasswordMessage(null);
+
+    try {
+      const res = await fetch("/api/users/me/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Error al cambiar la contraseña");
+      }
+
+      setPasswordMessage({ type: "success", text: result.message });
+      passwordForm.reset();
+      // Collapse the form after success
+      setTimeout(() => setShowPasswordForm(false), 2500);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Error desconocido";
+      setPasswordMessage({ type: "error", text: msg });
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
 
   const onSubmit = async (data: SettingsValues) => {
     setIsSubmitting(true);
@@ -216,33 +309,245 @@ export default function SettingsTabs() {
           </div>
         )}
 
-        {/* PESTAÑA: SEGURIDAD (Placeholders para futuro) */}
+        {/* PESTAÑA: SEGURIDAD */}
         {activeTab === "security" && (
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Seguridad de la Cuenta</h2>
-            
-            <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center">
+
+            {/* --- Contraseña --- */}
+            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+              <div className="p-4 flex justify-between items-center">
                 <div>
-                    <h3 className="font-bold">Contraseña</h3>
-                    <p className="text-sm text-slate-500">Se recomienda cambiarla cada 3 meses.</p>
+                  <h3 className="font-bold text-slate-900 dark:text-white">Contraseña</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Se recomienda cambiarla cada 3 meses.
+                  </p>
                 </div>
-                <button className="text-blue-600 font-bold text-sm hover:underline" onClick={() => alert("Si usas Google Login, debes cambiarla en Google. Si usas correo, funcionalidad en desarrollo.")}>Actualizar</button>
+
+                {/* Google-only users cannot change password here */}
+                {isGoogleUser && !hasPassword ? (
+                  <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full font-medium">
+                    Gestionada por Google
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    className="text-blue-600 font-bold text-sm hover:underline"
+                    onClick={() => {
+                      setShowPasswordForm((prev) => !prev);
+                      setPasswordMessage(null);
+                      passwordForm.reset();
+                    }}
+                  >
+                    {showPasswordForm ? "Cancelar" : "Actualizar"}
+                  </button>
+                )}
+              </div>
+
+              {/* Google-only informational message */}
+              {isGoogleUser && !hasPassword && (
+                <div className="px-4 pb-4">
+                  <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                    <p className="text-sm text-amber-700 dark:text-amber-400">
+                      Tu cuenta está vinculada a Google. Para cambiar tu contraseña, hazlo directamente desde tu{" "}
+                      <a
+                        href="https://myaccount.google.com/security"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline font-medium"
+                      >
+                        cuenta de Google
+                      </a>.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Password change form */}
+              {showPasswordForm && hasPassword && (
+                <div className="border-t border-slate-200 dark:border-slate-700 p-4 space-y-5">
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                    {/* Current password */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        Contraseña actual
+                      </label>
+                      <div className="relative">
+                        <input
+                          {...passwordForm.register("currentPassword")}
+                          type={showCurrentPw ? "text" : "password"}
+                          autoComplete="current-password"
+                          className="w-full p-3 pr-12 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Ingresa tu contraseña actual"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPw((v) => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          aria-label={showCurrentPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        >
+                          {showCurrentPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      {passwordForm.formState.errors.currentPassword && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {passwordForm.formState.errors.currentPassword.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* New password */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        Nueva contraseña
+                      </label>
+                      <div className="relative">
+                        <input
+                          {...passwordForm.register("newPassword")}
+                          type={showNewPw ? "text" : "password"}
+                          autoComplete="new-password"
+                          className="w-full p-3 pr-12 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Mínimo 8 caracteres"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPw((v) => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          aria-label={showNewPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        >
+                          {showNewPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      {passwordForm.formState.errors.newPassword && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {passwordForm.formState.errors.newPassword.message}
+                        </p>
+                      )}
+
+                      {/* Strength indicator */}
+                      {watchedNewPassword && (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                className={`h-1.5 flex-1 rounded-full transition-colors ${
+                                  i <= passwordStrength.score
+                                    ? passwordStrength.score <= 2
+                                      ? "bg-red-500"
+                                      : passwordStrength.score <= 3
+                                        ? "bg-amber-500"
+                                        : "bg-emerald-500"
+                                    : "bg-slate-200 dark:bg-slate-700"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <ul className="space-y-1">
+                            {passwordStrength.checks.map((check) => (
+                              <li key={check.label} className="flex items-center gap-2 text-xs">
+                                {check.passed ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                ) : (
+                                  <XCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                )}
+                                <span className={check.passed ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"}>
+                                  {check.label}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Confirm new password */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        Confirmar nueva contraseña
+                      </label>
+                      <div className="relative">
+                        <input
+                          {...passwordForm.register("confirmPassword")}
+                          type={showConfirmPw ? "text" : "password"}
+                          autoComplete="new-password"
+                          className="w-full p-3 pr-12 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Repite la nueva contraseña"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPw((v) => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          aria-label={showConfirmPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+                        >
+                          {showConfirmPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                      {passwordForm.formState.errors.confirmPassword && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {passwordForm.formState.errors.confirmPassword.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Status message */}
+                    {passwordMessage && (
+                      <div
+                        className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
+                          passwordMessage.type === "success"
+                            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                            : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                        }`}
+                      >
+                        {passwordMessage.type === "success" ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <XCircle className="w-4 h-4 shrink-0" />
+                        )}
+                        {passwordMessage.text}
+                      </div>
+                    )}
+
+                    {/* Submit */}
+                    <button
+                      type="submit"
+                      disabled={passwordSubmitting}
+                      className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all"
+                    >
+                      {passwordSubmitting ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Actualizando...
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          Cambiar Contraseña
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
 
+            {/* --- 2FA --- */}
             <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center">
                 <div>
-                    <h3 className="font-bold">Autenticación de 2 Factores</h3>
-                    <p className="text-sm text-slate-500">Agrega una capa extra de seguridad.</p>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Autenticación de 2 Factores</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Agrega una capa extra de seguridad.</p>
                 </div>
-                <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Próximamente</span>
+                <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Próximamente</span>
             </div>
-            
-             <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center">
+
+            {/* --- Verificación de Identidad --- */}
+            <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center">
                 <div>
-                    <h3 className="font-bold">Verificación de Identidad</h3>
-                    <p className="text-sm text-slate-500">Verifica tu cuenta con ID australiano.</p>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Verificación de Identidad</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Verifica tu cuenta con ID australiano.</p>
                 </div>
-                <span className="bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Próximamente</span>
+                <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Próximamente</span>
             </div>
           </div>
         )}

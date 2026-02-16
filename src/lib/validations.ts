@@ -317,6 +317,29 @@ export const conversionSchema = z.object({
     .max(1e15, 'La cantidad es demasiado grande'),
 })
 
+// Change password schema (authenticated users)
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'La contraseña actual es requerida'),
+    newPassword: z
+      .string()
+      .min(8, 'La nueva contraseña debe tener al menos 8 caracteres')
+      .max(128, 'La contraseña no puede exceder 128 caracteres')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+        'Debe contener al menos: 1 minúscula, 1 mayúscula, 1 número y 1 carácter especial (@$!%*?&)'
+      ),
+    confirmPassword: z.string().min(1, 'Confirma tu nueva contraseña'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Las contraseñas no coinciden',
+    path: ['confirmPassword'],
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: 'La nueva contraseña debe ser diferente a la actual',
+    path: ['newPassword'],
+  })
+
 // API response schemas
 export const apiResponseSchema = z.object({
   success: z.boolean(),
@@ -408,6 +431,7 @@ export type ReportData = z.infer<typeof reportSchema>
 export type NicknameData = z.infer<typeof nicknameSchema>
 export type SearchParams = z.infer<typeof searchSchema>
 export type FileUpload = z.infer<typeof fileUploadSchema>
+export type ChangePassword = z.infer<typeof changePasswordSchema>
 export type ExchangeRateQuery = z.infer<typeof exchangeRateQuerySchema>
 export type Conversion = z.infer<typeof conversionSchema>
 export type ApiResponse = z.infer<typeof apiResponseSchema>
