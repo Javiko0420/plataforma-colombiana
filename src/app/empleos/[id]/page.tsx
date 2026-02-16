@@ -5,9 +5,10 @@ import { Briefcase, MapPin, Clock, Calendar } from 'lucide-react';
 import JobDetailActions from '@/components/jobs/JobDetailActions';
 
 // Generación Dinámica de Metadata SEO / Open Graph
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
   const job = await prisma.jobOffer.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   // Si no existe, está borrada o expirada, devolver fallback seguro
@@ -45,9 +46,10 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 }
 
 // Server Component Principal
-export default async function JobDetailPage({ params }: { params: { id: string } }) {
+export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const job = await prisma.jobOffer.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   // Validar existencia y vigencia

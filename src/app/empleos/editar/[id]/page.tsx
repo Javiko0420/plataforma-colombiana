@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 export default async function EditarEmpleoPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -17,7 +17,8 @@ export default async function EditarEmpleoPage({
     redirect("/auth/signin?callbackUrl=/perfil");
   }
 
-  const result = await getJobOfferById(params.id);
+  const { id } = await params;
+  const result = await getJobOfferById(id);
 
   if (result.error || !result.data) {
     redirect("/perfil");

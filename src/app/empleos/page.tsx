@@ -8,11 +8,12 @@ export const dynamic = 'force-dynamic';
 export default async function EmpleosPage({
   searchParams,
 }: {
-  searchParams: { q?: string; category?: string; location?: string };
+  searchParams: Promise<{ q?: string; category?: string; location?: string }>;
 }) {
-  const query = searchParams.q || '';
-  const category = searchParams.category || '';
-  const location = searchParams.location || '';
+  const resolvedParams = await searchParams;
+  const query = resolvedParams.q || '';
+  const category = resolvedParams.category || '';
+  const location = resolvedParams.location || '';
 
   const activeJobs = await prisma.jobOffer.findMany({
     where: {
