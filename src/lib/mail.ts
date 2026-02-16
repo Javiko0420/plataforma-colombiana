@@ -15,7 +15,7 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
     const mailOptions = {
       from: process.env.SMTP_FROM,
       to: email,
-      subject: "🔐 Recupera tu acceso - Plataforma Colombiana",
+      subject: "🔐 Recupera tu acceso - Latin Territory",
       html: `
       <!DOCTYPE html>
       <html lang="es">
@@ -66,7 +66,7 @@ export const sendPasswordResetEmail = async (email: string, resetLink: string) =
           <tr>
             <td style="background-color: #f4f4f5; padding: 24px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; font-size: 12px; line-height: 18px; margin: 0;">
-                © ${new Date().getFullYear()} Plataforma Colombiana.<br>
+                © ${new Date().getFullYear()} Latin Territory.<br>
                 Diseñado y desarrollado por <strong>JaviWarrior Studio</strong>.
               </p>
             </td>
