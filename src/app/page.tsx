@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ArrowRight, Star, Users, TrendingUp, MapPin, Radio, Cloud, Trophy } from 'lucide-react'
+import { ArrowRight, Star, Users, TrendingUp, MapPin, Radio, Cloud, Trophy, Briefcase, CalendarDays } from 'lucide-react'
 import { useTranslations } from '@/components/providers/language-provider'
 
 export default function Home() {
@@ -36,22 +36,51 @@ export default function Home() {
             <p className="text-xl md:text-2xl text-black dark:text-gray-500 mb-8 max-w-6xl mx-auto text-center" style={{ textAlign: 'center' }}>
               {t('home.hero.tagline')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+              {/* Explorar Directorio */}
               <Link
                 href="/directorio"
-                className="bg-gradient-to-r from-yellow-500 to-red-500 text-white px-8 py-4 rounded-full font-semibold text-lg hover:from-yellow-600 hover:to-red-600 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 min-h-[44px]"
+                className="bg-gradient-to-r from-yellow-500 to-red-500 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:from-yellow-600 hover:to-red-600 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2 min-h-[44px]"
                 aria-describedby="directorio-description"
               >
                 {t('home.cta.directory')}
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
               <span id="directorio-description" className="sr-only">
                 {t('home.cta.directory')}
               </span>
-              
+
+              {/* Ofertas de Empleo */}
+              <Link
+                href="/empleos"
+                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 min-h-[44px]"
+                aria-describedby="empleos-description"
+              >
+                <Briefcase className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                {t('home.cta.jobs')}
+                <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+              </Link>
+              <span id="empleos-description" className="sr-only">
+                {t('home.cta.jobs')}
+              </span>
+
+              {/* Eventos */}
+              <Link
+                href="/eventos"
+                className="border-2 border-purple-500 text-purple-500 dark:text-purple-400 px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:bg-purple-500 hover:text-white dark:hover:bg-purple-400 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 min-h-[44px]"
+                aria-describedby="eventos-description"
+              >
+                <CalendarDays className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                {t('home.cta.events')}
+              </Link>
+              <span id="eventos-description" className="sr-only">
+                {t('home.cta.events')}
+              </span>
+
+              {/* Únete a los Foros */}
               <Link
                 href="/foros"
-                className="border-2 border-blue-500 text-blue-500 dark:text-blue-400 px-8 py-4 rounded-full font-semibold text-lg hover:bg-blue-500 hover:text-white dark:hover:bg-blue-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 min-h-[44px] flex items-center justify-center"
+                className="border-2 border-blue-500 text-blue-500 dark:text-blue-400 px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:bg-blue-500 hover:text-white dark:hover:bg-blue-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 min-h-[44px] flex items-center justify-center"
                 aria-describedby="foros-description"
               >
                 {t('home.cta.forums')}
