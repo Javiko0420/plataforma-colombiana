@@ -200,7 +200,7 @@ export default function EventForm({
               required
               defaultValue={initialData?.location}
               className={inputClasses}
-              placeholder="Ej: Teatro Municipal, Bogotá"
+              placeholder="Ej: Cultural Center, Brisbane"
             />
           </div>
         </div>
