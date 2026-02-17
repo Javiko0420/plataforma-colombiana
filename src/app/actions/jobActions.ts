@@ -102,12 +102,16 @@ export async function getJobOfferById(jobId: string) {
     return { error: "No autorizado", data: null };
   }
 
+  const userRole = (session.user as { role?: string }).role ?? 'USER';
+  const isPrivileged = userRole === 'ADMIN' || userRole === 'MODERATOR';
+
   try {
     const job = await prisma.jobOffer.findFirst({
       where: {
         id: jobId,
-        userId: session.user.id,
         deletedAt: null,
+        // Admins/moderadores pueden acceder a cualquier oferta
+        ...(!isPrivileged && { userId: session.user.id }),
       },
     });
 
@@ -139,13 +143,15 @@ export async function updateUserJobOffer(jobId: string, data: JobOfferInput) {
     return { error: "Por seguridad de la comunidad, no se permiten acortadores de URL en los enlaces externos." };
   }
 
+  const userRole = (session.user as { role?: string }).role ?? 'USER';
+  const isPrivileged = userRole === 'ADMIN' || userRole === 'MODERATOR';
+
   try {
-    // updateMany permite exigir que el jobId coincida con el userId
-    // para evitar que un usuario edite ofertas ajenas
     const result = await prisma.jobOffer.updateMany({
       where: {
         id: jobId,
-        userId: session.user.id,
+        // Admins/moderadores pueden editar cualquier oferta
+        ...(!isPrivileged && { userId: session.user.id }),
       },
       data: {
         title: data.title,
@@ -165,6 +171,7 @@ export async function updateUserJobOffer(jobId: string, data: JobOfferInput) {
 
     revalidatePath('/perfil');
     revalidatePath('/empleos');
+    revalidatePath('/admin/empleos');
 
     return { success: true };
   } catch (error) {

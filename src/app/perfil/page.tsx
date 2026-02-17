@@ -87,6 +87,12 @@ export default async function ProfilePage() {
   const userJobsResult = await getUserJobOffers()
   const userJobs = userJobsResult.data || []
 
+  // Obtener los eventos publicados por el usuario
+  const userEvents = await prisma.event.findMany({
+    where: { userId: session.user.id },
+    orderBy: { eventDate: 'desc' },
+  })
+
   return (
     <ProfileClient
       user={{
@@ -100,6 +106,7 @@ export default async function ProfilePage() {
       recentPosts={recentPosts}
       recentComments={recentComments}
       userJobs={userJobs}
+      userEvents={userEvents}
     />
   )
 }

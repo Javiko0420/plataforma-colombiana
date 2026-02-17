@@ -12,6 +12,8 @@ async function getDashboardStats() {
     reportedBusinesses,
     totalJobOffers,
     reportedJobOffers,
+    activeEvents,
+    totalEvents,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.business.count(),
@@ -32,6 +34,12 @@ async function getDashboardStats() {
     prisma.jobOffer.count({
       where: { deletedAt: null, reportCount: { gt: 0 } },
     }),
+    // Eventos activos (fecha futura)
+    prisma.event.count({
+      where: { eventDate: { gte: new Date() } },
+    }),
+    // Total de eventos registrados
+    prisma.event.count(),
   ])
 
   return {
@@ -42,6 +50,8 @@ async function getDashboardStats() {
     reportedBusinesses,
     totalJobOffers,
     reportedJobOffers,
+    activeEvents,
+    totalEvents,
   }
 }
 
@@ -76,6 +86,12 @@ export default async function AdminDashboard() {
           value={stats.totalJobOffers}
           icon="💼"
           description="Publicaciones activas"
+        />
+        <StatCard
+          title="Eventos Activos"
+          value={stats.activeEvents}
+          icon="🎪"
+          description={`${stats.totalEvents} eventos en total`}
         />
         <StatCard
           title="Negocios Reportados"

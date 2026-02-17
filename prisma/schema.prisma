@@ -71,6 +71,7 @@ model User {
   forumComments  ForumComment[]
   forumPosts     ForumPost[]
   moderationLogs ModerationLog[]
+  events         Event[]
   jobOffers      JobOffer[]
   reports        Report[]
   reviews        Review[]
@@ -451,4 +452,25 @@ model JobOffer {
   @@index([deletedAt])
   @@index([category, isVerified])
   @@index([userId])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String   // Ej: Concierto, Teatro, Comedia, Fiesta
+  eventDate   DateTime
+  location    String
+  imageUrl    String?  // URL de imagen almacenada en Cloudinary
+  ticketLink  String?
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventDate])
+  @@index([userId])
+  @@index([category])
 }

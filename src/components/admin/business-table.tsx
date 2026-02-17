@@ -199,6 +199,13 @@ export function BusinessTable({
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/negocio/editar/${biz.slug}`}
+                          className="p-1.5 hover:bg-blue-50 text-blue-600 rounded border border-transparent hover:border-blue-200 transition text-xs font-medium"
+                          title="Editar Negocio"
+                        >
+                          ✏️
+                        </Link>
                         {!biz.isVerified && (
                           <button
                             onClick={() => handleVerify(biz.id)}

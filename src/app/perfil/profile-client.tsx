@@ -6,6 +6,7 @@ import { useTranslations } from '@/components/providers/language-provider'
 import { 
   Briefcase,
   Building2, 
+  CalendarDays,
   MapPin, 
   PlusCircle, 
   CheckCircle2, 
@@ -24,7 +25,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { DateDisplay } from '@/components/ui/date-display'
 import UserJobOffers from '@/components/jobs/UserJobOffers'
-import { JobOffer } from '@prisma/client'
+import UserEvents from '@/components/eventos/UserEvents'
+import { JobOffer, Event } from '@prisma/client'
 
 interface ProfileUser {
   id: string
@@ -81,9 +83,10 @@ interface ProfileClientProps {
   recentPosts: RecentPost[]
   recentComments: RecentComment[]
   userJobs: JobOffer[]
+  userEvents: Event[]
 }
 
-export default function ProfileClient({ user, recentPosts, recentComments, userJobs }: ProfileClientProps) {
+export default function ProfileClient({ user, recentPosts, recentComments, userJobs, userEvents }: ProfileClientProps) {
   const router = useRouter()
   const { t } = useTranslations()
   const [isDeleting, setIsDeleting] = useState(false)
@@ -246,8 +249,15 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
         {/* Action Bar */}
         <div className="mb-8 flex flex-wrap gap-4 justify-end">
           <Link 
-            href="/empleos/publicar" 
+            href="/perfil/eventos/crear" 
             className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-bold px-6 py-3 hover:from-yellow-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
+          >
+            <CalendarDays className="w-5 h-5" />
+            Publicar Evento
+          </Link>
+          <Link 
+            href="/empleos/publicar" 
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold px-6 py-3 hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
           >
             <PlusCircle className="w-5 h-5" />
             Publicar Oferta de Empleo
@@ -259,6 +269,24 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
 
           {/* Columna Principal (Full Width) */}
           <div className="lg:col-span-3 mb-8 space-y-8">
+
+            {/* SECCIÓN: MIS EVENTOS */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <CalendarDays className="h-6 w-6 text-red-500" />
+                  Mis Eventos
+                </h2>
+                <Link
+                  href="/perfil/eventos/crear"
+                  className="text-sm bg-gradient-to-r from-yellow-500 to-red-500 hover:from-yellow-600 hover:to-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Nuevo Evento
+                </Link>
+              </div>
+              <UserEvents initialEvents={userEvents} />
+            </div>
 
             {/* SECCIÓN: MIS OFERTAS DE EMPLEO */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-gray-700">

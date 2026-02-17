@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   ExternalLink,
+  Edit,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -135,6 +136,15 @@ export default function JobsAdminTable({ jobs }: { jobs: AdminJobOffer[] }) {
 
                 {/* Acciones */}
                 <td className="px-6 py-4 text-right space-x-2">
+                  <Link
+                    href={`/empleos/editar/${job.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-md transition-colors"
+                    title="Editar oferta"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Editar
+                  </Link>
+
                   {job.reportCount > 0 && (
                     <button
                       onClick={() => handleClearReports(job.id)}

@@ -22,9 +22,12 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
     notFound();
   }
 
-  if (business.ownerId !== session.user.id) {
-    // Si intentas editar el negocio de otro, te manda a la home
-    redirect("/"); 
+  const userRole = session.user.role ?? 'USER'
+  const isOwner = business.ownerId === session.user.id
+  const isPrivileged = userRole === 'ADMIN' || userRole === 'MODERATOR'
+
+  if (!isOwner && !isPrivileged) {
+    redirect("/")
   }
 
   return (

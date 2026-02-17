@@ -40,6 +40,7 @@ export default async function AdminLayout({
           <AdminLink href="/admin/resenas" icon="⭐" label="Reseñas" />
           <AdminLink href="/admin/foros" icon="💬" label="Foros" />
           <AdminLink href="/admin/empleos" icon="💼" label="Bolsa de Empleo" />
+          <AdminLink href="/admin/eventos" icon="🎪" label="Eventos" />
 
           <div className="pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
             Sistema
