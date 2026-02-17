@@ -60,6 +60,7 @@ export default async function EditarEmpleoPage({
               description: job.description,
               location: job.location,
               jobType: job.jobType,
+              hourlyRate: job.hourlyRate ?? 0,
               email: job.email || '',
               phone: job.phone || '',
               externalLink: job.externalLink || '',

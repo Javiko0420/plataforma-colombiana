@@ -26,6 +26,8 @@ import Image from 'next/image'
 import { DateDisplay } from '@/components/ui/date-display'
 import UserJobOffers from '@/components/jobs/UserJobOffers'
 import UserEvents from '@/components/eventos/UserEvents'
+import JobPostingContractModal from '@/components/jobs/JobPostingContractModal'
+import { acceptJobPostingTerms } from '@/app/actions/jobActions'
 import { JobOffer, Event } from '@prisma/client'
 
 interface ProfileUser {
@@ -84,12 +86,15 @@ interface ProfileClientProps {
   recentComments: RecentComment[]
   userJobs: JobOffer[]
   userEvents: Event[]
+  hasAcceptedJobPostingTerms: boolean
 }
 
-export default function ProfileClient({ user, recentPosts, recentComments, userJobs, userEvents }: ProfileClientProps) {
+export default function ProfileClient({ user, recentPosts, recentComments, userJobs, userEvents, hasAcceptedJobPostingTerms }: ProfileClientProps) {
   const router = useRouter()
   const { t } = useTranslations()
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showContractModal, setShowContractModal] = useState(false)
+  const [isAcceptingTerms, setIsAcceptingTerms] = useState(false)
 
   const handleDeleteBusiness = async (businessId: string, businessName: string) => {
     // Confirmación de seguridad (Nivel Browser)
@@ -113,6 +118,31 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
       alert('Hubo un error al intentar eliminar el negocio.')
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handlePublishJobClick = () => {
+    if (hasAcceptedJobPostingTerms) {
+      router.push('/empleos/publicar')
+    } else {
+      setShowContractModal(true)
+    }
+  }
+
+  const handleAcceptTerms = async () => {
+    setIsAcceptingTerms(true)
+    try {
+      const result = await acceptJobPostingTerms()
+      if (result.success) {
+        setShowContractModal(false)
+        router.push('/empleos/publicar')
+      } else {
+        alert(result.error || 'Error al aceptar los términos.')
+      }
+    } catch {
+      alert('Error inesperado. Intenta de nuevo.')
+    } finally {
+      setIsAcceptingTerms(false)
     }
   }
 
@@ -255,13 +285,13 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
             <CalendarDays className="w-5 h-5" />
             Publicar Evento
           </Link>
-          <Link 
-            href="/empleos/publicar" 
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold px-6 py-3 hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
+          <button 
+            onClick={handlePublishJobClick}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold px-6 py-3 hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl cursor-pointer"
           >
             <PlusCircle className="w-5 h-5" />
             Publicar Oferta de Empleo
-          </Link>
+          </button>
         </div>
 
         {/* Content Grid */}
@@ -546,6 +576,14 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
           </div>
         </div>
       </div>
+
+      {/* Modal de contrato para primera publicación de empleo */}
+      <JobPostingContractModal
+        isOpen={showContractModal}
+        onClose={() => setShowContractModal(false)}
+        onAccept={handleAcceptTerms}
+        isSubmitting={isAcceptingTerms}
+      />
     </main>
   )
 }

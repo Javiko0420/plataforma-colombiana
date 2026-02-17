@@ -63,6 +63,10 @@ model User {
   acceptanceIp       String? // IP desde la cual aceptó
   acceptanceUa       String? // User-Agent del navegador al aceptar
 
+  // Aceptación de términos de publicación de empleo (Job Posting Terms)
+  jobPostingTermsAcceptedAt DateTime? // Timestamp de aceptación del contrato de empleo
+  jobPostingTermsVersion    String?   // Versión del contrato aceptado
+
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   accounts       Account[]
@@ -429,6 +433,7 @@ model JobOffer {
   description  String    @db.Text
   location     String
   jobType      String    // Ej: "Full-time", "Part-time", "Freelance"
+  hourlyRate   Float     // Salario por hora en AUD (obligatorio por requisito legal)
 
   // Campos de contacto
   email        String?

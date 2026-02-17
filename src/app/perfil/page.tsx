@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getUserJobOffers } from '@/app/actions/jobActions'
+import { getUserJobOffers, hasAcceptedJobPostingTerms } from '@/app/actions/jobActions'
 import ProfileClient from './profile-client'
 
 export const metadata: Metadata = {
@@ -84,7 +84,10 @@ export default async function ProfilePage() {
                      recentComments.reduce((s, c) => s + c.likesCount, 0)
 
   // Obtener los empleos publicados por el usuario
-  const userJobsResult = await getUserJobOffers()
+  const [userJobsResult, hasAcceptedTerms] = await Promise.all([
+    getUserJobOffers(),
+    hasAcceptedJobPostingTerms(),
+  ])
   const userJobs = userJobsResult.data || []
 
   // Obtener los eventos publicados por el usuario
@@ -107,6 +110,7 @@ export default async function ProfilePage() {
       recentComments={recentComments}
       userJobs={userJobs}
       userEvents={userEvents}
+      hasAcceptedJobPostingTerms={hasAcceptedTerms}
     />
   )
 }

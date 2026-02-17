@@ -16,6 +16,7 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(mode === 'edit');
   const [agreedNoPayment, setAgreedNoPayment] = useState(mode === 'edit');
+  const [agreedSalaryCompliance, setAgreedSalaryCompliance] = useState(mode === 'edit');
 
   const isEdit = mode === 'edit';
 
@@ -23,8 +24,17 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
     setError(null);
     setLoading(true);
 
-    if (!agreedToTerms || !agreedNoPayment) {
-      setError("Debe confirmar ambas casillas para continuar.");
+    if (!agreedToTerms || !agreedNoPayment || !agreedSalaryCompliance) {
+      setError("Debe confirmar todas las casillas de verificación para continuar.");
+      setLoading(false);
+      return;
+    }
+
+    const rawHourlyRate = formData.get('hourlyRate') as string;
+    const parsedRate = parseFloat(rawHourlyRate);
+
+    if (!parsedRate || isNaN(parsedRate) || parsedRate <= 0) {
+      setError("El salario por hora es obligatorio y debe ser mayor a $0.");
       setLoading(false);
       return;
     }
@@ -35,6 +45,7 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
       description: formData.get('description') as string,
       location: formData.get('location') as string,
       jobType: formData.get('jobType') as string,
+      hourlyRate: parsedRate,
       email: formData.get('email') as string,
       phone: formData.get('phone') as string,
       externalLink: formData.get('externalLink') as string,
@@ -120,6 +131,26 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
           </div>
         </div>
 
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Salario por hora (AUD) <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 font-medium">$</span>
+            <input
+              name="hourlyRate"
+              type="number"
+              step="0.01"
+              min="0.01"
+              required
+              defaultValue={initialData?.hourlyRate ?? ''}
+              className={`${inputClasses} pl-7`}
+              placeholder="Ej: 28.50"
+            />
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500">Obligatorio por requisito legal australiano.</p>
+        </div>
+
         <div className="border border-gray-200 dark:border-gray-700 p-5 rounded-xl bg-gray-50 dark:bg-gray-900/50 space-y-4">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white">
             Información de contacto <span className="text-gray-500 dark:text-gray-400 font-normal">(al menos 1 campo)</span>
@@ -139,27 +170,43 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
         )}
 
         <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <label className="flex items-center space-x-3 cursor-pointer group">
+          <label className="flex items-start space-x-3 cursor-pointer group">
             <input 
               type="checkbox" 
               checked={agreedNoPayment}
               onChange={(e) => setAgreedNoPayment(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900" 
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900 shrink-0" 
             />
             <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
               Confirmo que esta oferta no exige ningún pago a los candidatos.
             </span>
           </label>
+
+          <label className="flex items-start space-x-3 cursor-pointer group">
+            <input 
+              type="checkbox" 
+              checked={agreedSalaryCompliance}
+              onChange={(e) => setAgreedSalaryCompliance(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900 shrink-0" 
+            />
+            <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              Confirmo que el salario publicado cumple los mínimos legales aplicables (Award/EA o salario mínimo nacional).
+            </span>
+          </label>
           
-          <label className="flex items-center space-x-3 cursor-pointer group">
+          <label className="flex items-start space-x-3 cursor-pointer group">
             <input 
               type="checkbox" 
               checked={agreedToTerms}
               onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900" 
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-900 shrink-0" 
             />
             <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
-              Acepto los términos y condiciones de la plataforma.
+              Acepto los{' '}
+              <Link href="/job-posting-terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 underline font-medium hover:text-blue-700" onClick={(e) => e.stopPropagation()}>
+                términos y condiciones
+              </Link>{' '}
+              de publicación de empleos.
             </span>
           </label>
         </div>

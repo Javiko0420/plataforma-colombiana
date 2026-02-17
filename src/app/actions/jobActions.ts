@@ -8,12 +8,15 @@ import { authOptions } from "@/lib/auth";
 
 const URL_SHORTENER_REGEX = /^(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i;
 
+const JOB_POSTING_TERMS_VERSION = '2026-02-17';
+
 export type JobOfferInput = {
   title: string;
   category: string;
   description: string;
   location: string;
   jobType: string;
+  hourlyRate: number;
   email?: string;
   phone?: string;
   externalLink?: string;
@@ -27,12 +30,17 @@ export async function createJobOffer(data: JobOfferInput) {
     return { error: "Acceso denegado: Debes iniciar sesión para publicar una oferta." };
   }
 
-  // 2. Validación de métodos de contacto
+  // 2. Validación de salario por hora (obligatorio por requisito legal)
+  if (!data.hourlyRate || data.hourlyRate <= 0) {
+    return { error: "El salario por hora es obligatorio y debe ser mayor a 0 (requisito legal)." };
+  }
+
+  // 3. Validación de métodos de contacto
   if (!data.email && !data.phone && !data.externalLink) {
     return { error: "Se requiere al menos un método de contacto válido (email, teléfono o enlace)." };
   }
 
-  // 3. Validación de acortadores de URL
+  // 4. Validación de acortadores de URL
   if (data.externalLink && URL_SHORTENER_REGEX.test(data.externalLink)) {
     return { error: "Por seguridad de la comunidad, no se permiten acortadores de URL en los enlaces externos." };
   }
@@ -50,6 +58,7 @@ export async function createJobOffer(data: JobOfferInput) {
         description: data.description,
         location: data.location,
         jobType: data.jobType,
+        hourlyRate: data.hourlyRate,
         email: data.email,
         phone: data.phone,
         externalLink: data.externalLink,
@@ -67,6 +76,49 @@ export async function createJobOffer(data: JobOfferInput) {
   // (Next.js usa throw internamente en redirect, dentro de try-catch se rompería)
   revalidatePath('/empleos');
   redirect('/empleos');
+}
+
+export async function acceptJobPostingTerms() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return { error: "Acceso denegado: Debes iniciar sesión." };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        jobPostingTermsAcceptedAt: new Date(),
+        jobPostingTermsVersion: JOB_POSTING_TERMS_VERSION,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error al registrar aceptación de términos:", error);
+    return { error: "Error al registrar la aceptación. Intenta de nuevo." };
+  }
+}
+
+export async function hasAcceptedJobPostingTerms(): Promise<boolean> {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) return false;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { jobPostingTermsAcceptedAt: true, jobPostingTermsVersion: true },
+    });
+
+    return (
+      !!user?.jobPostingTermsAcceptedAt &&
+      user?.jobPostingTermsVersion === JOB_POSTING_TERMS_VERSION
+    );
+  } catch {
+    return false;
+  }
 }
 
 export async function getUserJobOffers() {
@@ -133,6 +185,11 @@ export async function updateUserJobOffer(jobId: string, data: JobOfferInput) {
     return { error: "No autorizado" };
   }
 
+  // Validación de salario por hora (obligatorio por requisito legal)
+  if (!data.hourlyRate || data.hourlyRate <= 0) {
+    return { error: "El salario por hora es obligatorio y debe ser mayor a 0 (requisito legal)." };
+  }
+
   // Validación de métodos de contacto
   if (!data.email && !data.phone && !data.externalLink) {
     return { error: "Se requiere al menos un método de contacto válido (email, teléfono o enlace)." };
@@ -159,6 +216,7 @@ export async function updateUserJobOffer(jobId: string, data: JobOfferInput) {
         description: data.description,
         location: data.location,
         jobType: data.jobType,
+        hourlyRate: data.hourlyRate,
         email: data.email,
         phone: data.phone,
         externalLink: data.externalLink,

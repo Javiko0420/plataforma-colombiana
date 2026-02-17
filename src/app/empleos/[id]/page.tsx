@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { Briefcase, MapPin, Clock, Calendar } from 'lucide-react';
+import { Briefcase, MapPin, Clock, Calendar, DollarSign } from 'lucide-react';
 import JobDetailActions from '@/components/jobs/JobDetailActions';
 
 // Generación Dinámica de Metadata SEO / Open Graph
@@ -98,6 +98,11 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg">
                   <Calendar className="w-4 h-4" /> Publicado el {postedDate}
                 </span>
+                {job.hourlyRate != null && (
+                  <span className="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-100 dark:border-green-800/50">
+                    <DollarSign className="w-4 h-4" /> {job.hourlyRate.toFixed(2)} AUD/hora
+                  </span>
+                )}
               </div>
 
               {/* Cuerpo de la Descripción */}
