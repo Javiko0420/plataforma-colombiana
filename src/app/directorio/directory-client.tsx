@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Search, Filter, MapPin, Phone, MessageCircle, Building2, Instagram } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -38,8 +39,9 @@ const cities = [
 ]
 
 export default function DirectoryClient({ initialBusinesses }: DirectoryClientProps) {
+  const searchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('categoria') ?? '')
   const [selectedCity, setSelectedCity] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 

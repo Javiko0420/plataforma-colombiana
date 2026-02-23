@@ -47,7 +47,7 @@ export default async function AdminLayout({
           </div>
           <AdminLink href="/admin/usuarios" icon="👥" label="Usuarios" />
           <AdminLink href="/admin/auditoria" icon="🛡️" label="Logs & Seguridad" />
-          <AdminLink href="/admin/integraciones" icon="⚡" label="n8n & APIs" />
+          <AdminLink href="/admin/integraciones" icon="⚡" label="n8n & APIs" pending />
         </nav>
 
         <div className="p-4 border-t border-gray-200 dark:border-slate-700">

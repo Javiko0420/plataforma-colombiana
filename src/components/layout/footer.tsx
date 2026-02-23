@@ -68,22 +68,22 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">{t('footer.categories')}</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/categoria/gastronomia" className="text-foreground/70 hover:text-foreground transition-colors">
+                <Link href="/directorio?categoria=Gastronomía" className="text-foreground/70 hover:text-foreground transition-colors">
                   {t('footer.category.gastronomy')}
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/tecnologia" className="text-foreground/70 hover:text-foreground transition-colors">
+                <Link href="/directorio?categoria=Tecnología" className="text-foreground/70 hover:text-foreground transition-colors">
                   {t('footer.category.technology')}
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/artesanias" className="text-foreground/70 hover:text-foreground transition-colors">
+                <Link href="/directorio?categoria=Artesanías" className="text-foreground/70 hover:text-foreground transition-colors">
                   {t('footer.category.handicrafts')}
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/moda" className="text-foreground/70 hover:text-foreground transition-colors">
+                <Link href="/directorio" className="text-foreground/70 hover:text-foreground transition-colors">
                   {t('footer.category.fashion')}
                 </Link>
               </li>
