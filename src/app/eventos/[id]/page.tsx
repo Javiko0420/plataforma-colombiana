@@ -4,8 +4,12 @@ import { prisma } from '@/lib/prisma'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { CalendarDays, MapPin, Tag, UserCircle, Ticket } from 'lucide-react'
+import { CalendarDays, MapPin, Tag, UserCircle, Ticket, DollarSign, Info } from 'lucide-react'
 import ShareButton from '@/components/ui/share-button'
+import ReportEventButton from '@/components/eventos/ReportEventButton'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { hasUserReportedEvent } from '@/app/eventos/actions'
 
 export async function generateMetadata({
   params,
@@ -55,12 +59,27 @@ export default async function EventDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: { user: { select: { name: true } } },
-  })
+  const [event, session] = await Promise.all([
+    prisma.event.findUnique({
+      where: { id },
+      include: { user: { select: { name: true } } },
+    }),
+    getServerSession(authOptions),
+  ])
 
   if (!event) notFound()
+
+  if (event.isHidden) {
+    const userRole = session?.user?.role ?? 'USER'
+    const isOwner = session?.user?.id === event.userId
+    const isPrivileged = userRole === 'ADMIN' || userRole === 'MODERATOR'
+    if (!isOwner && !isPrivileged) notFound()
+  }
+
+  const isOwner = session?.user?.id === event.userId
+  const alreadyReported = session?.user
+    ? await hasUserReportedEvent(event.id)
+    : false
 
   const formattedDate = format(
     new Date(event.eventDate),
@@ -82,6 +101,25 @@ export default async function EventDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Columna Izquierda: Detalles Principales */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Banner de evento oculto por reportes */}
+            {event.isHidden && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-5 flex items-start gap-3">
+                <div className="bg-red-100 dark:bg-red-800/50 p-2 rounded-full shrink-0">
+                  <Tag className="w-5 h-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-red-800 dark:text-red-300 font-bold text-sm">
+                    Evento oculto por reportes de la comunidad
+                  </h3>
+                  <p className="text-red-700 dark:text-red-400/80 text-sm mt-1">
+                    Este evento ha sido ocultado automáticamente debido a
+                    múltiples reportes y se encuentra en revisión por el equipo
+                    de moderación.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Imagen del evento */}
             {event.imageUrl && (
               <div className="relative w-full h-64 sm:h-96 rounded-2xl overflow-hidden shadow-sm">
@@ -146,6 +184,19 @@ export default async function EventDetailPage({
                 verificar siempre los detalles directamente con el organizador.
               </p>
             </div>
+
+            {/* Disclaimer: no vendemos tickets */}
+            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-2xl p-5 flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800 dark:text-blue-300">
+                <p className="font-bold mb-1">Latin Territory no vende entradas.</p>
+                <p>
+                  Los tickets, reembolsos y consultas sobre el evento son
+                  responsabilidad exclusiva del organizador. Cualquier enlace de
+                  compra dirige a un sitio externo ajeno a esta plataforma.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Columna Derecha: Sidebar de Acción */}
@@ -181,6 +232,22 @@ export default async function EventDetailPage({
                 </div>
 
                 <div className="border-t border-gray-100 dark:border-gray-700 pt-5 space-y-3">
+                  <div className="flex items-center justify-center gap-2 text-center">
+                    <DollarSign className="w-5 h-5 text-gray-400 shrink-0" />
+                    {event.ticketPrice && event.ticketPrice > 0 ? (
+                      <span className="text-2xl font-extrabold text-gray-900 dark:text-white">
+                        ${event.ticketPrice.toFixed(2)}{' '}
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                          AUD
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
+                        Gratis
+                      </span>
+                    )}
+                  </div>
+
                   {event.ticketLink && (
                     <a
                       href={event.ticketLink}
@@ -199,6 +266,16 @@ export default async function EventDetailPage({
                       text={`¡No te pierdas ${event.title} el ${formattedDate}!`}
                     />
                   </div>
+
+                  {session?.user && (
+                    <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+                      <ReportEventButton
+                        eventId={event.id}
+                        alreadyReported={alreadyReported}
+                        isOwner={isOwner}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

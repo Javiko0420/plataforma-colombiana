@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getUserJobOffers, hasAcceptedJobPostingTerms } from '@/app/actions/jobActions'
+import { hasAcceptedEventPostingTerms } from '@/app/actions/eventActions'
 import ProfileClient from './profile-client'
 
 export const metadata: Metadata = {
@@ -84,9 +85,10 @@ export default async function ProfilePage() {
                      recentComments.reduce((s, c) => s + c.likesCount, 0)
 
   // Obtener los empleos publicados por el usuario
-  const [userJobsResult, hasAcceptedTerms] = await Promise.all([
+  const [userJobsResult, hasAcceptedTerms, hasAcceptedEventTerms] = await Promise.all([
     getUserJobOffers(),
     hasAcceptedJobPostingTerms(),
+    hasAcceptedEventPostingTerms(),
   ])
   const userJobs = userJobsResult.data || []
 
@@ -111,6 +113,7 @@ export default async function ProfilePage() {
       userJobs={userJobs}
       userEvents={userEvents}
       hasAcceptedJobPostingTerms={hasAcceptedTerms}
+      hasAcceptedEventPostingTerms={hasAcceptedEventTerms}
     />
   )
 }

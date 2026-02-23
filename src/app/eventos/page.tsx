@@ -17,6 +17,7 @@ export default async function EventosPage({
   const eventos = await prisma.event.findMany({
     where: {
       eventDate: { gte: new Date() },
+      isHidden: false,
       ...(query && {
         OR: [
           { title: { contains: query, mode: 'insensitive' } },

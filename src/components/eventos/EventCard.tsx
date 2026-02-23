@@ -33,6 +33,15 @@ export default function EventCard({ event }: EventCardProps) {
           <span className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 rounded-full px-3 py-1 text-xs font-semibold">
             {event.category}
           </span>
+          {event.ticketPrice && event.ticketPrice > 0 ? (
+            <span className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full px-3 py-1 text-xs font-semibold">
+              ${event.ticketPrice.toFixed(2)} AUD
+            </span>
+          ) : (
+            <span className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-full px-3 py-1 text-xs font-semibold">
+              Gratis
+            </span>
+          )}
         </div>
 
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">

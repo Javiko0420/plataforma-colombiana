@@ -75,6 +75,7 @@ export default async function EditarEventoPage({
               location: event.location,
               imageUrl: event.imageUrl,
               ticketLink: event.ticketLink,
+              ticketPrice: event.ticketPrice,
             }}
           />
         </div>

@@ -14,6 +14,7 @@ async function getDashboardStats() {
     reportedJobOffers,
     activeEvents,
     totalEvents,
+    reportedEvents,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.business.count(),
@@ -40,6 +41,15 @@ async function getDashboardStats() {
     }),
     // Total de eventos registrados
     prisma.event.count(),
+    // Eventos reportados pendientes de moderación
+    prisma.event.count({
+      where: {
+        OR: [
+          { isHidden: true },
+          { reports: { some: { status: 'PENDING' } } },
+        ],
+      },
+    }),
   ])
 
   return {
@@ -52,6 +62,7 @@ async function getDashboardStats() {
     reportedJobOffers,
     activeEvents,
     totalEvents,
+    reportedEvents,
   }
 }
 
@@ -120,6 +131,13 @@ export default async function AdminDashboard() {
           icon="📋"
           trend="requires_action"
           description="Ofertas reportadas por la comunidad"
+        />
+        <StatCard
+          title="Eventos Reportados"
+          value={stats.reportedEvents}
+          icon="🎭"
+          trend="requires_action"
+          description="Eventos pendientes de moderación"
         />
       </div>
 

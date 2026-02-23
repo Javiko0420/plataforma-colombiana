@@ -67,6 +67,10 @@ model User {
   jobPostingTermsAcceptedAt DateTime? // Timestamp de aceptación del contrato de empleo
   jobPostingTermsVersion    String?   // Versión del contrato aceptado
 
+  // Aceptación de términos de publicación de eventos (Event Posting Terms)
+  eventPostingTermsAcceptedAt DateTime?
+  eventPostingTermsVersion    String?
+
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   accounts       Account[]
@@ -253,19 +257,23 @@ model Report {
   commentId  String?
   reviewId   String?
   businessId String?
+  eventId    String?
   comment    ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
   post       ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
   review     Review?       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   business   Business?     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   reporter   User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
-  @@unique([reviewId, reporterId]) // Un usuario solo puede reportar una reseña una vez
+  @@unique([reviewId, reporterId])
+  @@unique([eventId, reporterId]) // Un usuario solo puede reportar un evento una vez
   @@index([status])
   @@index([reporterId])
   @@index([postId])
   @@index([commentId])
   @@index([reviewId])
   @@index([businessId])
+  @@index([eventId])
   @@index([createdAt])
 }
 
@@ -468,9 +476,12 @@ model Event {
   location    String
   imageUrl    String?  // URL de imagen almacenada en Cloudinary
   ticketLink  String?
+  ticketPrice Float?   // Precio en AUD; null = gratuito
+  isHidden    Boolean  @default(false) // Auto-oculto al superar umbral de reportes
 
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reports     Report[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -478,4 +489,5 @@ model Event {
   @@index([eventDate])
   @@index([userId])
   @@index([category])
+  @@index([isHidden])
 }

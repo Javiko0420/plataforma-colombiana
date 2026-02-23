@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { adminDeleteEvent } from '@/app/admin/eventos/actions'
-import { Trash2, ExternalLink, CalendarDays, Edit } from 'lucide-react'
+import { Trash2, ExternalLink, CalendarDays, Edit, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -13,6 +13,8 @@ type AdminEvent = {
   category: string
   eventDate: Date
   location: string
+  ticketPrice: number | null
+  isHidden: boolean
   createdAt: Date
   user: {
     name: string | null
@@ -97,6 +99,16 @@ export default function EventsAdminTable({
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {evt.location}
                       </span>
+                      <span className="text-xs text-gray-400">·</span>
+                      {evt.ticketPrice && evt.ticketPrice > 0 ? (
+                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                          ${evt.ticketPrice.toFixed(2)} AUD
+                        </span>
+                      ) : (
+                        <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                          Gratis
+                        </span>
+                      )}
                     </div>
                   </td>
 
@@ -122,7 +134,12 @@ export default function EventsAdminTable({
 
                   {/* Estado */}
                   <td className="px-6 py-4 text-center">
-                    {isPast ? (
+                    {evt.isHidden ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50">
+                        <AlertTriangle className="w-3 h-3" />
+                        Reportado
+                      </span>
+                    ) : isPast ? (
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
                         Finalizado
                       </span>

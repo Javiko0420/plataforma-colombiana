@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { AlertCircle, ImagePlus, Trash } from 'lucide-react'
 import { createEvent, updateEvent } from '@/app/eventos/actions'
 
+const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
+
 interface EventFormData {
   title: string
   description: string
@@ -16,6 +18,7 @@ interface EventFormData {
   location: string
   imageUrl?: string | null
   ticketLink?: string | null
+  ticketPrice?: number | null
 }
 
 interface EventFormProps {
@@ -54,6 +57,9 @@ export default function EventForm({
       return
     }
 
+    const rawPrice = formData.get('ticketPrice') as string
+    const parsedPrice = rawPrice ? parseFloat(rawPrice) : null
+
     const data: EventFormData = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
@@ -62,10 +68,17 @@ export default function EventForm({
       location: formData.get('location') as string,
       imageUrl: imageUrl,
       ticketLink: (formData.get('ticketLink') as string) || null,
+      ticketPrice: parsedPrice !== null && !isNaN(parsedPrice) ? parsedPrice : null,
     }
 
     if (!data.title || !data.description || !data.category || !data.eventDate || !data.location) {
       setError('Por favor completa todos los campos obligatorios.')
+      setLoading(false)
+      return
+    }
+
+    if (URL_SHORTENER_REGEX.test(data.description)) {
+      setError('La descripción no puede contener enlaces acortados (bit.ly, tinyurl, t.co, etc.). Usa la URL completa.')
       setLoading(false)
       return
     }
@@ -80,6 +93,7 @@ export default function EventForm({
       ...data,
       imageUrl: data.imageUrl ?? undefined,
       ticketLink: data.ticketLink ?? undefined,
+      ticketPrice: data.ticketPrice ?? undefined,
     }
 
     if (isEdit && eventId) {
@@ -205,19 +219,39 @@ export default function EventForm({
           </div>
         </div>
 
-        {/* Link de entradas (opcional) */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Link para comprar entradas{' '}
-            <span className="text-gray-400 font-normal">(opcional)</span>
-          </label>
-          <input
-            name="ticketLink"
-            type="url"
-            defaultValue={initialData?.ticketLink ?? ''}
-            className={inputClasses}
-            placeholder="https://tuevento.com/entradas"
-          />
+        {/* Precio y Link de entradas (opcionales) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Precio del ticket (AUD){' '}
+              <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            <input
+              name="ticketPrice"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={initialData?.ticketPrice ?? ''}
+              className={inputClasses}
+              placeholder="0.00 = Gratis"
+            />
+            <p className="text-xs text-gray-400">
+              Déjalo vacío o en 0 si el evento es gratuito.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Link para comprar entradas{' '}
+              <span className="text-gray-400 font-normal">(opcional)</span>
+            </label>
+            <input
+              name="ticketLink"
+              type="url"
+              defaultValue={initialData?.ticketLink ?? ''}
+              className={inputClasses}
+              placeholder="https://tuevento.com/entradas"
+            />
+          </div>
         </div>
 
         {/* Imagen con Cloudinary */}

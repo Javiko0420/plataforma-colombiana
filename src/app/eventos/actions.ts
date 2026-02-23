@@ -5,6 +5,8 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
+const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
+
 /** Verifica que el usuario esté autenticado y retorna la sesión */
 async function getSessionOrThrow() {
   const session = await getServerSession(authOptions)
@@ -58,8 +60,13 @@ export async function createEvent(data: {
   location: string
   imageUrl?: string
   ticketLink?: string
+  ticketPrice?: number
 }) {
   const session = await getSessionOrThrow()
+
+  if (URL_SHORTENER_REGEX.test(data.description)) {
+    return { success: false, error: 'La descripción no puede contener enlaces acortados (bit.ly, tinyurl, t.co, etc.).' }
+  }
 
   try {
     const event = await prisma.event.create({
@@ -71,6 +78,7 @@ export async function createEvent(data: {
         location: data.location,
         imageUrl: data.imageUrl ?? null,
         ticketLink: data.ticketLink ?? null,
+        ticketPrice: data.ticketPrice ?? null,
         userId: session.user.id,
       },
     })
@@ -94,10 +102,15 @@ export async function updateEvent(
     location?: string
     imageUrl?: string | null
     ticketLink?: string | null
+    ticketPrice?: number | null
   }
 ) {
   const session = await getSessionOrThrow()
   const userRole = session.user.role ?? 'USER'
+
+  if (data.description && URL_SHORTENER_REGEX.test(data.description)) {
+    return { success: false, error: 'La descripción no puede contener enlaces acortados (bit.ly, tinyurl, t.co, etc.).' }
+  }
 
   try {
     const existingEvent = await prisma.event.findUnique({
@@ -145,6 +158,71 @@ export async function updateEvent(
     console.error('Error updating event:', error)
     return { success: false, error: 'No se pudo actualizar el evento.' }
   }
+}
+
+const REPORT_THRESHOLD_TO_HIDE = 2
+
+export async function reportEvent(
+  eventId: string,
+  data: { reason: string; details?: string }
+) {
+  const session = await getSessionOrThrow()
+
+  try {
+    const event = await prisma.event.findUnique({ where: { id: eventId } })
+    if (!event) {
+      return { success: false, error: 'Evento no encontrado.' }
+    }
+
+    if (event.userId === session.user.id) {
+      return { success: false, error: 'No puedes reportar tu propio evento.' }
+    }
+
+    const existing = await prisma.report.findUnique({
+      where: { eventId_reporterId: { eventId, reporterId: session.user.id } },
+    })
+    if (existing) {
+      return { success: false, error: 'Ya reportaste este evento anteriormente.' }
+    }
+
+    await prisma.report.create({
+      data: {
+        reason: data.reason as 'SPAM' | 'HARASSMENT' | 'HATE_SPEECH' | 'INAPPROPRIATE_CONTENT' | 'MISINFORMATION' | 'OTHER',
+        details: data.details ?? null,
+        eventId,
+        reporterId: session.user.id,
+      },
+    })
+
+    const reportCount = await prisma.report.count({
+      where: { eventId, status: 'PENDING' },
+    })
+
+    if (reportCount >= REPORT_THRESHOLD_TO_HIDE && !event.isHidden) {
+      await prisma.event.update({
+        where: { id: eventId },
+        data: { isHidden: true },
+      })
+    }
+
+    revalidatePath('/eventos')
+    revalidatePath(`/eventos/${eventId}`)
+    revalidatePath('/admin/eventos')
+    return { success: true }
+  } catch (error) {
+    console.error('Error reporting event:', error)
+    return { success: false, error: 'No se pudo enviar el reporte.' }
+  }
+}
+
+export async function hasUserReportedEvent(eventId: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user) return false
+
+  const report = await prisma.report.findUnique({
+    where: { eventId_reporterId: { eventId, reporterId: session.user.id } },
+  })
+  return !!report
 }
 
 export async function deleteEvent(eventId: string) {

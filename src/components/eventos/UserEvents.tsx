@@ -16,8 +16,10 @@ import type { Event } from '@prisma/client'
 
 export default function UserEvents({
   initialEvents,
+  onCreateClick,
 }: {
   initialEvents: Event[]
+  onCreateClick?: () => void
 }) {
   const [events, setEvents] = useState<Event[]>(initialEvents)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
@@ -53,13 +55,13 @@ export default function UserEvents({
           ¿Tienes un evento próximo en tu ciudad? Publícalo y conecta con la
           comunidad.
         </p>
-        <Link
-          href="/perfil/eventos/crear"
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-semibold px-6 py-2.5 hover:from-yellow-600 hover:to-red-600 transition-all shadow-md"
+        <button
+          onClick={onCreateClick}
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-semibold px-6 py-2.5 hover:from-yellow-600 hover:to-red-600 transition-all shadow-md cursor-pointer"
         >
           <PlusCircle className="w-5 h-5" />
           Publicar mi primer evento
-        </Link>
+        </button>
       </div>
     )
   }

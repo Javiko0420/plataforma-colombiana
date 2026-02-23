@@ -27,7 +27,9 @@ import { DateDisplay } from '@/components/ui/date-display'
 import UserJobOffers from '@/components/jobs/UserJobOffers'
 import UserEvents from '@/components/eventos/UserEvents'
 import JobPostingContractModal from '@/components/jobs/JobPostingContractModal'
+import EventPostingContractModal from '@/components/eventos/EventPostingContractModal'
 import { acceptJobPostingTerms } from '@/app/actions/jobActions'
+import { acceptEventPostingTerms } from '@/app/actions/eventActions'
 import { JobOffer, Event } from '@prisma/client'
 
 interface ProfileUser {
@@ -87,14 +89,17 @@ interface ProfileClientProps {
   userJobs: JobOffer[]
   userEvents: Event[]
   hasAcceptedJobPostingTerms: boolean
+  hasAcceptedEventPostingTerms: boolean
 }
 
-export default function ProfileClient({ user, recentPosts, recentComments, userJobs, userEvents, hasAcceptedJobPostingTerms }: ProfileClientProps) {
+export default function ProfileClient({ user, recentPosts, recentComments, userJobs, userEvents, hasAcceptedJobPostingTerms, hasAcceptedEventPostingTerms }: ProfileClientProps) {
   const router = useRouter()
   const { t } = useTranslations()
   const [isDeleting, setIsDeleting] = useState(false)
   const [showContractModal, setShowContractModal] = useState(false)
   const [isAcceptingTerms, setIsAcceptingTerms] = useState(false)
+  const [showEventContractModal, setShowEventContractModal] = useState(false)
+  const [isAcceptingEventTerms, setIsAcceptingEventTerms] = useState(false)
 
   const handleDeleteBusiness = async (businessId: string, businessName: string) => {
     // Confirmación de seguridad (Nivel Browser)
@@ -143,6 +148,31 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
       alert('Error inesperado. Intenta de nuevo.')
     } finally {
       setIsAcceptingTerms(false)
+    }
+  }
+
+  const handlePublishEventClick = () => {
+    if (hasAcceptedEventPostingTerms) {
+      router.push('/perfil/eventos/crear')
+    } else {
+      setShowEventContractModal(true)
+    }
+  }
+
+  const handleAcceptEventTerms = async () => {
+    setIsAcceptingEventTerms(true)
+    try {
+      const result = await acceptEventPostingTerms()
+      if (result.success) {
+        setShowEventContractModal(false)
+        router.push('/perfil/eventos/crear')
+      } else {
+        alert(result.error || 'Error al aceptar los términos.')
+      }
+    } catch {
+      alert('Error inesperado. Intenta de nuevo.')
+    } finally {
+      setIsAcceptingEventTerms(false)
     }
   }
 
@@ -278,13 +308,13 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
 
         {/* Action Bar */}
         <div className="mb-8 flex flex-wrap gap-4 justify-end">
-          <Link 
-            href="/perfil/eventos/crear" 
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-bold px-6 py-3 hover:from-yellow-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
+          <button 
+            onClick={handlePublishEventClick}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-bold px-6 py-3 hover:from-yellow-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl cursor-pointer"
           >
             <CalendarDays className="w-5 h-5" />
             Publicar Evento
-          </Link>
+          </button>
           <button 
             onClick={handlePublishJobClick}
             className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold px-6 py-3 hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl cursor-pointer"
@@ -307,15 +337,15 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
                   <CalendarDays className="h-6 w-6 text-red-500" />
                   Mis Eventos
                 </h2>
-                <Link
-                  href="/perfil/eventos/crear"
-                  className="text-sm bg-gradient-to-r from-yellow-500 to-red-500 hover:from-yellow-600 hover:to-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                <button
+                  onClick={handlePublishEventClick}
+                  className="text-sm bg-gradient-to-r from-yellow-500 to-red-500 hover:from-yellow-600 hover:to-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 cursor-pointer"
                 >
                   <PlusCircle className="h-4 w-4" />
                   Nuevo Evento
-                </Link>
+                </button>
               </div>
-              <UserEvents initialEvents={userEvents} />
+              <UserEvents initialEvents={userEvents} onCreateClick={handlePublishEventClick} />
             </div>
 
             {/* SECCIÓN: MIS OFERTAS DE EMPLEO */}
@@ -583,6 +613,14 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
         onClose={() => setShowContractModal(false)}
         onAccept={handleAcceptTerms}
         isSubmitting={isAcceptingTerms}
+      />
+
+      {/* Modal de contrato para primera publicación de evento */}
+      <EventPostingContractModal
+        isOpen={showEventContractModal}
+        onClose={() => setShowEventContractModal(false)}
+        onAccept={handleAcceptEventTerms}
+        isSubmitting={isAcceptingEventTerms}
       />
     </main>
   )
