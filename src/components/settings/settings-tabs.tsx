@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { User, Lock, CreditCard, Save, ShieldCheck, Eye, EyeOff, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { User, Lock, /* CreditCard, */ Save, /* ShieldCheck, */ Eye, EyeOff, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 
@@ -227,12 +227,14 @@ export default function SettingsTabs() {
         >
           <Lock className="w-5 h-5" /> Seguridad
         </button>
+        {/* TODO: Habilitar cuando se lance la monetización de la plataforma
         <button
           onClick={() => setActiveTab("billing")}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === "billing" ? "bg-blue-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
         >
           <CreditCard className="w-5 h-5" /> Suscripciones
         </button>
+        */}
       </aside>
 
       {/* ÁREA DE CONTENIDO */}
@@ -552,7 +554,7 @@ export default function SettingsTabs() {
           </div>
         )}
 
-        {/* PESTAÑA: SUSCRIPCIONES */}
+        {/* TODO: Habilitar cuando se lance la monetización de la plataforma
         {activeTab === "billing" && (
            <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center py-16">
               <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -564,6 +566,7 @@ export default function SettingsTabs() {
               </p>
            </div>
         )}
+        */}
 
       </main>
     </div>
