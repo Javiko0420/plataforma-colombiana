@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { moderateForumContent } from '@/app/admin/foros/actions'
+import { moderateForumContent } from '@/app/(main)/admin/foros/actions'
 
 interface FlaggedItem {
   id: string

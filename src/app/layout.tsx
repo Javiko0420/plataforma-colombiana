@@ -5,9 +5,6 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { AudioProvider } from "@/components/providers/audio-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
-import { AudioPlayer } from "@/components/ui/audio-player";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { getServerLocale } from '@/lib/i18n-server'
 
 const inter = Inter({
@@ -26,7 +23,7 @@ export const metadata: Metadata = {
     title: 'Latin Territory',
     description: 'Tu comunidad latina en Australia',
     type: 'website',
-    locale: 'es_AU', // Español en Australia
+    locale: 'es_AU',
     siteName: 'Latin Territory',
   },
 };
@@ -49,14 +46,7 @@ export default async function RootLayout({
           >
             <LanguageProvider>
               <AudioProvider>
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    {children}
-                  </main>
-                  <Footer />
-                </div>
-                <AudioPlayer />
+                {children}
               </AudioProvider>
             </LanguageProvider>
           </ThemeProvider>

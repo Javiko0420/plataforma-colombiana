@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { adminDeleteEvent } from '@/app/admin/eventos/actions'
+import { adminDeleteEvent } from '@/app/(main)/admin/eventos/actions'
 import { Trash2, ExternalLink, CalendarDays, Edit, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'

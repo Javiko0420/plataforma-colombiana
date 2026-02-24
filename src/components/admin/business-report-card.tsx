@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale'
 import {
   dismissBusinessReport,
   deactivateReportedBusiness,
-} from '@/app/admin/negocios/actions'
+} from '@/app/(main)/admin/negocios/actions'
 
 /** Maps Prisma ReportReason enum to readable Spanish labels */
 const REASON_LABELS: Record<string, string> = {

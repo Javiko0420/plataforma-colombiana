@@ -11,7 +11,7 @@ import {
   Edit,
   MapPin,
 } from 'lucide-react'
-import { deleteEvent } from '@/app/eventos/actions'
+import { deleteEvent } from '@/app/(main)/eventos/actions'
 import type { Event } from '@prisma/client'
 
 export default function UserEvents({

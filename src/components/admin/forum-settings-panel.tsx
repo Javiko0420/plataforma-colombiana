@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateForumDetails } from '@/app/admin/foros/actions'
+import { updateForumDetails } from '@/app/(main)/admin/foros/actions'
 
 interface ActiveForum {
   id: string

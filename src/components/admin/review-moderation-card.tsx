@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { approveReview, hideReview } from '@/app/admin/resenas/actions'
+import { approveReview, hideReview } from '@/app/(main)/admin/resenas/actions'
 
 interface ReviewCardProps {
   review: {

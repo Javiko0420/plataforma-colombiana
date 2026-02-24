@@ -6,7 +6,7 @@ import { CldUploadWidget } from 'next-cloudinary'
 import Image from 'next/image'
 import Link from 'next/link'
 import { AlertCircle, ImagePlus, Trash } from 'lucide-react'
-import { createEvent, updateEvent } from '@/app/eventos/actions'
+import { createEvent, updateEvent } from '@/app/(main)/eventos/actions'
 
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
 

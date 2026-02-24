@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Flag, AlertTriangle, X } from 'lucide-react'
-import { reportEvent } from '@/app/eventos/actions'
+import { reportEvent } from '@/app/(main)/eventos/actions'
 
 const REPORT_REASONS = [
   { value: 'SPAM', label: 'Spam o publicidad engañosa' },

@@ -57,7 +57,8 @@ export const userRegistrationSchema = z.object({
       const date = new Date(val)
       const age = calculateAge(date)
       return age <= 120
-    }, 'Fecha de nacimiento inválida'),
+    }, 'Fecha de nacimiento inválida')
+    .optional(),
   contractAcceptedAt: z
     .string()
     .datetime('Timestamp de aceptación inválido'),

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import {
   approveReportedEvent,
   rejectReportedEvent,
-} from '@/app/admin/eventos/actions'
+} from '@/app/(main)/admin/eventos/actions'
 import {
   ShieldCheck,
   Trash2,

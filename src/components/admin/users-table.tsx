@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { updateUserRole, toggleUserBan } from '@/app/admin/usuarios/actions'
+import { updateUserRole, toggleUserBan } from '@/app/(main)/admin/usuarios/actions'
 import { UserRole } from '@prisma/client'
 import Image from 'next/image'
 

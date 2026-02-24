@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import {
   verifyBusiness,
   toggleBusinessStatus,
-} from '@/app/admin/negocios/actions'
+} from '@/app/(main)/admin/negocios/actions'
 import Link from 'next/link'
 
 interface BusinessTableProps {

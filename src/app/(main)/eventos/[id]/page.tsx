@@ -9,7 +9,7 @@ import ShareButton from '@/components/ui/share-button'
 import ReportEventButton from '@/components/eventos/ReportEventButton'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { hasUserReportedEvent } from '@/app/eventos/actions'
+import { hasUserReportedEvent } from '@/app/(main)/eventos/actions'
 
 export async function generateMetadata({
   params,

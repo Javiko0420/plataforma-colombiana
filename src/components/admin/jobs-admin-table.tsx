@@ -4,7 +4,7 @@ import { useState } from 'react'
 import {
   adminDeleteJobOffer,
   clearJobReports,
-} from '@/app/admin/empleos/actions'
+} from '@/app/(main)/admin/empleos/actions'
 import {
   Trash2,
   ShieldCheck,
