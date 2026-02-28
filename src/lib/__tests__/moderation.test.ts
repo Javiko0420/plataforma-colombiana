@@ -26,19 +26,25 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/logger', () => ({
-  logger: {
+vi.mock('@/lib/logger', () => {
+  const mockLogger = {
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-  },
-}));
+  };
+  return {
+    __esModule: true,
+    default: mockLogger,
+    logger: mockLogger,
+  };
+});
 
 global.fetch = vi.fn();
 
 describe('Moderation System', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     delete process.env.OPENAI_API_KEY;
   });
 

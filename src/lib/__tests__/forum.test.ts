@@ -37,14 +37,19 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-// Mock logger
-vi.mock('@/lib/logger', () => ({
-  logger: {
+// Mock logger (default export used by forum.ts)
+vi.mock('@/lib/logger', () => {
+  const mockLogger = {
     info: vi.fn(),
     error: vi.fn(),
     warn: vi.fn(),
-  },
-}));
+  };
+  return {
+    __esModule: true,
+    default: mockLogger,
+    logger: mockLogger,
+  };
+});
 
 describe('Forum Functions', () => {
   beforeEach(() => {
