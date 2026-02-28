@@ -81,9 +81,10 @@ model User {
   moderationLogs ModerationLog[]
   events         Event[]
   jobOffers      JobOffer[]
-  reports        Report[]
-  reviews        Review[]
-  sessions       Session[]
+  reports             Report[]
+  reviews             Review[]
+  sessions            Session[]
+  mobileRefreshTokens MobileRefreshToken[]
 
   @@index([email])
   @@index([nickname])
@@ -490,4 +491,23 @@ model Event {
   @@index([userId])
   @@index([category])
   @@index([isHidden])
+}
+
+model MobileRefreshToken {
+  id            String   @id @default(cuid())
+  tokenHash     String   @unique
+  family        String
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt     DateTime
+  isRevoked     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  lastUsedAt    DateTime?
+  userAgent     String?
+  ip            String?
+
+  @@index([userId])
+  @@index([family])
+  @@index([expiresAt])
+  @@index([isRevoked])
 }
