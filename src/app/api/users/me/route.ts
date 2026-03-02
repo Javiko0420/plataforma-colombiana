@@ -3,11 +3,15 @@
  * GET /api/users/me - Get current user profile
  * PUT /api/users/me - Update current user profile (full update)
  * PATCH /api/users/me - Update current user profile (partial - nickname only)
+ * DELETE /api/users/me - Delete current user account
+ *
+ * Supports both:
+ * - NextAuth sessions (web — cookie-based)
+ * - Mobile JWT (Authorization: Bearer header)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthUserId } from '@/lib/get-auth-user';
 import { prisma } from '@/lib/prisma';
 import { getUserProfile, updateUserNickname } from '@/lib/forum';
 import { logger } from '@/lib/logger';
@@ -57,9 +61,9 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -67,9 +71,9 @@ export async function GET(request: NextRequest) {
     }
 
     const [profile, authInfo] = await Promise.all([
-      getUserProfile(session.user.id),
+      getUserProfile(userId),
       prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: userId },
         select: {
           password: true,
           accounts: { select: { provider: true } },
@@ -96,22 +100,22 @@ export async function GET(request: NextRequest) {
  * PUT /api/users/me
  * Update current user profile (full update: name, nickname, image)
  */
-export async function PUT(req: Request) {
+export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const body = await req.json();
+    const body = await request.json();
     const validatedData = userUpdateSchema.parse(body);
 
     // Convertir string de fecha a objeto Date para Prisma
     const dob = validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null;
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: userId },
       data: {
         name: validatedData.name,
         nickname: validatedData.nickname || null,
@@ -138,9 +142,9 @@ export async function PUT(req: Request) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -162,7 +166,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const user = await updateUserNickname(
-      session.user.id,
+      userId,
       validation.data.nickname
     );
 
@@ -184,9 +188,9 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
         { status: 401 }
@@ -196,10 +200,10 @@ export async function DELETE(request: NextRequest) {
     // Al borrar el usuario, Prisma borrará sus negocios, reseñas, posts, etc.
     // automáticamente gracias al 'onDelete: Cascade' configurado en el schema
     await prisma.user.delete({
-      where: { id: session.user.id },
+      where: { id: userId },
     });
 
-    logger.info('User account deleted', { userId: session.user.id });
+    logger.info('User account deleted', { userId });
 
     return NextResponse.json({
       success: true,
@@ -215,4 +219,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-
