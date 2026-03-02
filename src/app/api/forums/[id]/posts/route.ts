@@ -5,8 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthUserId } from '@/lib/get-auth-user';
 import { getForumPosts, createPost } from '@/lib/forum';
 import { moderatePost } from '@/lib/moderation';
 import { logger } from '@/lib/logger';
@@ -64,9 +63,9 @@ export async function POST(
 ) {
   try {
     const { id: forumId } = await params;
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -98,7 +97,7 @@ export async function POST(
     const post = await createPost({
       content: validation.data.content,
       forumId,
-      authorId: session.user.id,
+      authorId: userId,
     });
 
     // Moderate post asynchronously (don't await to not block response)
