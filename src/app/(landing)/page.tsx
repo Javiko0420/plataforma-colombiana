@@ -6,7 +6,7 @@ import { FounderRegisterForm } from '@/components/ui/founder-register-form'
 import { FoundersProgressBar } from '@/components/ui/founders-progress-bar'
 import { CountdownTimer } from '@/components/ui/countdown-timer'
 
-const CONVOCATORIA_END = new Date('2026-03-09T23:59:59')
+const CONVOCATORIA_END = new Date('2026-03-31T23:59:59')
 
 const KEYFRAMES = `
 @keyframes latamShift {
