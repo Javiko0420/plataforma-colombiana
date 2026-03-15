@@ -87,7 +87,7 @@ export function ForumPostCard({
           </div>
 
           {/* Header report shortcut (icon-only, discreto) */}
-          {currentUserId && (
+          {currentUserId && (currentUserId !== post.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR') && (
             <button
               onClick={handleReportClick}
               className="text-foreground/40 hover:text-red-500 transition-colors p-1 rounded"
@@ -140,7 +140,7 @@ export function ForumPostCard({
             </span>
           </button>
 
-          {currentUserId && (
+          {currentUserId && (currentUserId !== post.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR') && (
             <button
               onClick={handleReportClick}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors group ml-auto"

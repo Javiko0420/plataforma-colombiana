@@ -122,7 +122,7 @@ export function ForumCommentCard({
           </span>
         </button>
 
-        {currentUserId && (
+        {currentUserId && (currentUserId !== comment.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR') && (
           <button
             onClick={() => onReport?.(comment.id)}
             className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-red-500/10 transition-colors group"
