@@ -3,19 +3,16 @@
 /**
  * Forum Post Card Component
  * Displays a single forum post with actions (like, reply, report)
- * Self-contained report flow via embedded ReportModal
  */
 
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Flag } from 'lucide-react';
 import { PostWithAuthor } from '@/lib/forum';
-import { ReportModal } from '@/components/ui/report-modal';
 
 interface ForumPostCardProps {
   post: PostWithAuthor;
   t: (key: string) => string;
   onLike?: (postId: string) => Promise<void>;
-  /** @deprecated Report is now handled internally via ReportModal */
   onReport?: (postId: string) => void;
   onReply?: (postId: string) => void;
   currentUserId?: string;
@@ -27,14 +24,12 @@ export function ForumPostCard({
   post,
   t,
   onLike,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onReport: _onReport,
+  onReport,
   onReply,
   currentUserId,
   userRole,
 }: ForumPostCardProps) {
   const [isLiking, setIsLiking] = useState(false);
-  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const handleLike = async () => {
     if (!currentUserId || !onLike || isLiking) return;
@@ -49,10 +44,8 @@ export function ForumPostCard({
     }
   };
 
-  /** Opens the self-contained report modal */
-  const handleReportClick = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    setIsReportOpen(true);
+  const handleReportClick = () => {
+    onReport?.(post.id);
   };
 
   if (post.isDeleted) {
@@ -64,7 +57,6 @@ export function ForumPostCard({
   }
 
   return (
-    <>
       <div className="border border-border rounded-lg p-4 bg-background hover:bg-background/80 transition-colors">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
@@ -161,15 +153,6 @@ export function ForumPostCard({
           )}
         </div>
       </div>
-
-      {/* Self-contained Report Modal */}
-      <ReportModal
-        isOpen={isReportOpen}
-        onClose={() => setIsReportOpen(false)}
-        targetId={post.id}
-        targetType="post"
-      />
-    </>
   );
 }
 
