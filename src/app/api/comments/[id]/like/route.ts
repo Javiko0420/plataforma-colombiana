@@ -4,8 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getAuthUserId } from '@/lib/get-auth-user';
 import { likeComment } from '@/lib/forum';
 import { logger } from '@/lib/logger';
 import { handleApiError } from '@/lib/error-handler';
@@ -22,9 +21,9 @@ export async function POST(
 ) {
   try {
     const { id: commentId } = await params;
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(request);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -38,7 +37,7 @@ export async function POST(
       );
     }
 
-    const comment = await likeComment(commentId, session.user.id);
+    const comment = await likeComment(commentId, userId);
 
     return NextResponse.json({
       success: true,
