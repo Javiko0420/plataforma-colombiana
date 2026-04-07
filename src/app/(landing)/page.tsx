@@ -151,17 +151,13 @@ export default function FoundersLandingPage() {
         <header style={s.header}>
           <div style={s.logoWrap}>
             <span style={s.logoText}>Latin</span>
-            <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
-              <circle cx="32" cy="32" r="14" fill="#D4A843" />
-              {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => {
-                const r = (a * Math.PI) / 180
-                return (
-                  <line key={a} x1={32 + 18 * Math.cos(r)} y1={32 + 18 * Math.sin(r)}
-                    x2={32 + 26 * Math.cos(r)} y2={32 + 26 * Math.sin(r)}
-                    stroke="#D4A843" strokeWidth="3" strokeLinecap="round" />
-                )
-              })}
-            </svg>
+            <img
+              src="/latin-territory-logo.png"
+              alt="Latin Territory"
+              width={28}
+              height={28}
+              style={{ borderRadius: '50%', objectFit: 'cover' }}
+            />
             <span style={s.logoText}>Territory</span>
           </div>
           <span style={s.tagline}>Conectando a la comunidad latina en Australia.</span>
