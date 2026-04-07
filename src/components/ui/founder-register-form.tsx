@@ -252,20 +252,14 @@ export function FounderRegisterForm({ variant = 'light' }: FounderRegisterFormPr
       )}
 
       {/* Divider */}
-      <div style={{ position: 'relative', margin: '16px 0' }}>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-          <div style={{ width: '100%', borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : '#d1d5db'}` }} />
-        </div>
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-          <span style={{
-            padding: '0 12px',
-            fontSize: 12,
-            color: dark ? '#d1d5db' : '#9ca3af',
-            background: 'transparent',
-          }}>
-            o con tu correo
-          </span>
-        </div>
+      <div style={{ margin: '16px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: '100%', borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.2)' : '#d1d5db'}` }} />
+        <span style={{
+          fontSize: 12,
+          color: dark ? '#d1d5db' : '#9ca3af',
+        }}>
+          o con tu correo
+        </span>
       </div>
 
       {error && (

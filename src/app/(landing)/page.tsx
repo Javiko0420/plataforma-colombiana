@@ -4,9 +4,6 @@ import { CSSProperties } from 'react'
 import { Trophy, Award, Globe } from 'lucide-react'
 import { FounderRegisterForm } from '@/components/ui/founder-register-form'
 import { FoundersProgressBar } from '@/components/ui/founders-progress-bar'
-import { CountdownTimer } from '@/components/ui/countdown-timer'
-
-const CONVOCATORIA_END = new Date('2026-03-31T23:59:59')
 
 const KEYFRAMES = `
 @keyframes latamShift {
@@ -135,7 +132,6 @@ const s = {
   cardSub: { fontSize: 14, color: '#f5d060', fontWeight: 600, marginTop: 4, fontFamily: font } satisfies CSSProperties,
 
   divider: { marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.15)' } satisfies CSSProperties,
-  countdownWrap: { marginTop: 16, display: 'flex', justifyContent: 'center' } satisfies CSSProperties,
 
   footer: {
     marginTop: 20, textAlign: 'center' as const, fontSize: 11,
@@ -232,9 +228,6 @@ export default function FoundersLandingPage() {
 
                     <div style={s.divider}>
                       <FoundersProgressBar variant="dark" />
-                    </div>
-                    <div style={s.countdownWrap}>
-                      <CountdownTimer targetDate={CONVOCATORIA_END} variant="dark" />
                     </div>
                     <p style={s.footer}>
                       Respaldado por JaviWarrior Studio. Sin tarjeta de crédito.<br />
