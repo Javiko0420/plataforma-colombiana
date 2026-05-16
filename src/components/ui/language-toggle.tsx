@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Languages } from 'lucide-react'
+import { Globe } from 'lucide-react'
 import { useTranslations } from '@/components/providers/language-provider'
 import { useRouter } from 'next/navigation'
 import { getLocaleCookieName } from '@/lib/i18n'
@@ -31,7 +31,7 @@ export function LanguageToggle() {
       onMouseOver={e => (e.currentTarget.style.background = 'rgba(34,21,15,0.05)')}
       onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
     >
-      <Languages className="h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+      <Globe className="h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
       <span className="text-sm font-semibold uppercase tracking-wide">
         {locale}
       </span>

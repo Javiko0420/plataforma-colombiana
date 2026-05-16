@@ -98,17 +98,17 @@ export default function Home() {
           HERO
       ══════════════════════════════════ */}
       <section
-        className="relative overflow-hidden pt-12 pb-20 px-6 md:pt-16 md:pb-28"
+        className="relative overflow-hidden pt-16 pb-24 px-6 md:pt-20 md:pb-28"
         aria-labelledby="hero-title"
       >
         {/* ── Sol gigante centrado detrás ── */}
         <div
           aria-hidden="true"
           className="absolute left-1/2 -translate-x-1/2 pointer-events-none select-none"
-          style={{ top: '-120px', opacity: 0.85, zIndex: 0 }}
+          style={{ top: '-100px', opacity: 0.85, zIndex: 0 }}
           data-lt-wobble="true"
         >
-          <SunMotif size={640} />
+          <SunMotif size={720} />
         </div>
 
         {/* ── LeafSprigs laterales ── */}
@@ -116,14 +116,14 @@ export default function Home() {
           size={140}
           aria-hidden="true"
           className="absolute pointer-events-none select-none hidden md:block"
-          style={{ left: '36px', top: '80px', opacity: 0.85, transform: 'rotate(-25deg)' }}
+          style={{ left: '36px', top: '120px', opacity: 0.85, transform: 'rotate(-25deg)', zIndex: 1 }}
           data-lt-rotate="true"
         />
         <LeafSprig
           size={120}
           aria-hidden="true"
           className="absolute pointer-events-none select-none hidden md:block"
-          style={{ right: '56px', top: '144px', opacity: 0.8, transform: 'rotate(40deg) scaleX(-1)' }}
+          style={{ right: '56px', top: '180px', opacity: 0.8, transform: 'rotate(40deg) scaleX(-1)', zIndex: 1 }}
           data-lt-rotate="true"
         />
 
@@ -135,8 +135,28 @@ export default function Home() {
           className="absolute top-6 left-12 opacity-40 pointer-events-none select-none hidden md:block"
         />
 
+        {/* ── Sticker izquierda — flanqueando el título a media altura ── */}
+        <div
+          className="absolute left-[4%] top-[38%] hidden md:block"
+          style={{ transform: 'rotate(-8deg)', zIndex: 3 }}
+          data-lt-rotate="true"
+          aria-hidden="true"
+        >
+          <StickerBadge tone="terracota" text="¡Hecho aquí!" />
+        </div>
+
+        {/* ── Sticker derecha — flanqueando el título a media altura ── */}
+        <div
+          className="absolute right-[4%] top-[42%] hidden md:block"
+          style={{ transform: 'rotate(9deg)', zIndex: 3 }}
+          data-lt-rotate="true"
+          aria-hidden="true"
+        >
+          <StickerBadge tone="verde" text="Comunidad ✦ Latina" />
+        </div>
+
         {/* ── Contenido, empujado bajo el sol ── */}
-        <div className="relative max-w-4xl mx-auto text-center pt-28 md:pt-36" style={{ zIndex: 1 }}>
+        <div className="relative max-w-5xl mx-auto text-center pt-32 md:pt-40" style={{ zIndex: 2 }}>
 
           {/* Badge centrada oscura */}
           <div
@@ -157,41 +177,41 @@ export default function Home() {
             <SouthernCross size={16} color="var(--lt-sun)" />
           </div>
 
-          {/* Sticker izquierda — zona alta, flanqueando el badge superior */}
-          <div
-            className="absolute left-[6%] top-[14%] hidden lg:block z-[2]"
-            style={{ transform: 'rotate(-8deg)' }}
-            data-lt-rotate="true"
-            aria-hidden="true"
-          >
-            <StickerBadge tone="terracota" text="¡Hecho aquí!" />
-          </div>
-
-          {/* Sticker derecha — zona alta, flanqueando el badge superior */}
-          <div
-            className="absolute right-[6%] top-[18%] hidden lg:block z-[2]"
-            style={{ transform: 'rotate(9deg)' }}
-            data-lt-rotate="true"
-            aria-hidden="true"
-          >
-            <StickerBadge tone="verde" text="Comunidad ✦ Latina" />
-          </div>
-
-          {/* H1 */}
+          {/* H1 — dos líneas explícitas, mucho más grande */}
           <h1
             id="hero-title"
-            className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-3"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            className="font-black"
+            style={{
+              fontFamily: 'var(--lt-font-serif)',
+              color: 'var(--lt-ink)',
+              fontSize: 'clamp(52px, 11vw, 124px)',
+              lineHeight: 0.93,
+              letterSpacing: '-0.03em',
+              margin: 0,
+              marginBottom: '36px',
+            }}
           >
-            Bienvenidos a{' '}
-            <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>
-              tu territorio.
-            </em>
+            <span style={{ display: 'block', fontWeight: 800 }}>Bienvenidos</span>
+            <span
+              style={{
+                display: 'block',
+                fontStyle: 'italic',
+                fontWeight: 400,
+                color: 'var(--lt-terracota)',
+              }}
+            >
+              a tu territorio.
+            </span>
           </h1>
 
           <p
-            className="text-lg md:text-xl max-w-2xl mx-auto mb-10 mt-4"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+            className="text-lg md:text-xl mx-auto mb-10"
+            style={{
+              fontFamily: 'var(--lt-font-sans)',
+              color: 'var(--lt-ink-soft)',
+              maxWidth: '620px',
+              lineHeight: 1.5,
+            }}
           >
             {t('home.hero.tagline')}
           </p>
