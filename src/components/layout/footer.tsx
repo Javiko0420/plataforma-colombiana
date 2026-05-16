@@ -192,7 +192,7 @@ export function Footer() {
             <div className="space-y-3 mb-4">
               {[
                 { icon: Mail,    label: 'Email',    value: 'privacy@latinterritory.com', href: 'mailto:privacy@latinterritory.com' },
-                { icon: Phone,   label: 'Teléfono', value: '+61 0433560234',             href: 'tel:+610433560234' },
+                { icon: Phone,   label: 'Teléfono', value: '+61 0468771870',             href: 'tel:+610468771870' },
                 { icon: MapPin,  label: 'Ubicación', value: 'Brisbane, Australia',       href: null },
               ].map(({ icon: Icon, label, value, href }) => (
                 <div key={label} className="flex items-start gap-3">
