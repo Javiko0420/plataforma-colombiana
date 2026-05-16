@@ -2,45 +2,80 @@
 
 import Link from 'next/link'
 import {
-  ArrowRight, Star, Users, TrendingUp, MapPin,
+  ArrowRight, Users, TrendingUp, MapPin,
   Radio, Cloud, Trophy, Briefcase, CalendarDays, Search,
 } from 'lucide-react'
 import { useTranslations } from '@/components/providers/language-provider'
-import { SunMotif }          from '@/components/lt/SunMotif'
-import { LeafSprig }         from '@/components/lt/LeafSprig'
-import { SouthernCross }     from '@/components/lt/SouthernCross'
-import { Squiggle }          from '@/components/lt/Squiggle'
-import { HandDrawnUnderline} from '@/components/lt/HandDrawnUnderline'
-import { HandDrawnBox }      from '@/components/lt/HandDrawnBox'
-import { LtButton }          from '@/components/lt/Button'
-import { LtBadge }           from '@/components/lt/Badge'
-import { LtCard, LtCardHeader, LtCardBody } from '@/components/lt/Card'
+import { SunMotif }           from '@/components/lt/SunMotif'
+import { LeafSprig }          from '@/components/lt/LeafSprig'
+import { SouthernCross }      from '@/components/lt/SouthernCross'
+import { Squiggle }           from '@/components/lt/Squiggle'
+import { HandDrawnBox }       from '@/components/lt/HandDrawnBox'
+import { LtButton }           from '@/components/lt/Button'
+import { LtCard, LtCardBody } from '@/components/lt/Card'
+import { StickerBadge }       from '@/components/lt/StickerBadge'
 
 /* ─────────────────────────────────────────
-   Datos estáticos — no cambia lógica
+   Datos estáticos
 ───────────────────────────────────────── */
 const STATS = [
-  { value: '1,200+', labelKey: 'home.stats.entrepreneurs', ariaKey: 'Mil doscientos emprendedores', icon: Users,     tone: 'terracota' as const },
-  { value: '5,000+', labelKey: 'home.stats.products',      ariaKey: 'Cinco mil productos',          icon: Star,      tone: 'sun'      as const },
-  { value: '32',     labelKey: 'home.stats.departments',   ariaKey: 'Treinta y dos ciudades',        icon: MapPin,    tone: 'verde'    as const },
-  { value: '98%',    labelKey: 'home.stats.satisfaction',  ariaKey: 'Noventa y ocho por ciento',     icon: TrendingUp,tone: 'accent'   as const },
+  { n: '1,200+', label: 'emprendedores',      tone: 'terracota', italic: false },
+  { n: '5,000+', label: 'productos & servicios', tone: 'sun-core',  italic: true  },
+  { n: '32',     label: 'ciudades AU',         tone: 'verde',     italic: false },
+  { n: '98%',    label: 'comunidad feliz',     tone: 'accent',    italic: true  },
 ]
 
+const FEATURE_TONES = ['terracota', 'verde', 'sun', 'accent', 'sun-core', 'verde']
+const FEATURE_ROTATIONS = [-1, 1.5, -0.5, 1, -1.5, 0.5]
+
 const FEATURES = [
-  { href: '/directorio', icon: Users,      titleKey: 'home.features.directory.title', descKey: 'home.features.directory.desc', linkKey: 'home.features.directory.link', iconTone: 'terracota' as const },
-  { href: '/emisoras',   icon: Radio,      titleKey: 'home.features.radios.title',    descKey: 'home.features.radios.desc',    linkKey: 'home.features.radios.link',    iconTone: 'sun'       as const },
-  { href: '/clima',      icon: Cloud,      titleKey: 'home.features.weather.title',   descKey: 'home.features.weather.desc',   linkKey: 'home.features.weather.link',   iconTone: 'verde'     as const },
-  { href: '/deportes',   icon: Trophy,     titleKey: 'home.features.sports.title',    descKey: 'home.features.sports.desc',    linkKey: 'home.features.sports.link',    iconTone: 'sun'       as const },
-  { href: '/foros',      icon: Users,      titleKey: 'home.features.forums.title',    descKey: 'home.features.forums.desc',    linkKey: 'home.features.forums.link',    iconTone: 'accent'    as const },
-  { href: '/tasas',      icon: TrendingUp, titleKey: 'home.features.rates.title',     descKey: 'home.features.rates.desc',     linkKey: 'home.features.rates.link',     iconTone: 'terracota' as const },
+  { href: '/directorio', icon: Users,      titleKey: 'home.features.directory.title', descKey: 'home.features.directory.desc' },
+  { href: '/emisoras',   icon: Radio,      titleKey: 'home.features.radios.title',    descKey: 'home.features.radios.desc'    },
+  { href: '/clima',      icon: Cloud,      titleKey: 'home.features.weather.title',   descKey: 'home.features.weather.desc'   },
+  { href: '/deportes',   icon: Trophy,     titleKey: 'home.features.sports.title',    descKey: 'home.features.sports.desc'    },
+  { href: '/foros',      icon: Users,      titleKey: 'home.features.forums.title',    descKey: 'home.features.forums.desc'    },
+  { href: '/tasas',      icon: TrendingUp, titleKey: 'home.features.rates.title',     descKey: 'home.features.rates.desc'     },
 ]
 
 const CTA_LINKS = [
-  { href: '/directorio', labelKey: 'home.cta.directory', tone: 'terracota' as const, rotate: -2,   icon: ArrowRight },
-  { href: '/empleos',    labelKey: 'home.cta.jobs',      tone: 'verde'     as const, rotate:  1.5, icon: Briefcase  },
+  { href: '/directorio', labelKey: 'home.cta.directory', tone: 'terracota' as const, rotate: -2,   icon: ArrowRight   },
+  { href: '/empleos',    labelKey: 'home.cta.jobs',      tone: 'verde'     as const, rotate:  1.5, icon: Briefcase    },
   { href: '/eventos',    labelKey: 'home.cta.events',    tone: 'sun'       as const, rotate: -1,   icon: CalendarDays },
-  { href: '/foros',      labelKey: 'home.cta.forums',    tone: 'accent'    as const, rotate:  2,   icon: Users      },
+  { href: '/foros',      labelKey: 'home.cta.forums',    tone: 'accent'    as const, rotate:  2,   icon: Users        },
 ]
+
+// TODO: replace with real data from server action when available
+const MOCK_EVENTS = [
+  {
+    id: '1',
+    day: '14',
+    month: 'JUN',
+    title: 'Festival de Gastronomía Latina',
+    location: 'South Bank, Brisbane',
+    tone: 'terracota',
+    attendees: 42,
+  },
+  {
+    id: '2',
+    day: '21',
+    month: 'JUN',
+    title: 'Networking Emprendedores AU',
+    location: 'CBD, Sydney',
+    tone: 'verde',
+    attendees: 28,
+  },
+  {
+    id: '3',
+    day: '28',
+    month: 'JUN',
+    title: 'Noche de Cumbia & Salsa',
+    location: 'Fortitude Valley, Brisbane',
+    tone: 'accent',
+    attendees: 87,
+  },
+]
+
+const EVENT_CARD_ROTATIONS = [-0.6, 0.8, -0.6]
 
 /* ─────────────────────────────────────────
    Componente principal
@@ -63,80 +98,106 @@ export default function Home() {
           HERO
       ══════════════════════════════════ */}
       <section
-        className="relative overflow-hidden"
+        className="relative overflow-hidden pt-12 pb-20 px-6 md:pt-16 md:pb-28"
         aria-labelledby="hero-title"
       >
-        {/* Decoraciones de fondo */}
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
-          {/* Sol grande central */}
-          <SunMotif
-            size={420}
-            className="absolute opacity-[0.08]"
-            style={{ top: '-80px', right: '-60px' }}
-          />
-          {/* Hoja inferior izquierda */}
-          <LeafSprig
-            size={140}
-            className="absolute opacity-20"
-            style={{ bottom: '20px', left: '20px', transform: 'rotate(-15deg)' }}
-          />
-          {/* Cruz del Sur */}
-          <SouthernCross
-            size={56}
-            color="var(--lt-sun)"
-            className="absolute opacity-40"
-            style={{ top: '24px', left: '48px' }}
-          />
-          {/* Squiggles decorativos */}
-          <Squiggle
-            width={200} height={14}
-            color="var(--lt-sun)"
-            amplitude={5}
-            className="absolute opacity-25"
-            style={{ bottom: '40px', right: '10%' }}
-          />
+        {/* ── Sol gigante centrado detrás ── */}
+        <div
+          aria-hidden="true"
+          className="absolute left-1/2 -translate-x-1/2 pointer-events-none select-none"
+          style={{ top: '-120px', opacity: 0.85, zIndex: 0 }}
+          data-lt-wobble="true"
+        >
+          <SunMotif size={640} />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          {/* Badges flotantes */}
-          <div className="flex flex-wrap justify-center gap-3 mb-8" aria-hidden="true">
-            <LtBadge tone="terracota" rotate={-1.5}>¡Hecho aquí! 🇨🇴</LtBadge>
-            <LtBadge tone="sun" rotate={1}>Comunidad ✦ Latina</LtBadge>
-            <LtBadge tone="verde" rotate={-0.8}>Brisbane, Australia 🌏</LtBadge>
+        {/* ── LeafSprigs laterales ── */}
+        <LeafSprig
+          size={140}
+          aria-hidden="true"
+          className="absolute pointer-events-none select-none hidden md:block"
+          style={{ left: '36px', top: '80px', opacity: 0.85, transform: 'rotate(-25deg)' }}
+          data-lt-rotate="true"
+        />
+        <LeafSprig
+          size={120}
+          aria-hidden="true"
+          className="absolute pointer-events-none select-none hidden md:block"
+          style={{ right: '56px', top: '144px', opacity: 0.8, transform: 'rotate(40deg) scaleX(-1)' }}
+          data-lt-rotate="true"
+        />
+
+        {/* ── SouthernCross decorativo ── */}
+        <SouthernCross
+          size={48}
+          color="var(--lt-sun)"
+          aria-hidden="true"
+          className="absolute top-6 left-12 opacity-40 pointer-events-none select-none hidden md:block"
+        />
+
+        {/* ── Contenido, empujado bajo el sol ── */}
+        <div className="relative max-w-4xl mx-auto text-center pt-28 md:pt-36" style={{ zIndex: 1 }}>
+
+          {/* Badge centrada oscura */}
+          <div
+            className="inline-flex items-center gap-3 px-5 py-2 rounded-full text-[13px] uppercase tracking-[0.14em] font-semibold mb-8 border-2 border-[var(--lt-ink)]"
+            style={{
+              background: 'var(--lt-ink)',
+              color: 'var(--lt-paper)',
+              transform: 'rotate(-1deg)',
+              filter: 'url(#lt-wobble-soft)',
+              fontFamily: 'var(--lt-font-sans)',
+            }}
+            data-lt-rotate="true"
+            data-lt-wobble="true"
+            aria-hidden="true"
+          >
+            <SouthernCross size={16} color="var(--lt-sun)" />
+            <span>Latinos en Australia</span>
+            <SouthernCross size={16} color="var(--lt-sun)" />
           </div>
 
-          {/* Título Hero */}
-          <div className="text-center mb-4">
-            <h1
-              id="hero-title"
-              className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-2"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
-              Bienvenidos a{' '}
-              <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>
-                tu territorio.
-              </em>
-            </h1>
-            <div className="flex justify-center mb-6" aria-hidden="true">
-              <HandDrawnUnderline width={320} color="var(--lt-sun-core)" thickness={3} />
-            </div>
-            <p
-              className="text-lg md:text-xl max-w-2xl mx-auto mb-10"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-            >
-              {t('home.hero.tagline')}
-            </p>
+          {/* Sticker izquierda — absoluto */}
+          <div
+            className="absolute left-[2%] top-[38%] hidden lg:block"
+            style={{ transform: 'rotate(-7deg)' }}
+            data-lt-rotate="true"
+          >
+            <StickerBadge tone="terracota" text="¡Hecho aquí!" />
           </div>
+
+          {/* Sticker derecha — absoluto */}
+          <div
+            className="absolute right-[2%] top-[34%] hidden lg:block"
+            style={{ transform: 'rotate(8deg)' }}
+            data-lt-rotate="true"
+          >
+            <StickerBadge tone="verde" text="Comunidad ✦ Latina" />
+          </div>
+
+          {/* H1 */}
+          <h1
+            id="hero-title"
+            className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-3"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
+            Bienvenidos a{' '}
+            <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>
+              tu territorio.
+            </em>
+          </h1>
+
+          <p
+            className="text-lg md:text-xl max-w-2xl mx-auto mb-10 mt-4"
+            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+          >
+            {t('home.hero.tagline')}
+          </p>
 
           {/* 4 CTAs sticker */}
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-12">
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-10">
             {CTA_LINKS.map(({ href, labelKey, tone, rotate, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                aria-label={t(labelKey)}
-                tabIndex={0}
-              >
+              <Link key={href} href={href} aria-label={t(labelKey)}>
                 <LtButton
                   variant="sticker"
                   tone={tone}
@@ -150,7 +211,7 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Search bar en HandDrawnBox */}
+          {/* Search bar */}
           <div className="max-w-xl mx-auto">
             <HandDrawnBox
               padding="0.5rem"
@@ -159,11 +220,7 @@ export default function Home() {
               aria-label="Buscar en Latin Territory"
             >
               <label htmlFor="hero-search" className="sr-only">Buscar negocios, eventos o empleos</label>
-              <Search
-                className="h-5 w-5 ml-1 shrink-0"
-                aria-hidden="true"
-                style={{ color: 'var(--lt-ink-soft)' }}
-              />
+              <Search className="h-5 w-5 ml-1 shrink-0" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
               <input
                 id="hero-search"
                 name="q"
@@ -172,10 +229,47 @@ export default function Home() {
                 className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--lt-ink-soft)]"
                 style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
               />
-              <LtButton variant="pill" tone="terracota" size="sm">
-                Buscar
-              </LtButton>
+              <LtButton variant="pill" tone="terracota" size="sm">Buscar</LtButton>
             </HandDrawnBox>
+          </div>
+
+          {/* ── 4 pills de stats inline ── */}
+          <div
+            className="flex justify-center items-center flex-wrap gap-3.5 mt-10"
+            aria-label="Estadísticas de la comunidad"
+          >
+            {STATS.map((s, i) => (
+              <div
+                key={s.label}
+                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border-[1.8px] border-[var(--lt-ink)]"
+                style={{
+                  background: 'var(--lt-paper)',
+                  boxShadow: '3px 3px 0 var(--lt-ink)',
+                  transform: `rotate(${i % 2 ? 1 : -1}deg)`,
+                  filter: 'url(#lt-wobble-soft)',
+                }}
+                data-lt-rotate="true"
+                data-lt-wobble="true"
+                aria-label={`${s.n} ${s.label}`}
+              >
+                <span
+                  className="text-[22px] font-extrabold leading-none"
+                  style={{
+                    fontFamily: 'var(--lt-font-serif)',
+                    color: `var(--lt-${s.tone})`,
+                    fontStyle: s.italic ? 'italic' : 'normal',
+                  }}
+                >
+                  {s.n}
+                </span>
+                <span
+                  className="text-xs uppercase tracking-[0.08em] font-semibold"
+                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                >
+                  {s.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -185,51 +279,108 @@ export default function Home() {
       ══════════════════════════════════ */}
       <main id="main-content">
 
-        {/* ── Stats ── */}
-        <section
-          className="py-16 border-y-[2px] border-[var(--lt-ink)]"
-          style={{ background: 'var(--lt-paper)' }}
-          aria-labelledby="stats-title"
-        >
+        {/* ── Features ── */}
+        <section className="py-24" aria-labelledby="features-title">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 id="stats-title" className="sr-only">{t('home.stats.title')}</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              {STATS.map(({ value, labelKey, ariaKey, icon: Icon, tone }, i) => {
-                const rotations = [-1.5, 1.2, -1, 1.8]
-                const rot = rotations[i]
+
+            {/* Encabezado */}
+            <div className="text-center mb-14">
+              <div className="inline-flex items-center gap-3 mb-5">
+                <Squiggle color="var(--lt-terracota)" width={70} height={10} amplitude={3} aria-hidden="true" />
+                <span
+                  className="text-[13px] font-bold uppercase tracking-[0.32em]"
+                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-terracota)' }}
+                >
+                  Lo que ofrecemos
+                </span>
+                <Squiggle color="var(--lt-terracota)" width={70} height={10} amplitude={3} aria-hidden="true" />
+              </div>
+              <h2
+                id="features-title"
+                className="font-bold leading-none tracking-tight"
+                style={{
+                  fontFamily: 'var(--lt-font-serif)',
+                  color: 'var(--lt-ink)',
+                  fontSize: 'clamp(40px, 6vw, 64px)',
+                  margin: 0,
+                }}
+              >
+                Una{' '}
+                <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>plataforma,</em>
+                <br />
+                mil{' '}
+                <em style={{ color: 'var(--lt-verde)', fontStyle: 'italic' }}>posibilidades.</em>
+              </h2>
+            </div>
+
+            {/* Grid de features */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {FEATURES.map(({ href, icon: Icon, titleKey, descKey }, i) => {
+                const tone = FEATURE_TONES[i]
+                const rotation = FEATURE_ROTATIONS[i]
                 return (
                   <div
-                    key={labelKey}
-                    className="flex flex-col items-center gap-3"
-                    aria-label={`${ariaKey} ${t(labelKey)}`}
+                    key={href}
+                    className="relative flex flex-col rounded-[22px] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 hover:-translate-y-1"
+                    style={{
+                      background: 'var(--lt-paper)',
+                      boxShadow: '6px 7px 0 var(--lt-ink)',
+                      transform: `rotate(${rotation}deg)`,
+                    }}
+                    data-lt-rotate="true"
                   >
-                    {/* Icono sticker */}
+                    {/* Círculo tonal decorativo */}
                     <div
                       aria-hidden="true"
-                      className="w-16 h-16 rounded-[var(--lt-radius-sm)] flex items-center justify-center border-[2px] border-[var(--lt-ink)]"
-                      style={{
-                        background: `var(--lt-${tone})`,
-                        boxShadow: 'var(--lt-shadow-sticker)',
-                        transform: `rotate(${rot}deg)`,
-                        color: tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
-                      }}
-                      data-lt-rotate="true"
-                    >
-                      <Icon className="h-7 w-7" />
+                      className="absolute -top-5 -right-5 w-24 h-24 rounded-full opacity-15"
+                      style={{ background: `var(--lt-${tone})` }}
+                    />
+
+                    <div className="p-6 flex flex-col flex-1 gap-4 relative">
+                      {/* Icono sticker */}
+                      <div
+                        className="w-16 h-16 flex items-center justify-center rounded-[18px] border-2 border-[var(--lt-ink)]"
+                        style={{
+                          background: `var(--lt-${tone})`,
+                          color: tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
+                          boxShadow: '3px 3px 0 var(--lt-ink)',
+                          filter: 'url(#lt-wobble-soft)',
+                        }}
+                        data-lt-wobble="true"
+                        aria-hidden="true"
+                      >
+                        <Icon className="w-7 h-7" />
+                      </div>
+
+                      <h3
+                        className="text-lg font-bold"
+                        style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                      >
+                        {t(titleKey)}
+                      </h3>
+
+                      <p
+                        className="text-sm leading-relaxed flex-1"
+                        style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                      >
+                        {t(descKey)}
+                      </p>
+
+                      {/* CTA pill */}
+                      <Link href={href} tabIndex={0} aria-label={`${t(titleKey)} — Explorar ahora`}>
+                        <div
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-[1.6px] border-[var(--lt-ink)] text-[13px] font-semibold cursor-pointer transition-all hover:-translate-y-0.5"
+                          style={{
+                            background: `var(--lt-${tone})`,
+                            color: tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
+                            boxShadow: '2px 2px 0 var(--lt-ink)',
+                          }}
+                        >
+                          Explorar ahora
+                          <ArrowRight size={14} aria-hidden="true" />
+                        </div>
+                      </Link>
                     </div>
-                    {/* Número */}
-                    <span
-                      className="text-4xl font-black"
-                      style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                    >
-                      {value}
-                    </span>
-                    <span
-                      className="text-sm font-medium"
-                      style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-                    >
-                      {t(labelKey)}
-                    </span>
                   </div>
                 )
               })}
@@ -237,109 +388,206 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Features ── */}
-        <section className="py-20" aria-labelledby="features-title">
+        {/* ── Eventos próximos ── */}
+        <section className="py-20" aria-labelledby="events-title">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Encabezado de sección */}
-            <div className="text-center mb-14">
-              <h2
-                id="features-title"
-                className="text-3xl md:text-4xl font-bold mb-3"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                {t('home.features.title')}
-              </h2>
-              <div className="flex justify-center mb-4" aria-hidden="true">
-                <Squiggle width={160} height={12} color="var(--lt-terracota)" amplitude={4} />
+
+            {/* Header de sección */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+              <div>
+                <div
+                  className="text-[13px] font-bold uppercase tracking-[0.28em] mb-3"
+                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-verde)' }}
+                >
+                  ✦ Próximamente ✦
+                </div>
+                <h2
+                  id="events-title"
+                  className="font-bold leading-none tracking-tight"
+                  style={{
+                    fontFamily: 'var(--lt-font-serif)',
+                    color: 'var(--lt-ink)',
+                    fontSize: 'clamp(36px, 5vw, 56px)',
+                    margin: 0,
+                  }}
+                >
+                  Eventos que{' '}
+                  <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>laten.</em>
+                </h2>
               </div>
-              <p
-                className="text-lg max-w-2xl mx-auto"
-                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-              >
-                {t('home.features.subtitle')}
-              </p>
+              <Link href="/eventos">
+                <LtButton
+                  variant="sticker"
+                  tone="ink"
+                  size="md"
+                  rotate={1}
+                >
+                  Ver todos los eventos →
+                </LtButton>
+              </Link>
             </div>
 
-            {/* Grid de features */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {FEATURES.map(({ href, icon: Icon, titleKey, descKey, linkKey, iconTone }, i) => (
-                <LtCard key={href} index={i} shadow="md" className="flex flex-col">
-                  <LtCardHeader
-                    icon={<Icon className="h-5 w-5" aria-hidden="true" />}
-                    iconTone={iconTone}
-                  >
-                    <h3
-                      className="text-lg font-bold"
-                      style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            {/* Grid de cards de eventos */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {MOCK_EVENTS.map((ev, i) => (
+                <div
+                  key={ev.id}
+                  className="rounded-[var(--lt-radius-md)] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 hover:-translate-y-1"
+                  style={{
+                    background: 'var(--lt-paper)',
+                    boxShadow: 'var(--lt-shadow-sticker-lg)',
+                    transform: `rotate(${EVENT_CARD_ROTATIONS[i]}deg)`,
+                  }}
+                  data-lt-rotate="true"
+                >
+                  {/* Fila superior: fecha + info */}
+                  <div className="flex items-start gap-4 p-5 border-b-[2px] border-[var(--lt-ink)]">
+                    {/* Fecha-pill */}
+                    <div
+                      className="flex flex-col items-center justify-center px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.8px] border-[var(--lt-ink)] shrink-0"
+                      style={{
+                        background: `var(--lt-${ev.tone})`,
+                        color: ev.tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
+                        boxShadow: '2px 2px 0 var(--lt-ink)',
+                        minWidth: '52px',
+                      }}
+                      aria-label={`${ev.day} de ${ev.month}`}
                     >
-                      {t(titleKey)}
-                    </h3>
-                  </LtCardHeader>
-                  <LtCardBody className="flex flex-col flex-1 gap-4">
-                    <p
-                      className="text-sm leading-relaxed flex-1"
-                      style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-                    >
-                      {t(descKey)}
-                    </p>
+                      <span
+                        className="font-black leading-none"
+                        style={{ fontFamily: 'var(--lt-font-serif)', fontSize: '28px' }}
+                      >
+                        {ev.day}
+                      </span>
+                      <span
+                        className="font-bold tracking-widest mt-0.5"
+                        style={{ fontFamily: 'var(--lt-font-sans)', fontSize: '10px', letterSpacing: '0.12em' }}
+                      >
+                        {ev.month}
+                      </span>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className="font-bold text-base leading-snug line-clamp-2 mb-1"
+                        style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                      >
+                        {ev.title}
+                      </h3>
+                      <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+                        <MapPin className="w-3 h-3 shrink-0" aria-hidden="true" style={{ color: 'var(--lt-terracota)' }} />
+                        <span className="truncate">{ev.location}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer: avatares + asistentes + CTA */}
+                  <div className="flex items-center justify-between px-5 py-3">
+                    <div className="flex items-center gap-2">
+                      {/* Avatares apilados */}
+                      <div className="flex" aria-hidden="true">
+                        {['terracota', 'verde', 'sun'].map((t, ai) => (
+                          <div
+                            key={ai}
+                            className="w-7 h-7 rounded-full border-2 border-[var(--lt-paper)] flex items-center justify-center text-[10px] font-bold"
+                            style={{
+                              background: `var(--lt-${t})`,
+                              color: t === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
+                              marginLeft: ai === 0 ? 0 : '-8px',
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <span
+                        className="text-xs font-semibold"
+                        style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+                      >
+                        +{ev.attendees} asistiendo
+                      </span>
+                    </div>
                     <Link
-                      href={href}
-                      className="inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:gap-2 focus:outline-none focus:underline"
-                      style={{ color: 'var(--lt-terracota)' }}
+                      href="/eventos"
+                      className="text-xs font-bold transition-colors hover:opacity-80 focus:outline-none focus:underline"
+                      style={{ color: `var(--lt-${ev.tone})`, fontFamily: 'var(--lt-font-sans)' }}
                     >
-                      {t(linkKey)}
-                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                      Asistir →
                     </Link>
-                  </LtCardBody>
-                </LtCard>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </section>
 
         {/* ── CTA emprendedor ── */}
-        <section
-          className="py-20 relative overflow-hidden"
-          aria-labelledby="cta-title"
-        >
-          {/* Fondo terracota con sombra sticker XL */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="cta-title">
           <div
-            className="max-w-4xl mx-auto mx-4 sm:mx-6 lg:mx-auto px-8 py-14 rounded-[var(--lt-radius-lg)] border-[2.5px] border-[var(--lt-ink)] text-center relative"
+            className="max-w-4xl mx-auto px-8 py-16 rounded-[var(--lt-radius-lg)] border-[2.5px] border-[var(--lt-ink)] text-center relative overflow-hidden"
             style={{
               background: 'var(--lt-terracota)',
-              boxShadow: 'var(--lt-shadow-sticker-xl)',
+              boxShadow: '8px 10px 0 var(--lt-ink)',
               transform: 'rotate(-0.4deg)',
             }}
             data-lt-rotate="true"
           >
-            {/* Decoraciones internas */}
-            <div aria-hidden="true" className="absolute top-4 right-6 opacity-20">
-              <SunMotif size={80} color="var(--lt-paper)" coreColor="var(--lt-sun)" />
-            </div>
-            <div aria-hidden="true" className="absolute bottom-4 left-6 opacity-15">
-              <LeafSprig size={60} color="var(--lt-paper)" />
+            {/* Patrón diamonds overlay */}
+            <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{ opacity: 0.12 }}>
+              <svg width="100%" height="100%">
+                <rect width="100%" height="100%" fill="url(#lt-diamonds)" color="var(--lt-sun)" />
+              </svg>
             </div>
 
-            <h2
-              id="cta-title"
-              className="text-3xl md:text-4xl font-black mb-4 relative"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-paper)' }}
+            {/* Sol gigante decorativo */}
+            <div
+              aria-hidden="true"
+              className="absolute pointer-events-none select-none"
+              style={{ right: '-80px', bottom: '-120px', opacity: 0.7 }}
             >
-              {t('home.cta.hero.title')}
-            </h2>
-            <p
-              className="text-lg mb-8 max-w-xl mx-auto relative"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-paper)', opacity: 0.9 }}
-            >
-              {t('home.cta.hero.desc')}
-            </p>
-            <div className="flex justify-center relative">
-              <Link href="/registrar-negocio">
-                <LtButton variant="sticker" tone="paper" size="lg" rotate={-1.2}>
-                  {t('home.cta.hero.link')}
-                  <ArrowRight className="h-5 w-5" aria-hidden="true" />
-                </LtButton>
-              </Link>
+              <SunMotif size={400} color="var(--lt-sun)" coreColor="var(--lt-paper)" />
+            </div>
+
+            {/* LeafSprig izquierda */}
+            <div aria-hidden="true" className="absolute bottom-4 left-6 opacity-20 pointer-events-none">
+              <LeafSprig size={70} color="var(--lt-paper)" />
+            </div>
+
+            {/* Contenido */}
+            <div className="relative">
+              <h2
+                id="cta-title"
+                className="font-black leading-tight mb-4"
+                style={{
+                  fontFamily: 'var(--lt-font-serif)',
+                  color: 'var(--lt-paper)',
+                  fontSize: 'clamp(32px, 5vw, 56px)',
+                }}
+              >
+                {t('home.cta.hero.title').split('latino').length > 1
+                  ? <>¿Eres emprendedor<br /><em style={{ color: 'var(--lt-sun)', fontStyle: 'italic' }}>latino?</em></>
+                  : t('home.cta.hero.title')
+                }
+              </h2>
+              <p
+                className="text-lg mb-10 max-w-xl mx-auto"
+                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-paper)', opacity: 0.9 }}
+              >
+                {t('home.cta.hero.desc')}
+              </p>
+
+              {/* 2 botones */}
+              <div className="flex flex-wrap justify-center gap-4">
+                <Link href="/registrar-negocio">
+                  <LtButton variant="sticker" tone="sun" size="lg" rotate={-2}>
+                    Registrar mi negocio
+                  </LtButton>
+                </Link>
+                <Link href="/soporte">
+                  <LtButton variant="sticker" tone="paper" size="lg" rotate={1.2}>
+                    Hablar con alguien
+                  </LtButton>
+                </Link>
+              </div>
             </div>
           </div>
         </section>

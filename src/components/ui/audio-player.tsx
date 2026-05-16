@@ -10,40 +10,82 @@ export function AudioPlayer() {
   const { t } = useTranslations()
 
   return (
-    <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1.5rem)] sm:w-auto">
-      <div className="mx-auto max-w-3xl rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="p-2 rounded-md bg-red-600/10 text-red-600 dark:text-red-400" aria-hidden="true">
-            <Radio className="w-5 h-5" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-              {currentStation?.name ?? t('audio.stationFallback', 'Emisora')} {isPlaying && <span className="ml-2 inline-block align-middle text-[10px] px-1.5 py-0.5 rounded bg-red-600 text-white">{t('audio.liveTag', 'LIVE')}</span>}
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 truncate" aria-live="polite">
-              {isLoading ? t('audio.connecting', 'Conectando…') : (nowPlaying?.title ? `${nowPlaying.title}${nowPlaying.artist ? ' — '+nowPlaying.artist : ''}` : t('audio.ready', 'Listo para reproducir'))}
-            </p>
-          </div>
+    /* Desktop: bottom-4 right-4 fijo. Mobile: stretch bottom-2 left-2 right-2 */
+    <div className="fixed z-40 bottom-2 left-2 right-2 sm:bottom-4 sm:left-auto sm:right-4 sm:w-auto">
+      <div
+        className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[var(--lt-radius-md)]"
+        style={{
+          background: 'var(--lt-paper)',
+          border: '2px solid var(--lt-ink)',
+          boxShadow: 'var(--lt-shadow-sticker)',
+          fontFamily: 'var(--lt-font-sans)',
+        }}
+      >
+        {/* Icono Radio */}
+        <div
+          className="p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0"
+          style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+          aria-hidden="true"
+        >
+          <Radio className="w-4 h-4" />
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+        {/* Texto: nombre de emisora + estado */}
+        <div className="min-w-0 flex-1">
+          <p
+            className="text-sm font-semibold truncate"
+            style={{ color: 'var(--lt-ink)' }}
+          >
+            {currentStation?.name ?? t('audio.stationFallback', 'Emisora')}
+            {isPlaying && (
+              <span
+                className="ml-2 inline-block align-middle text-[10px] px-1.5 py-0.5 rounded font-bold"
+                style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)' }}
+              >
+                {t('audio.liveTag', 'LIVE')}
+              </span>
+            )}
+          </p>
+          <p
+            className="text-xs truncate"
+            style={{ color: 'var(--lt-ink-soft)' }}
+            aria-live="polite"
+          >
+            {isLoading
+              ? t('audio.connecting', 'Conectando…')
+              : nowPlaying?.title
+                ? `${nowPlaying.title}${nowPlaying.artist ? ' — ' + nowPlaying.artist : ''}`
+                : t('audio.ready', 'Listo para reproducir')}
+          </p>
+        </div>
+
+        {/* Controles */}
+        <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
+          {/* Play / Pause */}
           <button
             type="button"
             onClick={() => void togglePlayPause()}
-            className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-full border-2 border-[var(--lt-ink)] transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+            style={{
+              background: 'var(--lt-terracota)',
+              color: 'var(--lt-paper)',
+              boxShadow: 'var(--lt-shadow-sticker)',
+            }}
             aria-label={isPlaying ? t('audio.pause', 'Pausar') : t('audio.play', 'Reproducir')}
           >
-            {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </button>
 
+          {/* Volumen — solo desktop */}
           <div className="hidden sm:flex items-center gap-2">
             <button
               type="button"
               onClick={() => toggleMute()}
-              className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+              className="inline-flex items-center justify-center h-8 w-8 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+              style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
               aria-label={muted ? t('audio.unmute', 'Activar sonido') : t('audio.mute', 'Silenciar')}
             >
-              {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
             <input
               type="range"
@@ -51,19 +93,15 @@ export function AudioPlayer() {
               max={1}
               step={0.01}
               value={muted ? 0 : volume}
-              onChange={(e) => setVolume(Number(e.target.value))}
+              onChange={e => setVolume(Number(e.target.value))}
               aria-label={t('audio.volumeLabel', 'Volumen')}
-              className="w-28 accent-red-600"
+              className="w-24 accent-[var(--lt-terracota)]"
             />
           </div>
         </div>
 
-        {error && (
-          <p className="sr-only" role="alert">{error}</p>
-        )}
+        {error && <p className="sr-only" role="alert">{error}</p>}
       </div>
     </div>
   )
 }
-
-
