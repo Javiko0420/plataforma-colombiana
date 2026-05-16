@@ -29,12 +29,12 @@ const FEATURE_TONES = ['terracota', 'verde', 'sun', 'accent', 'sun-core', 'verde
 const FEATURE_ROTATIONS = [-1, 1.5, -0.5, 1, -1.5, 0.5]
 
 const FEATURES = [
-  { href: '/directorio', icon: Users,      titleKey: 'home.features.directory.title', descKey: 'home.features.directory.desc' },
-  { href: '/emisoras',   icon: Radio,      titleKey: 'home.features.radios.title',    descKey: 'home.features.radios.desc'    },
-  { href: '/clima',      icon: Cloud,      titleKey: 'home.features.weather.title',   descKey: 'home.features.weather.desc'   },
-  { href: '/deportes',   icon: Trophy,     titleKey: 'home.features.sports.title',    descKey: 'home.features.sports.desc'    },
-  { href: '/foros',      icon: Users,      titleKey: 'home.features.forums.title',    descKey: 'home.features.forums.desc'    },
-  { href: '/tasas',      icon: TrendingUp, titleKey: 'home.features.rates.title',     descKey: 'home.features.rates.desc'     },
+  { href: '/directorio', icon: Users,      titleKey: 'home.features.directory.title', descKey: 'home.features.directory.desc', linkKey: 'home.features.directory.link' },
+  { href: '/emisoras',   icon: Radio,      titleKey: 'home.features.radios.title',    descKey: 'home.features.radios.desc',    linkKey: 'home.features.radios.link'    },
+  { href: '/clima',      icon: Cloud,      titleKey: 'home.features.weather.title',   descKey: 'home.features.weather.desc',   linkKey: 'home.features.weather.link'   },
+  { href: '/deportes',   icon: Trophy,     titleKey: 'home.features.sports.title',    descKey: 'home.features.sports.desc',    linkKey: 'home.features.sports.link'    },
+  { href: '/foros',      icon: Users,      titleKey: 'home.features.forums.title',    descKey: 'home.features.forums.desc',    linkKey: 'home.features.forums.link'    },
+  { href: '/tasas',      icon: TrendingUp, titleKey: 'home.features.rates.title',     descKey: 'home.features.rates.desc',     linkKey: 'home.features.rates.link'     },
 ]
 
 const CTA_LINKS = [
@@ -203,9 +203,10 @@ export default function Home() {
                 <LtButton
                   variant="sticker"
                   tone={tone}
-                  size="md"
+                  size="lg"
                   rotate={rotate}
-                  iconLeft={<Icon className="h-4 w-4" aria-hidden="true" />}
+                  iconLeft={<Icon className="h-5 w-5" aria-hidden="true" />}
+                  className="shadow-[var(--lt-shadow-sticker-lg)]"
                 >
                   {t(labelKey)}
                 </LtButton>
@@ -214,24 +215,25 @@ export default function Home() {
           </div>
 
           {/* Search bar */}
-          <div className="max-w-xl mx-auto">
+          <div className="max-w-[560px] mx-auto mt-2">
             <HandDrawnBox
-              padding="0.5rem"
-              className="flex items-center gap-2"
+              padding="0"
+              className="flex items-center gap-3 px-5 h-[62px]"
+              style={{ borderRadius: '50px' }}
               role="search"
               aria-label="Buscar en Latin Territory"
             >
-              <label htmlFor="hero-search" className="sr-only">Buscar negocios, eventos o empleos</label>
-              <Search className="h-5 w-5 ml-1 shrink-0" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
+              <label htmlFor="hero-search" className="sr-only">¿Qué buscas? Restaurante, peluquería, contador…</label>
+              <Search className="h-5 w-5 shrink-0" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
               <input
                 id="hero-search"
                 name="q"
                 type="search"
-                placeholder="Buscar negocios, eventos o empleos…"
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--lt-ink-soft)]"
+                placeholder="¿Qué buscas? Restaurante, peluquería, contador…"
+                className="flex-1 bg-transparent border-0 outline-none text-[15px] placeholder:text-[var(--lt-ink-soft)]"
                 style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
               />
-              <LtButton variant="pill" tone="terracota" size="sm">Buscar</LtButton>
+              <LtButton variant="sticker" tone="sun" size="sm">Buscar</LtButton>
             </HandDrawnBox>
           </div>
 
@@ -317,7 +319,7 @@ export default function Home() {
 
             {/* Grid de features */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {FEATURES.map(({ href, icon: Icon, titleKey, descKey }, i) => {
+              {FEATURES.map(({ href, icon: Icon, titleKey, descKey, linkKey }, i) => {
                 const tone = FEATURE_TONES[i]
                 const rotation = FEATURE_ROTATIONS[i]
                 return (
@@ -369,7 +371,7 @@ export default function Home() {
                       </p>
 
                       {/* CTA pill */}
-                      <Link href={href} tabIndex={0} aria-label={`${t(titleKey)} — Explorar ahora`}>
+                      <Link href={href} tabIndex={0} aria-label={`${t(titleKey)} — ${t(linkKey)}`}>
                         <div
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-[1.6px] border-[var(--lt-ink)] text-[13px] font-semibold cursor-pointer transition-all hover:-translate-y-0.5"
                           style={{
@@ -378,7 +380,7 @@ export default function Home() {
                             boxShadow: '2px 2px 0 var(--lt-ink)',
                           }}
                         >
-                          Explorar ahora
+                          {t(linkKey)}
                           <ArrowRight size={14} aria-hidden="true" />
                         </div>
                       </Link>

@@ -51,11 +51,6 @@ export function SunMotif({
       <circle cx="40" cy="40" r="18" fill={color} stroke="var(--lt-ink)" strokeWidth="2.5" />
       {/* Núcleo */}
       <circle cx="40" cy="40" r="11" fill={coreColor} />
-      {/* Cara (puntos de ojos) */}
-      <circle cx="36" cy="38" r="1.8" fill="var(--lt-ink)" />
-      <circle cx="44" cy="38" r="1.8" fill="var(--lt-ink)" />
-      {/* Sonrisa */}
-      <path d="M 35 43 Q 40 47 45 43" stroke="var(--lt-ink)" strokeWidth="1.8" strokeLinecap="round" fill="none" />
     </svg>
   )
 }
