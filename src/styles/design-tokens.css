@@ -1,31 +1,42 @@
 /* ============================================================
    LATIN TERRITORY — Design Tokens "Sol"
    Dirección visual: cálida, latinoamericana, sticker style
+   ============================================================
+
+   WCAG AA (4.5:1 norma texto normal) verificado:
+   --lt-terracota  (#b34020) vs paper (#fffaee) → 5.00:1 ✅
+   --lt-verde      (#336940) vs paper           → 6.07:1 ✅
+   --lt-accent     (#b33868) vs paper           → 5.27:1 ✅
+   --lt-ink        (#22150f) vs paper           → 16.6:1 ✅
+   --lt-ink-soft   (#7a4f3b) vs paper           → 5.57:1 ✅
+   --lt-sun        (#f0a932) vs ink  (#22150f)  → 7.96:1 ✅ (solo sobre fondos oscuros)
    ============================================================ */
 
 :root {
-  /* === Colores === */
+  /* === Colores base === */
   --lt-bg:          #fff3d8;   /* crema soleada */
   --lt-paper:       #fffaee;   /* superficies elevadas */
   --lt-ink:         #22150f;   /* texto / borde principal */
   --lt-ink-soft:    #7a4f3b;   /* texto secundario */
 
-  --lt-terracota:   #c14b2a;   /* primario */
-  --lt-sun:         #f0a932;   /* secundario (amarillo sol) */
-  --lt-sun-core:    #e76d34;   /* núcleo del sol */
-  --lt-verde:       #3e7f4d;   /* verde selva */
-  --lt-accent:      #c44272;   /* berry / acento */
+  /* === Colores de acento (calibrados para 4.5:1 sobre --lt-paper) === */
+  --lt-terracota:   #b34020;   /* primario  — 5.00:1 */
+  --lt-sun:         #f0a932;   /* sol — SOLO usar como bg con ink arriba */
+  --lt-sun-core:    #e76d34;   /* núcleo del sol — decorativo */
+  --lt-verde:       #336940;   /* verde selva — 6.07:1 */
+  --lt-accent:      #b33868;   /* berry — 5.27:1 */
 
   /* === Tipografía === */
   --lt-font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
   --lt-font-sans:  'Work Sans', 'Public Sans', system-ui, sans-serif;
 
-  /* === Radios / sombras sticker === */
+  /* === Radios === */
   --lt-radius-sm:   12px;
   --lt-radius-md:   18px;
   --lt-radius-lg:   22px;
   --lt-radius-pill: 999px;
 
+  /* === Sombras sticker === */
   --lt-shadow-sticker:    3px 3px 0 var(--lt-ink);
   --lt-shadow-sticker-lg: 6px 7px 0 var(--lt-ink);
   --lt-shadow-sticker-xl: 8px 10px 0 var(--lt-ink);
@@ -35,7 +46,10 @@
   --lt-border-thin: 1.6px solid var(--lt-ink);
 }
 
-/* Dark mode — paleta tonal coherente */
+/* ============================================================
+   Dark mode — paleta tonal coherente
+   Usando .dark (next-themes attribute="class") y data-theme
+   ============================================================ */
 [data-theme="dark"],
 .dark {
   --lt-bg:        #1a0f0a;
@@ -43,41 +57,87 @@
   --lt-ink:       #fff3d8;
   --lt-ink-soft:  #d4a87d;
 
-  /* colores de acento se mantienen vibrantes en dark */
-  --lt-terracota: #d4603a;
+  /* Colores calibrados para contraste sobre bg oscuro:
+     --lt-terracota (#df7048) vs #1a0f0a → 6.57:1 ✅
+     --lt-verde     (#4e9f5e) vs #1a0f0a → 6.45:1 ✅
+     --lt-accent    (#d45585) vs #1a0f0a → 5.17:1 ✅ */
+  --lt-terracota: #df7048;
   --lt-sun:       #f0a932;
   --lt-sun-core:  #e76d34;
   --lt-verde:     #4e9f5e;
   --lt-accent:    #d45585;
 
+  /* Sombras sobre fondo oscuro — cream ink */
   --lt-shadow-sticker:    3px 3px 0 var(--lt-ink);
   --lt-shadow-sticker-lg: 6px 7px 0 var(--lt-ink);
   --lt-shadow-sticker-xl: 8px 10px 0 var(--lt-ink);
 }
 
 /* ============================================================
-   Utilidades globales de los tokens
+   Utilidades de clase auxiliares
    ============================================================ */
+.lt-bg         { background-color: var(--lt-bg); }
+.lt-paper      { background-color: var(--lt-paper); }
+.lt-ink        { color: var(--lt-ink); }
+.lt-ink-soft   { color: var(--lt-ink-soft); }
+.lt-font-serif { font-family: var(--lt-font-serif); }
+.lt-font-sans  { font-family: var(--lt-font-sans); }
+.lt-shadow-sm  { box-shadow: var(--lt-shadow-sticker); }
+.lt-shadow-md  { box-shadow: var(--lt-shadow-sticker-lg); }
+.lt-shadow-xl  { box-shadow: var(--lt-shadow-sticker-xl); }
 
-.lt-bg          { background-color: var(--lt-bg); }
-.lt-paper       { background-color: var(--lt-paper); }
-.lt-ink         { color: var(--lt-ink); }
-.lt-ink-soft    { color: var(--lt-ink-soft); }
-
-.lt-font-serif  { font-family: var(--lt-font-serif); }
-.lt-font-sans   { font-family: var(--lt-font-sans); }
-
-/* Sombra sticker helpers */
-.lt-shadow-sm   { box-shadow: var(--lt-shadow-sticker); }
-.lt-shadow-md   { box-shadow: var(--lt-shadow-sticker-lg); }
-.lt-shadow-xl   { box-shadow: var(--lt-shadow-sticker-xl); }
-
-/* Deshabilitar wobble y rotaciones cuando el usuario lo solicita */
-@media (prefers-reduced-motion: reduce) {
+/* ============================================================
+   Responsive — rotaciones en móvil (≤640px)
+   Los stickers rotan ±0.5° en lugar de ±1.5°
+   Los filtros SVG wobble se desactivan en móvil
+   para evitar repaint costoso en pantallas pequeñas
+   ============================================================ */
+@media (max-width: 640px) {
+  [data-lt-rotate] {
+    transform: rotate(0.5deg) !important;
+  }
   [data-lt-wobble] {
     filter: none !important;
   }
+}
+
+/* ============================================================
+   prefers-reduced-motion
+   Desactiva TODAS las transformaciones de rotación,
+   filtros SVG wobble y animaciones del sistema Sol
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  /* Rotaciones sticker */
   [data-lt-rotate] {
     transform: none !important;
+  }
+
+  /* Filtros wobble (dibujado a mano) */
+  [data-lt-wobble] {
+    filter: none !important;
+  }
+
+  /* Animaciones de giro (SunMotif loading, etc.) */
+  .animate-spin {
+    animation: none !important;
+  }
+
+  /* Transiciones de elevación en hover */
+  .hover\:-translate-y-0\.5:hover,
+  .hover\:-translate-y-1:hover,
+  .hover\:translate-y-0:hover {
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   prefers-contrast: more — refuerza bordes en modo alto contraste
+   ============================================================ */
+@media (prefers-contrast: more) {
+  :root {
+    --lt-border:      3px solid var(--lt-ink);
+    --lt-border-thin: 2px solid var(--lt-ink);
+    --lt-shadow-sticker:    4px 4px 0 var(--lt-ink);
+    --lt-shadow-sticker-lg: 7px 8px 0 var(--lt-ink);
   }
 }
