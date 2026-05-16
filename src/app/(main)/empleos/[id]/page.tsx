@@ -1,17 +1,18 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
-import { Briefcase, MapPin, Clock, Calendar, DollarSign } from 'lucide-react';
+import { Briefcase, MapPin, Clock, Calendar, DollarSign, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import JobDetailActions from '@/components/jobs/JobDetailActions';
+import { LtBadge } from '@/components/lt/Badge';
+import { SunMotif } from '@/components/lt/SunMotif';
+import { Squiggle } from '@/components/lt/Squiggle';
+import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline';
 
-// Generación Dinámica de Metadata SEO / Open Graph
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const job = await prisma.jobOffer.findUnique({
-    where: { id },
-  });
+  const job = await prisma.jobOffer.findUnique({ where: { id } });
 
-  // Si no existe, está borrada o expirada, devolver fallback seguro
   if (!job || job.deletedAt !== null || job.expiresAt < new Date()) {
     return {
       title: 'Oferta no disponible | Latin Territory',
@@ -19,9 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
   }
 
-  // Generar descripción corta para SEO (max 160 caracteres)
-  const shortDescription = job.description.length > 150 
-    ? `${job.description.substring(0, 150)}...` 
+  const shortDescription = job.description.length > 150
+    ? `${job.description.substring(0, 150)}...`
     : job.description;
 
   const pageTitle = `${job.title} en Latin Territory`;
@@ -45,102 +45,138 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-// Server Component Principal
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const job = await prisma.jobOffer.findUnique({
-    where: { id },
-  });
+  const job = await prisma.jobOffer.findUnique({ where: { id } });
 
-  // Validar existencia y vigencia
   if (!job || job.deletedAt !== null || job.expiresAt < new Date()) {
     notFound();
   }
 
-  // Formatear fecha de creación
-  const postedDate = new Intl.DateTimeFormat('es-ES', { 
-    day: 'numeric', month: 'long', year: 'numeric' 
+  const postedDate = new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric', month: 'long', year: 'numeric'
   }).format(new Date(job.createdAt));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        
+    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh', paddingBottom: '5rem', paddingTop: '2rem' }}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Botón volver */}
+        <Link
+          href="/empleos"
+          className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+          style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
+        >
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Empleos
+        </Link>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Columna Izquierda: Detalles Principales */}
+
+          {/* ── Columna principal ── */}
           <div className="lg:col-span-2 space-y-6">
-            
-            {/* Cabecera de la Oferta */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            <div
+              className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 md:p-8"
+              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
+            >
+              {/* Encabezado */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-gradient-to-r from-blue-500 to-red-400 text-white shadow-md shrink-0">
-                  <Briefcase className="w-8 h-8" />
+                <div
+                  className="w-14 h-14 rounded-[var(--lt-radius-sm)] flex items-center justify-center border-[2px] border-[var(--lt-ink)] shrink-0"
+                  style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+                  aria-hidden="true"
+                >
+                  <Briefcase className="w-7 h-7" />
                 </div>
-                <div>
-                  <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
+                <div className="flex-1 min-w-0">
+                  <h1
+                    className="text-2xl md:text-3xl font-black leading-tight"
+                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                  >
                     {job.title}
                   </h1>
                 </div>
               </div>
+              <HandDrawnUnderline width={200} color="var(--lt-sun-core)" thickness={2.5} className="mb-6" aria-hidden="true" />
 
-              {/* Tags de metadatos del empleo */}
-              <div className="flex flex-wrap gap-3 text-sm font-medium text-gray-600 dark:text-gray-300 mb-8 border-b border-gray-100 dark:border-gray-700 pb-8">
-                <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800/50">
-                  <Briefcase className="w-4 h-4" /> {job.category}
-                </span>
-                <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg">
-                  <MapPin className="w-4 h-4" /> {job.location}
-                </span>
-                <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg">
-                  <Clock className="w-4 h-4" /> {job.jobType}
-                </span>
-                <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700/50 px-3 py-1.5 rounded-lg">
-                  <Calendar className="w-4 h-4" /> Publicado el {postedDate}
-                </span>
+              {/* Badges de metadatos */}
+              <div className="flex flex-wrap gap-2 mb-8">
+                <LtBadge tone="terracota" rotate={-1}>
+                  <Briefcase className="w-3 h-3" aria-hidden="true" />
+                  {job.category}
+                </LtBadge>
+                <LtBadge tone="neutral" rotate={0.8}>
+                  <MapPin className="w-3 h-3" aria-hidden="true" />
+                  {job.location}
+                </LtBadge>
+                <LtBadge tone="neutral" rotate={-0.5}>
+                  <Clock className="w-3 h-3" aria-hidden="true" />
+                  {job.jobType}
+                </LtBadge>
+                <LtBadge tone="neutral" rotate={1}>
+                  <Calendar className="w-3 h-3" aria-hidden="true" />
+                  {postedDate}
+                </LtBadge>
                 {job.hourlyRate != null && (
-                  <span className="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-lg border border-green-100 dark:border-green-800/50">
-                    <DollarSign className="w-4 h-4" /> {job.hourlyRate.toFixed(2)} AUD/hora
-                  </span>
+                  <LtBadge tone="sun" rotate={-1.2}>
+                    <DollarSign className="w-3 h-3" aria-hidden="true" />
+                    {job.hourlyRate.toFixed(2)} AUD/hora
+                  </LtBadge>
                 )}
               </div>
 
-              {/* Cuerpo de la Descripción */}
+              <Squiggle width={160} height={10} color="var(--lt-terracota)" amplitude={3} className="mb-6" aria-hidden="true" />
+
+              {/* Descripción del puesto */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                <h2
+                  className="text-xl font-bold mb-4"
+                  style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                >
                   Descripción del Puesto
                 </h2>
-                <div className="text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                <div
+                  className="leading-relaxed whitespace-pre-wrap"
+                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                >
                   {job.description}
                 </div>
               </div>
             </div>
-            
-            {/* Mensaje comunitario de confianza */}
-            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 rounded-2xl p-6 text-center">
-              <p className="text-sm text-blue-800 dark:text-blue-300">
-                Al postularte, recuerda mencionar que encontraste esta oferta a través de la comunidad de <span className="font-bold">Latin Territory</span>. ¡Mucho éxito en tu proceso!
+
+            {/* Mensaje de confianza */}
+            <div
+              className="rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)] p-5 text-center relative overflow-hidden"
+              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+              role="note"
+            >
+              <div aria-hidden="true" className="absolute right-3 top-1/2 -translate-y-1/2 opacity-[0.07]">
+                <SunMotif size={80} />
+              </div>
+              <p
+                className="text-sm relative"
+                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+              >
+                Al postularte, recuerda mencionar que encontraste esta oferta a través de la comunidad de{' '}
+                <strong style={{ color: 'var(--lt-ink)' }}>Latin Territory</strong>. ¡Mucho éxito en tu proceso!
               </p>
             </div>
-
           </div>
 
-          {/* Columna Derecha: Sidebar de Acción */}
+          {/* ── Sidebar de acciones ── */}
           <div className="lg:col-span-1 relative">
-            <JobDetailActions 
+            <JobDetailActions
               job={{
                 id: job.id,
                 title: job.title,
                 email: job.email,
                 phone: job.phone,
                 externalLink: job.externalLink,
-                expiresAt: job.expiresAt
-              }} 
+                expiresAt: job.expiresAt,
+              }}
             />
           </div>
 
         </div>
-
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Share2, AlertTriangle, Mail, Phone, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { Share2, AlertTriangle, Mail, Phone, ExternalLink, CheckCircle2, Clock } from 'lucide-react';
+import { LtButton } from '@/components/lt/Button';
+import { HandDrawnBox } from '@/components/lt/HandDrawnBox';
 
 interface JobDetailActionsProps {
   job: {
@@ -18,11 +20,9 @@ export default function JobDetailActions({ job }: JobDetailActionsProps) {
   const [isContactRevealed, setIsContactRevealed] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // Cálculo de días restantes
   const today = new Date();
   const expirationDate = new Date(job.expiresAt);
-  const diffTime = Math.abs(expirationDate.getTime() - today.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.ceil(Math.abs(expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   const handleShare = async () => {
     const shareData = {
@@ -30,13 +30,10 @@ export default function JobDetailActions({ job }: JobDetailActionsProps) {
       text: `Mira esta oferta de empleo en Latin Territory: ${job.title}`,
       url: window.location.href,
     };
-
     try {
-      // Intenta usar la API nativa de compartir (Mobile/Browsers modernos)
       if (navigator.share && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        // Fallback: Copiar al portapapeles
         await navigator.clipboard.writeText(window.location.href);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 3000);
@@ -47,82 +44,140 @@ export default function JobDetailActions({ job }: JobDetailActionsProps) {
   };
 
   const handleReport = () => {
-    const confirmReport = window.confirm(
-      "¿Deseas reportar este anuncio al equipo de moderación por contenido inapropiado o fraudulento?"
+    const confirmed = window.confirm(
+      '¿Deseas reportar este anuncio al equipo de moderación por contenido inapropiado o fraudulento?'
     );
-    if (confirmReport) {
-      alert("Gracias. Nuestro equipo revisará esta publicación en breve.");
+    if (confirmed) {
+      alert('Gracias. Nuestro equipo revisará esta publicación en breve.');
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 sticky top-24">
-      
-      {/* Indicador de Tiempo */}
+    <div
+      className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 sticky top-24"
+      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
+    >
+      {/* Indicador de tiempo */}
       <div className="flex justify-center mb-6">
-        <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-semibold bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20">
-          ⏳ Expira en {diffDays} {diffDays === 1 ? 'día' : 'días'}
+        <span
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold"
+          style={{
+            background: 'var(--lt-sun)',
+            color: 'var(--lt-ink)',
+            boxShadow: 'var(--lt-shadow-sticker)',
+          }}
+          aria-label={`Expira en ${diffDays} días`}
+        >
+          <Clock className="w-4 h-4" aria-hidden="true" style={{ color: 'var(--lt-sun-core)' }} />
+          Expira en {diffDays} {diffDays === 1 ? 'día' : 'días'}
         </span>
       </div>
 
-      <div className="space-y-4">
-        {/* Botón Principal de Contacto */}
+      <div className="space-y-3">
+        {/* Botón principal de contacto */}
         {!isContactRevealed ? (
-          <button
+          <LtButton
+            variant="sticker"
+            tone="terracota"
+            size="md"
+            rotate={-1}
+            className="w-full justify-center"
             onClick={() => setIsContactRevealed(true)}
-            className="w-full flex justify-center items-center py-3.5 px-6 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white font-bold text-lg hover:from-yellow-600 hover:to-red-600 transition-all shadow-md hover:shadow-lg"
+            aria-expanded={false}
           >
             Ver Contacto
-          </button>
+          </LtButton>
         ) : (
-          <div className="space-y-3 bg-gray-50 dark:bg-gray-900/50 p-5 rounded-xl border border-gray-100 dark:border-gray-700 animate-in fade-in zoom-in-95 duration-200">
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 text-center">
+          <HandDrawnBox padding="1rem" aria-live="polite">
+            <h4
+              className="text-xs font-bold uppercase tracking-wider mb-3 text-center"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+            >
               Información del Reclutador
             </h4>
-            
-            {job.email && (
-              <a href={`mailto:${job.email}`} className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-white dark:hover:bg-gray-800">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full"><Mail className="w-4 h-4" /></div>
-                <span className="font-medium text-sm break-all">{job.email}</span>
-              </a>
-            )}
-            
-            {job.phone && (
-              <a href={`tel:${job.phone}`} className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-white dark:hover:bg-gray-800">
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full"><Phone className="w-4 h-4" /></div>
-                <span className="font-medium text-sm">{job.phone}</span>
-              </a>
-            )}
-            
-            {job.externalLink && (
-              <a href={job.externalLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-white dark:hover:bg-gray-800">
-                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full"><ExternalLink className="w-4 h-4" /></div>
-                <span className="font-medium text-sm line-clamp-1">Enlace de postulación</span>
-              </a>
-            )}
-          </div>
+            <div className="space-y-2">
+              {job.email && (
+                <a
+                  href={`mailto:${job.email}`}
+                  className="flex items-center gap-3 p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5"
+                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+                >
+                  <span
+                    className="p-1.5 rounded-[var(--lt-radius-sm)] border border-[var(--lt-ink)] shrink-0"
+                    style={{ background: 'var(--lt-sun)', color: 'var(--lt-ink)' }}
+                    aria-hidden="true"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="font-medium text-sm break-all">{job.email}</span>
+                </a>
+              )}
+              {job.phone && (
+                <a
+                  href={`tel:${job.phone}`}
+                  className="flex items-center gap-3 p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5"
+                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+                >
+                  <span
+                    className="p-1.5 rounded-[var(--lt-radius-sm)] border border-[var(--lt-ink)] shrink-0"
+                    style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)' }}
+                    aria-hidden="true"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="font-medium text-sm">{job.phone}</span>
+                </a>
+              )}
+              {job.externalLink && (
+                <a
+                  href={job.externalLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5"
+                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+                >
+                  <span
+                    className="p-1.5 rounded-[var(--lt-radius-sm)] border border-[var(--lt-ink)] shrink-0"
+                    style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)' }}
+                    aria-hidden="true"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="font-medium text-sm line-clamp-1">Enlace de postulación</span>
+                </a>
+              )}
+            </div>
+          </HandDrawnBox>
         )}
 
-        {/* Botón de Compartir */}
-        <button
+        {/* Compartir */}
+        <LtButton
+          variant="outline"
+          tone="ink"
+          size="md"
+          rotate={0.8}
+          className="w-full justify-center"
           onClick={handleShare}
-          className="w-full flex justify-center items-center gap-2 py-3 px-6 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold border-2 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          iconLeft={
+            copySuccess
+              ? <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--lt-verde)' }} />
+              : <Share2 className="w-5 h-5" />
+          }
         >
-          {copySuccess ? (
-            <><CheckCircle2 className="w-5 h-5 text-green-500" /> ¡Enlace copiado!</>
-          ) : (
-            <><Share2 className="w-5 h-5" /> Compartir Oferta</>
-          )}
-        </button>
+          {copySuccess ? '¡Enlace copiado!' : 'Compartir Oferta'}
+        </LtButton>
       </div>
 
-      {/* Reporte sutil (Botón Ghost) */}
-      <div className="mt-8 pt-4 border-t border-gray-100 dark:border-gray-700 text-center">
+      {/* Reporte */}
+      <div className="mt-6 pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 text-center">
         <button
           onClick={handleReport}
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors bg-transparent"
+          className="inline-flex items-center gap-1.5 text-xs transition-colors bg-transparent focus:outline-none focus:underline"
+          style={{ color: 'var(--lt-ink-soft)' }}
+          onMouseOver={e => (e.currentTarget.style.color = 'var(--lt-terracota)')}
+          onMouseOut={e => (e.currentTarget.style.color = 'var(--lt-ink-soft)')}
         >
-          <AlertTriangle className="w-3.5 h-3.5" />
+          <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
           Reportar anuncio sospechoso
         </button>
       </div>

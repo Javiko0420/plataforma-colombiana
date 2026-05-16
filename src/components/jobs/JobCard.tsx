@@ -1,58 +1,96 @@
 import { JobOffer } from '@prisma/client';
 import Link from 'next/link';
-import { Clock, DollarSign } from 'lucide-react';
+import { Clock, DollarSign, MapPin, Briefcase } from 'lucide-react';
+import { LtBadge } from '@/components/lt/Badge';
 
-export default function JobCard({ job }: { job: JobOffer }) {
-  // Calcular días restantes
+const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1];
+
+export default function JobCard({ job, index = 0 }: { job: JobOffer; index?: number }) {
   const today = new Date();
   const expirationDate = new Date(job.expiresAt);
-  const diffTime = Math.abs(expirationDate.getTime() - today.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffDays = Math.ceil(Math.abs(expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length];
 
   return (
-    <Link href={`/empleos/${job.id}`} className="block">
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 group h-full flex flex-col">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {job.title}
-            </h3>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
-                {job.category}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                {job.jobType}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                {job.location}
-              </span>
-              {job.hourlyRate != null && (
-                <span className="inline-flex items-center gap-0.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                  <DollarSign className="w-3 h-3" />
-                  {job.hourlyRate.toFixed(2)}/hr
-                </span>
-              )}
-            </div>
+    <Link href={`/empleos/${job.id}`} className="block group" aria-label={`Ver oferta: ${job.title}`}>
+      <article
+        className="flex flex-col h-full rounded-[var(--lt-radius-md)] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 group-hover:-translate-y-1"
+        style={{
+          background: 'var(--lt-paper)',
+          boxShadow: 'var(--lt-shadow-sticker-lg)',
+          transform: `rotate(${rotation}deg)`,
+        }}
+        data-lt-rotate="true"
+      >
+        {/* Cabecera con icono sticker */}
+        <div
+          className="flex items-center gap-3 px-5 py-4 border-b-[2px] border-[var(--lt-ink)]"
+          style={{ background: 'var(--lt-bg)' }}
+        >
+          <div
+            className="w-10 h-10 flex items-center justify-center rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0"
+            style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+            aria-hidden="true"
+          >
+            <Briefcase className="w-5 h-5" />
           </div>
-          <div className="text-right shrink-0 ml-3">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
-              <Clock className="w-3 h-3" />
-              {diffDays} días
+          <h3
+            className="text-base font-bold leading-tight group-hover:text-[var(--lt-terracota)] transition-colors line-clamp-2 flex-1"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
+            {job.title}
+          </h3>
+        </div>
+
+        {/* Cuerpo */}
+        <div className="p-5 flex flex-col flex-1 gap-3">
+          {/* Badges de metadatos */}
+          <div className="flex flex-wrap gap-1.5">
+            <LtBadge tone="terracota" rotate={-1}>{job.category}</LtBadge>
+            <LtBadge tone="neutral" rotate={0.8}>{job.jobType}</LtBadge>
+            <LtBadge tone="neutral" rotate={-0.5}>
+              <MapPin className="w-3 h-3" aria-hidden="true" />
+              {job.location}
+            </LtBadge>
+            {job.hourlyRate != null && (
+              <LtBadge tone="sun" rotate={1}>
+                <DollarSign className="w-3 h-3" aria-hidden="true" />
+                {job.hourlyRate.toFixed(2)}/hr
+              </LtBadge>
+            )}
+          </div>
+
+          {/* Descripción */}
+          <p
+            className="text-sm leading-relaxed line-clamp-3 flex-1"
+            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+          >
+            {job.description}
+          </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 border-t-[1.6px] border-[var(--lt-ink)]/20">
+            <span
+              className="inline-flex items-center gap-1 text-xs font-medium"
+              style={{ color: 'var(--lt-ink-soft)' }}
+              aria-label={`Expira en ${diffDays} días`}
+            >
+              <Clock className="w-3.5 h-3.5" aria-hidden="true" style={{ color: 'var(--lt-sun-core)' }} />
+              {diffDays}d restantes
+            </span>
+            <span
+              className="text-xs font-bold px-3 py-1.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all group-hover:-translate-y-0.5"
+              style={{
+                background: 'var(--lt-verde)',
+                color: 'var(--lt-paper)',
+                boxShadow: 'var(--lt-shadow-sticker)',
+              }}
+            >
+              Ver detalles →
             </span>
           </div>
         </div>
-
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-6 leading-relaxed line-clamp-3 flex-grow">
-          {job.description}
-        </p>
-
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-          <span className="w-full inline-flex justify-center px-6 py-2.5 bg-blue-600 group-hover:bg-blue-700 text-white font-medium rounded-xl transition-colors text-center">
-            Ver detalles
-          </span>
-        </div>
-      </div>
+      </article>
     </Link>
   );
 }

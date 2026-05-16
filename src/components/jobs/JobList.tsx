@@ -1,29 +1,44 @@
 import { JobOffer } from '@prisma/client';
 import JobCard from './JobCard';
-import { Briefcase } from 'lucide-react';
+import Link from 'next/link';
+import { SunMotif } from '@/components/lt/SunMotif';
+import { LtButton } from '@/components/lt/Button';
 
 export default function JobList({ jobs }: { jobs: JobOffer[] }) {
   if (jobs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 px-4 text-center border border-dashed border-gray-200 dark:border-gray-700 rounded-2xl bg-white/50 dark:bg-gray-800/30">
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-6">
-          <Briefcase className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+      <div
+        className="flex flex-col items-center justify-center py-20 px-4 text-center rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
+        style={{ background: 'var(--lt-paper)' }}
+      >
+        <div aria-hidden="true" className="mb-5 opacity-30">
+          <SunMotif size={72} />
         </div>
-        
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+        <h3
+          className="text-xl font-bold mb-2"
+          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+        >
           No se encontraron ofertas
         </h3>
-        <p className="text-gray-500 dark:text-gray-400 text-sm max-w-md mx-auto">
+        <p
+          className="text-sm max-w-md mx-auto mb-6"
+          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+        >
           No hay oportunidades activas con estos filtros en este momento. Intenta con otros criterios de búsqueda o vuelve más tarde.
         </p>
+        <Link href="/empleos/publicar">
+          <LtButton variant="sticker" tone="verde" size="md" rotate={-1}>
+            Publicar una oferta
+          </LtButton>
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max">
-      {jobs.map((job) => (
-        <JobCard key={job.id} job={job} />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-max">
+      {jobs.map((job, i) => (
+        <JobCard key={job.id} job={job} index={i} />
       ))}
     </div>
   );
