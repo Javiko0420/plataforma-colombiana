@@ -12,17 +12,16 @@ import { SouthernCross }      from '@/components/lt/SouthernCross'
 import { Squiggle }           from '@/components/lt/Squiggle'
 import { HandDrawnBox }       from '@/components/lt/HandDrawnBox'
 import { LtButton }           from '@/components/lt/Button'
-import { LtCard, LtCardBody } from '@/components/lt/Card'
 import { StickerBadge }       from '@/components/lt/StickerBadge'
 
 /* ─────────────────────────────────────────
    Datos estáticos
 ───────────────────────────────────────── */
 const STATS = [
-  { n: '1,200+', label: 'emprendedores',      tone: 'terracota', italic: false },
-  { n: '5,000+', label: 'productos & servicios', tone: 'sun-core',  italic: true  },
-  { n: '32',     label: 'ciudades AU',         tone: 'verde',     italic: false },
-  { n: '98%',    label: 'comunidad feliz',     tone: 'accent',    italic: true  },
+  { n: '1,200+', labelKey: 'home.stats.entrepreneurs.label', tone: 'terracota', italic: false },
+  { n: '5,000+', labelKey: 'home.stats.products.label',      tone: 'sun-core',  italic: true  },
+  { n: '32',     labelKey: 'home.stats.cities.label',        tone: 'verde',     italic: false },
+  { n: '98%',    labelKey: 'home.stats.satisfaction.label',  tone: 'accent',    italic: true  },
 ]
 
 const FEATURE_TONES = ['terracota', 'verde', 'sun', 'accent', 'sun-core', 'verde']
@@ -142,7 +141,7 @@ export default function Home() {
           data-lt-rotate="true"
           aria-hidden="true"
         >
-          <StickerBadge tone="terracota" text="¡Hecho aquí!" />
+          <StickerBadge tone="terracota" text={t('home.stickers.madeHere')} />
         </div>
 
         {/* ── Sticker derecha — flanqueando el título a media altura ── */}
@@ -152,7 +151,7 @@ export default function Home() {
           data-lt-rotate="true"
           aria-hidden="true"
         >
-          <StickerBadge tone="verde" text="Comunidad ✦ Latina" />
+          <StickerBadge tone="verde" text={t('home.stickers.community')} />
         </div>
 
         {/* ── Contenido, empujado bajo el sol ── */}
@@ -173,7 +172,7 @@ export default function Home() {
             aria-hidden="true"
           >
             <SouthernCross size={16} color="var(--lt-sun)" />
-            <span>Latinos en Australia</span>
+            <span>{t('home.hero.badge')}</span>
             <SouthernCross size={16} color="var(--lt-sun)" />
           </div>
 
@@ -191,7 +190,7 @@ export default function Home() {
               marginBottom: '36px',
             }}
           >
-            <span style={{ display: 'block', fontWeight: 800 }}>Bienvenidos</span>
+            <span style={{ display: 'block', fontWeight: 800 }}>{t('home.hero.title.line1')}</span>
             <span
               style={{
                 display: 'block',
@@ -200,7 +199,7 @@ export default function Home() {
                 color: 'var(--lt-terracota)',
               }}
             >
-              a tu territorio.
+              {t('home.hero.title.line2')}
             </span>
           </h1>
 
@@ -241,19 +240,22 @@ export default function Home() {
               className="flex items-center gap-3 px-5 h-[62px]"
               style={{ borderRadius: '50px' }}
               role="search"
-              aria-label="Buscar en Latin Territory"
+              aria-label={t('home.search.label')}
             >
-              <label htmlFor="hero-search" className="sr-only">¿Qué buscas? Restaurante, peluquería, contador…</label>
+              <label htmlFor="hero-search" className="sr-only">{t('home.search.placeholder')}</label>
               <Search className="h-5 w-5 shrink-0" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
               <input
                 id="hero-search"
                 name="q"
                 type="search"
-                placeholder="¿Qué buscas? Restaurante, peluquería, contador…"
+                placeholder={t('home.search.placeholder')}
+                aria-label={t('home.search.label')}
                 className="flex-1 bg-transparent border-0 outline-none text-[15px] placeholder:text-[var(--lt-ink-soft)]"
                 style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
               />
-              <LtButton variant="sticker" tone="sun" size="sm">Buscar</LtButton>
+              <LtButton variant="sticker" tone="terracota" size="sm">
+                {t('home.search.submit')}
+              </LtButton>
             </HandDrawnBox>
           </div>
 
@@ -262,38 +264,41 @@ export default function Home() {
             className="flex justify-center items-center flex-wrap gap-3.5 mt-10"
             aria-label="Estadísticas de la comunidad"
           >
-            {STATS.map((s, i) => (
-              <div
-                key={s.label}
-                className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border-[1.8px] border-[var(--lt-ink)]"
-                style={{
-                  background: 'var(--lt-paper)',
-                  boxShadow: '3px 3px 0 var(--lt-ink)',
-                  transform: `rotate(${i % 2 ? 1 : -1}deg)`,
-                  filter: 'url(#lt-wobble-soft)',
-                }}
-                data-lt-rotate="true"
-                data-lt-wobble="true"
-                aria-label={`${s.n} ${s.label}`}
-              >
-                <span
-                  className="text-[22px] font-extrabold leading-none"
+            {STATS.map((s, i) => {
+              const label = t(s.labelKey)
+              return (
+                <div
+                  key={s.labelKey}
+                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border-[1.8px] border-[var(--lt-ink)]"
                   style={{
-                    fontFamily: 'var(--lt-font-serif)',
-                    color: `var(--lt-${s.tone})`,
-                    fontStyle: s.italic ? 'italic' : 'normal',
+                    background: 'var(--lt-paper)',
+                    boxShadow: '3px 3px 0 var(--lt-ink)',
+                    transform: `rotate(${i % 2 ? 1 : -1}deg)`,
+                    filter: 'url(#lt-wobble-soft)',
                   }}
+                  data-lt-rotate="true"
+                  data-lt-wobble="true"
+                  aria-label={`${s.n} ${label}`}
                 >
-                  {s.n}
-                </span>
-                <span
-                  className="text-xs uppercase tracking-[0.08em] font-semibold"
-                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-                >
-                  {s.label}
-                </span>
-              </div>
-            ))}
+                  <span
+                    className="text-[22px] font-extrabold leading-none"
+                    style={{
+                      fontFamily: 'var(--lt-font-serif)',
+                      color: `var(--lt-${s.tone})`,
+                      fontStyle: s.italic ? 'italic' : 'normal',
+                    }}
+                  >
+                    {s.n}
+                  </span>
+                  <span
+                    className="text-xs uppercase tracking-[0.08em] font-semibold"
+                    style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -315,7 +320,7 @@ export default function Home() {
                   className="text-[13px] font-bold uppercase tracking-[0.32em]"
                   style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-terracota)' }}
                 >
-                  Lo que ofrecemos
+                  {t('home.features.eyebrow')}
                 </span>
                 <Squiggle color="var(--lt-terracota)" width={70} height={10} amplitude={3} aria-hidden="true" />
               </div>
@@ -329,11 +334,15 @@ export default function Home() {
                   margin: 0,
                 }}
               >
-                Una{' '}
-                <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>plataforma,</em>
+                {t('home.features.title.part1')}{' '}
+                <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>
+                  {t('home.features.title.platform')}
+                </em>
                 <br />
-                mil{' '}
-                <em style={{ color: 'var(--lt-verde)', fontStyle: 'italic' }}>posibilidades.</em>
+                {t('home.features.title.part2')}{' '}
+                <em style={{ color: 'var(--lt-verde)', fontStyle: 'italic' }}>
+                  {t('home.features.title.possibilities')}
+                </em>
               </h2>
             </div>
 
@@ -423,7 +432,7 @@ export default function Home() {
                   className="text-[13px] font-bold uppercase tracking-[0.28em] mb-3"
                   style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-verde)' }}
                 >
-                  ✦ Próximamente ✦
+                  {t('home.events.eyebrow')}
                 </div>
                 <h2
                   id="events-title"
@@ -435,8 +444,10 @@ export default function Home() {
                     margin: 0,
                   }}
                 >
-                  Eventos que{' '}
-                  <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>laten.</em>
+                  {t('home.events.title.part1')}{' '}
+                  <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>
+                    {t('home.events.title.beat')}
+                  </em>
                 </h2>
               </div>
               <Link href="/eventos">
@@ -446,7 +457,7 @@ export default function Home() {
                   size="md"
                   rotate={1}
                 >
-                  Ver todos los eventos →
+                  {t('home.events.viewAll')}
                 </LtButton>
               </Link>
             </div>
@@ -527,7 +538,7 @@ export default function Home() {
                         className="text-xs font-semibold"
                         style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
                       >
-                        +{ev.attendees} asistiendo
+                        +{ev.attendees} {t('home.events.attending')}
                       </span>
                     </div>
                     <Link
@@ -535,7 +546,7 @@ export default function Home() {
                       className="text-xs font-bold transition-colors hover:opacity-80 focus:outline-none focus:underline"
                       style={{ color: `var(--lt-${ev.tone})`, fontFamily: 'var(--lt-font-sans)' }}
                     >
-                      Asistir →
+                      {t('home.events.attend')}
                     </Link>
                   </div>
                 </div>
@@ -545,72 +556,74 @@ export default function Home() {
         </section>
 
         {/* ── CTA emprendedor ── */}
-        <section className="py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="cta-title">
-          <div
-            className="max-w-4xl mx-auto px-8 py-16 rounded-[var(--lt-radius-lg)] border-[2.5px] border-[var(--lt-ink)] text-center relative overflow-hidden"
-            style={{
-              background: 'var(--lt-terracota)',
-              boxShadow: '8px 10px 0 var(--lt-ink)',
-              transform: 'rotate(-0.4deg)',
-            }}
-            data-lt-rotate="true"
-          >
-            {/* Patrón diamonds overlay */}
-            <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{ opacity: 0.12 }}>
-              <svg width="100%" height="100%">
-                <rect width="100%" height="100%" fill="url(#lt-diamonds)" color="var(--lt-sun)" />
-              </svg>
-            </div>
-
-            {/* Sol gigante decorativo */}
+        <section className="py-20" aria-labelledby="cta-title">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div
-              aria-hidden="true"
-              className="absolute pointer-events-none select-none"
-              style={{ right: '-80px', bottom: '-120px', opacity: 0.7 }}
+              className="px-8 sm:px-12 lg:px-16 py-16 rounded-[var(--lt-radius-lg)] border-[2.5px] border-[var(--lt-ink)] text-left relative overflow-hidden"
+              style={{
+                background: 'var(--lt-terracota)',
+                boxShadow: '8px 10px 0 var(--lt-ink)',
+                transform: 'rotate(-0.4deg)',
+              }}
+              data-lt-rotate="true"
             >
-              <SunMotif size={400} color="var(--lt-sun)" coreColor="var(--lt-paper)" />
-            </div>
+              {/* Patrón diamonds overlay */}
+              <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{ opacity: 0.12 }}>
+                <svg width="100%" height="100%">
+                  <rect width="100%" height="100%" fill="url(#lt-diamonds)" color="var(--lt-sun)" />
+                </svg>
+              </div>
 
-            {/* LeafSprig izquierda */}
-            <div aria-hidden="true" className="absolute bottom-4 left-6 opacity-20 pointer-events-none">
-              <LeafSprig size={70} color="var(--lt-paper)" />
-            </div>
-
-            {/* Contenido */}
-            <div className="relative">
-              <h2
-                id="cta-title"
-                className="font-black leading-tight mb-4"
-                style={{
-                  fontFamily: 'var(--lt-font-serif)',
-                  color: 'var(--lt-paper)',
-                  fontSize: 'clamp(32px, 5vw, 56px)',
-                }}
+              {/* Sol gigante decorativo */}
+              <div
+                aria-hidden="true"
+                className="absolute pointer-events-none select-none"
+                style={{ right: '-80px', bottom: '-120px', opacity: 0.7 }}
               >
-                {t('home.cta.hero.title').split('latino').length > 1
-                  ? <>¿Eres emprendedor<br /><em style={{ color: 'var(--lt-sun)', fontStyle: 'italic' }}>latino?</em></>
-                  : t('home.cta.hero.title')
-                }
-              </h2>
-              <p
-                className="text-lg mb-10 max-w-xl mx-auto"
-                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-paper)', opacity: 0.9 }}
-              >
-                {t('home.cta.hero.desc')}
-              </p>
+                <SunMotif size={400} color="var(--lt-sun)" coreColor="var(--lt-paper)" />
+              </div>
 
-              {/* 2 botones */}
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/registrar-negocio">
-                  <LtButton variant="sticker" tone="sun" size="lg" rotate={-2}>
-                    Registrar mi negocio
-                  </LtButton>
-                </Link>
-                <Link href="/soporte">
-                  <LtButton variant="sticker" tone="paper" size="lg" rotate={1.2}>
-                    Hablar con alguien
-                  </LtButton>
-                </Link>
+              {/* LeafSprig izquierda */}
+              <div aria-hidden="true" className="absolute bottom-4 left-6 opacity-20 pointer-events-none">
+                <LeafSprig size={70} color="var(--lt-paper)" />
+              </div>
+
+              {/* Contenido */}
+              <div className="relative max-w-2xl">
+                <h2
+                  id="cta-title"
+                  className="font-black leading-tight mb-4"
+                  style={{
+                    fontFamily: 'var(--lt-font-serif)',
+                    color: 'var(--lt-paper)',
+                    fontSize: 'clamp(32px, 5vw, 56px)',
+                  }}
+                >
+                  {t('home.cta.hero.title').split('latino').length > 1
+                    ? <>¿Eres emprendedor<br /><em style={{ color: 'var(--lt-sun)', fontStyle: 'italic' }}>latino?</em></>
+                    : t('home.cta.hero.title')
+                  }
+                </h2>
+                <p
+                  className="text-lg mb-10 max-w-xl"
+                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-paper)', opacity: 0.9 }}
+                >
+                  {t('home.cta.hero.desc')}
+                </p>
+
+                {/* 2 botones */}
+                <div className="flex flex-wrap justify-start gap-4">
+                  <Link href="/registrar-negocio">
+                    <LtButton variant="sticker" tone="sun" size="lg" rotate={-2}>
+                      {t('home.cta.hero.link')}
+                    </LtButton>
+                  </Link>
+                  <Link href="/soporte">
+                    <LtButton variant="sticker" tone="paper" size="lg" rotate={1.2}>
+                      {t('home.cta.hero.button.secondary')}
+                    </LtButton>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

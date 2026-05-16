@@ -54,6 +54,7 @@ export const LtButton = forwardRef<HTMLButtonElement, LtButtonProps>(({
   const inlineStyle: CSSProperties = {
     '--rot': `${rotate}deg`,
     transform: `rotate(${rotate}deg)`,
+    ...(variant !== 'pill' ? { filter: 'url(#lt-wobble-soft)' } : {}),
     ...style,
   } as CSSProperties
 
@@ -71,14 +72,11 @@ export const LtButton = forwardRef<HTMLButtonElement, LtButtonProps>(({
       bg, text,
       'rounded-[var(--lt-radius-sm)]',
       'shadow-[var(--lt-shadow-sticker)]',
-      'filter-[url(#lt-wobble-soft)]',
       'hover:-translate-y-0.5 hover:shadow-[var(--lt-shadow-sticker-lg)] active:translate-y-0 active:shadow-[var(--lt-shadow-sticker)]',
     ],
     outline: [
-      'bg-transparent', text.replace('text-[var(--lt-paper)]', 'text-[var(--lt-ink)]').replace('text-[var(--lt-ink)]', 'text-[var(--lt-ink)]'),
-      'text-[var(--lt-ink)]',
+      'bg-transparent text-[var(--lt-ink)]',
       'rounded-[var(--lt-radius-sm)]',
-      'filter-[url(#lt-wobble-soft)]',
       'hover:bg-[var(--lt-paper)] hover:-translate-y-0.5',
     ],
     pill: [
