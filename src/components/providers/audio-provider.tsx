@@ -3,12 +3,21 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from '@/components/providers/language-provider'
 
-type Station = {
+export type Station = {
   id: string
   name: string
   streamUrl: string
   homepage?: string
   logoUrl?: string
+  country?: string
+  countryCode?: string
+  language?: string
+  codec?: string
+  bitrate?: number
+  tags?: string[]
+  // Metadata provider hint. 'auto' detects StreamTheWorld by URL pattern
+  // and falls back to Icecast/SHOUTcast Icy metadata via our proxy.
+  metadataProvider?: 'streamtheworld' | 'icecast' | 'none' | 'auto'
 }
 
 type NowPlaying = {
@@ -98,22 +107,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const fetchNowPlaying = useCallback(async (station: Station) => {
-    // StreamTheWorld metadata endpoint often uses station call letters; here we attempt common patterns
-    // When not available, we gracefully no-op
+  const fetchStreamTheWorldMeta = useCallback(async (station: Station): Promise<NowPlaying | null> => {
     try {
-      // If streamUrl is a redirect endpoint, try to pass mount or station id appropriately
       const url = new URL('https://playerservices.streamtheworld.com/api/metadata/nowplaying')
-      // Try to extract mount from known redirect formats
       const mountMatch = station.streamUrl.match(/livestream-redirect\/([^?.]+)/i)
       const mount = mountMatch?.[1] || station.streamUrl
       url.searchParams.set('mount', mount)
       url.searchParams.set('format', 'json')
       const res = await fetch(url.toString(), { cache: 'no-store' })
-      if (!res.ok) return
+      if (!res.ok) return null
       const data = await res.json().catch(() => null)
-      if (!data) return
-      // Normalize common shapes
+      if (!data) return null
       let title: string | undefined
       let artist: string | undefined
       if (Array.isArray(data?.data)) {
@@ -124,13 +128,56 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         title = data.nowplaying?.track || data.nowplaying?.title
         artist = data.nowplaying?.artist
       }
-      const meta: NowPlaying | null = title ? { title, artist } : null
+      return title ? { title, artist } : null
+    } catch {
+      return null
+    }
+  }, [])
+
+  const fetchIcecastMeta = useCallback(async (station: Station): Promise<NowPlaying | null> => {
+    try {
+      const url = `/api/radio/metadata?url=${encodeURIComponent(station.streamUrl)}`
+      const res = await fetch(url, { cache: 'no-store' })
+      if (!res.ok) return null
+      const json = await res.json().catch(() => null) as
+        | { success: true; data: { metadata: NowPlaying | null } }
+        | { success: false }
+        | null
+      if (!json || !json.success) return null
+      const meta = json.data.metadata
+      if (!meta || !meta.title) return null
+      return { title: meta.title, artist: meta.artist }
+    } catch {
+      return null
+    }
+  }, [])
+
+  const fetchNowPlaying = useCallback(async (station: Station) => {
+    // Resolve metadata provider.
+    //  - 'none': explicit opt-out, skip the network call entirely.
+    //  - 'streamtheworld': StreamTheWorld public metadata API (browser → upstream).
+    //  - 'icecast': proxy via our /api/radio/metadata endpoint (reads Icy headers).
+    //  - 'auto': sniff StreamTheWorld by URL; default everything else to icecast.
+    const explicit = station.metadataProvider ?? 'auto'
+    if (explicit === 'none') return
+
+    const looksLikeStreamTheWorld = /playerservices\.streamtheworld\.com/i.test(station.streamUrl)
+    const provider: 'streamtheworld' | 'icecast' =
+      explicit === 'streamtheworld' ? 'streamtheworld'
+      : explicit === 'icecast' ? 'icecast'
+      : looksLikeStreamTheWorld ? 'streamtheworld' : 'icecast'
+
+    const meta = provider === 'streamtheworld'
+      ? await fetchStreamTheWorldMeta(station)
+      : await fetchIcecastMeta(station)
+
+    if (meta) {
       setNowPlaying(meta)
       updateMediaSessionMetadata(station, meta)
-    } catch {
-      // ignore
     }
-  }, [updateMediaSessionMetadata])
+    // Intentionally do not clear stale metadata on null: keeps last known
+    // track visible briefly while the next poll resolves.
+  }, [fetchStreamTheWorldMeta, fetchIcecastMeta, updateMediaSessionMetadata])
 
   const startNowPlayingPolling = useCallback((station: Station) => {
     stopNowPlayingPolling()
@@ -140,26 +187,45 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }, NOW_PLAYING_INTERVAL_MS)
   }, [fetchNowPlaying, stopNowPlayingPolling])
 
+  const buildStreamUrl = useCallback((station: Station): string => {
+    try {
+      const url = new URL(station.streamUrl)
+      const isStreamTheWorld = /playerservices\.streamtheworld\.com/i.test(url.hostname)
+      if (isStreamTheWorld && !/\.mp3$/i.test(url.pathname)) {
+        if (!url.searchParams.has('dist')) url.searchParams.set('dist', 'web')
+        if (!url.searchParams.has('type')) url.searchParams.set('type', 'mp3')
+      }
+      return url.toString()
+    } catch {
+      return station.streamUrl
+    }
+  }, [])
+
   const play = useCallback(async (station: Station) => {
     setError(null)
     setIsLoading(true)
     try {
       if (!audioRef.current) return
-      if (!currentStation || currentStation.id !== station.id) {
+      const audio = audioRef.current
+      const isNewStation = !currentStation || currentStation.id !== station.id
+      if (isNewStation) {
         setCurrentStation(station)
-        // Ensure we request mp3 when available to avoid codec issues and pause current stream first
-        try { audioRef.current.pause() } catch {}
-        const url = new URL(station.streamUrl)
-        if (!/\.mp3$/i.test(url.pathname)) {
-          if (!url.searchParams.has('dist')) url.searchParams.set('dist', 'web')
-          if (!url.searchParams.has('type')) url.searchParams.set('type', 'mp3')
-        }
-        audioRef.current.src = url.toString()
+        setNowPlaying(null)
+        try { audio.pause() } catch {}
+        audio.src = buildStreamUrl(station)
       }
-      audioRef.current.crossOrigin = 'anonymous'
-      audioRef.current.preload = 'none'
-      audioRef.current.load()
-      await audioRef.current.play()
+      // crossOrigin is required for canvas-based visualizers but many radio
+      // CORS configs reject it. Try with it first; on failure, retry without.
+      audio.preload = 'none'
+      audio.crossOrigin = 'anonymous'
+      audio.load()
+      try {
+        await audio.play()
+      } catch {
+        audio.removeAttribute('crossorigin')
+        audio.load()
+        await audio.play()
+      }
       setIsPlaying(true)
       setIsLoading(false)
       updateMediaSessionMetadata(station, nowPlaying)
@@ -169,7 +235,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       setIsPlaying(false)
       setError(t('audio.error', 'No se pudo iniciar la reproducción. Toca nuevamente para reintentar.'))
     }
-  }, [currentStation, nowPlaying, startNowPlayingPolling, updateMediaSessionMetadata, t])
+  }, [buildStreamUrl, currentStation, nowPlaying, startNowPlayingPolling, updateMediaSessionMetadata, t])
 
   const pause = useCallback(() => {
     if (!audioRef.current) return
@@ -265,24 +331,61 @@ export function useAudio() {
   return ctx
 }
 
+// Curated featured stations rendered at the top of the page. These are
+// hand-picked and have working metadata via StreamTheWorld.
 export const stations: Station[] = [
   {
     id: 'tropicana-bogota',
     name: 'Tropicana Bogotá',
     streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TROPICANA_SC.mp3',
-    homepage: 'https://www.tropicanafm.com/'
+    homepage: 'https://www.tropicanafm.com/',
+    country: 'Colombia',
+    countryCode: 'CO',
+    language: 'spanish',
+    codec: 'MP3',
+    tags: ['tropical', 'salsa', 'reggaeton'],
+    metadataProvider: 'streamtheworld',
   },
   {
     id: 'tropicana-cali',
     name: 'Tropicana Cali',
     streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TR_CALI.mp3',
-    homepage: 'https://www.tropicanafm.com/'
+    homepage: 'https://www.tropicanafm.com/',
+    country: 'Colombia',
+    countryCode: 'CO',
+    language: 'spanish',
+    codec: 'MP3',
+    tags: ['salsa', 'tropical'],
+    metadataProvider: 'streamtheworld',
   },
   {
     id: 'tropicana-popayan',
     name: 'Tropicana Popayán',
     streamUrl: 'https://playerservices.streamtheworld.com/api/livestream-redirect/TR_POPAYAN_SC.mp3',
-    homepage: 'https://www.tropicanafm.com/'
+    homepage: 'https://www.tropicanafm.com/',
+    country: 'Colombia',
+    countryCode: 'CO',
+    language: 'spanish',
+    codec: 'MP3',
+    tags: ['salsa', 'tropical'],
+    metadataProvider: 'streamtheworld',
+  },
+  {
+    id: 'la-x-965-cali',
+    name: 'La X 96.5',
+    // SHOUTcast stream (HTTPS, MP3 128 kbps). Verified via Radio Browser
+    // station uuid a7f9c796-e31b-43b0-a087-35daedd8a887.
+    streamUrl: 'https://tupanel.info/stream/2digitalradioHDsslLIVE040',
+    homepage: 'https://www.laxcali.com/',
+    logoUrl: 'https://www.laxcali.com/static/images/apple-icon-180x180.aab671daf60d.png',
+    country: 'Colombia',
+    countryCode: 'CO',
+    language: 'spanish',
+    codec: 'MP3',
+    bitrate: 128,
+    tags: ['pop', 'dance', 'electronic'],
+    // SHOUTcast — Icy in-stream metadata read via our proxy.
+    metadataProvider: 'icecast',
   },
 ]
 
