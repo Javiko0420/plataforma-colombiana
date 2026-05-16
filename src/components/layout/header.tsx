@@ -2,20 +2,34 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { Menu, X, Search, User, LogOut, UserCircle, Settings, Building2, PlusCircle, Shield } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, X, User, LogOut, UserCircle, Settings, Building2, PlusCircle, Shield } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 import { ScreenReader } from '@/lib/accessibility'
 import { useTranslations } from '@/components/providers/language-provider'
+import { SunMotif } from '@/components/lt/SunMotif'
+import { LtButton } from '@/components/lt/Button'
+import { cn } from '@/lib/utils'
 
-// Dominios corporativos autorizados para ver el enlace al panel de administración.
-// Capa visual de Defense in Depth — el middleware bloquea igualmente si se manipula el cliente.
 const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
+
+const NAV_LINKS = [
+  { href: '/',          labelKey: 'nav.home' },
+  { href: '/directorio', labelKey: 'nav.directory' },
+  { href: '/empleos',   labelKey: 'nav.jobs' },
+  { href: '/eventos',   labelKey: 'nav.events' },
+  { href: '/foros',     labelKey: 'nav.forums' },
+  { href: '/deportes',  labelKey: 'nav.sports' },
+  { href: '/clima',     labelKey: 'nav.weather' },
+  { href: '/tasas',     labelKey: 'nav.rates' },
+]
 
 export function Header() {
   const { t } = useTranslations()
   const { data: session, status } = useSession()
+  const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -23,260 +37,195 @@ export function Header() {
   const userMenuRef = useRef<HTMLDivElement>(null)
   const userMenuButtonRef = useRef<HTMLButtonElement>(null)
 
-  // Defense in Depth: ocultar visualmente el enlace de admin si no cumple rol + dominio
   const userEmail = session?.user?.email || ''
   const hasAdminRole = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR'
   const hasCorporateEmail = ALLOWED_ADMIN_DOMAINS.some(domain => userEmail.endsWith(domain))
   const showAdminPanel = hasAdminRole && hasCorporateEmail
 
-  // Handle mobile menu toggle with accessibility
   const toggleMobileMenu = () => {
-    const newState = !isMenuOpen
-    setIsMenuOpen(newState)
-    
-    // Announce state change to screen readers
-    ScreenReader.announce(
-      newState ? t('sr.menu.open') : t('sr.menu.closed'),
-      'polite'
-    )
+    const next = !isMenuOpen
+    setIsMenuOpen(next)
+    ScreenReader.announce(next ? t('sr.menu.open') : t('sr.menu.closed'), 'polite')
   }
 
-  // Handle user menu toggle
-  const toggleUserMenu = () => {
-    setIsUserMenuOpen(!isUserMenuOpen)
-  }
+  const toggleUserMenu = () => setIsUserMenuOpen(prev => !prev)
 
-  // Handle logout
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' })
   }
 
-  // Close user menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node) &&
-        userMenuButtonRef.current &&
-        !userMenuButtonRef.current.contains(event.target as Node)
-      ) {
-        setIsUserMenuOpen(false)
-      }
+        userMenuRef.current && !userMenuRef.current.contains(e.target as Node) &&
+        userMenuButtonRef.current && !userMenuButtonRef.current.contains(e.target as Node)
+      ) setIsUserMenuOpen(false)
     }
-
-    if (isUserMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    if (isUserMenuOpen) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
   }, [isUserMenuOpen])
 
-  // Handle keyboard navigation for mobile menu
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       if (!isMenuOpen) return
-
-      if (event.key === 'Escape') {
+      if (e.key === 'Escape') {
         setIsMenuOpen(false)
         menuButtonRef.current?.focus()
         ScreenReader.announce(t('sr.menu.closed.short'), 'polite')
       }
     }
-
-    if (isMenuOpen) {
-      document.addEventListener('keydown', handleKeyDown)
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
+    if (isMenuOpen) document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
   }, [isMenuOpen, t])
 
+  function isActive(href: string) {
+    if (href === '/') return pathname === '/'
+    return pathname.startsWith(href)
+  }
+
   return (
-    <header 
-      className="bg-background text-foreground shadow-lg border-b border-border"
+    <header
+      className="border-b-[2px] border-[var(--lt-ink)]"
+      style={{ background: 'var(--lt-bg)' }}
       role="banner"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link 
-              href="/" 
-              className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md p-1"
-              aria-label={`${t('app.name')} - ${t('nav.home')}`}
-            >
-              <div 
-                className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-red-500 rounded-full flex items-center justify-center"
-                aria-hidden="true"
-              >
-                <span className="text-white font-bold text-sm">LT</span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                {t('app.name')}
-              </span>
-            </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <nav 
-            className="hidden md:flex items-center gap-x-10"
+          {/* ── Logo ── */}
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2 rounded-lg p-1 group"
+            aria-label={`${t('app.name')} - ${t('nav.home')}`}
+          >
+            <SunMotif size={40} className="shrink-0 transition-transform group-hover:scale-105" />
+            <div className="flex flex-col leading-tight">
+              <span
+                className="text-lg font-bold tracking-tight"
+                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+              >
+                Latin <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>Territory</em>
+              </span>
+              <span
+                className="text-[10px] font-medium tracking-wide"
+                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+              >
+                ¡Australia, esto es nuestro! ✦
+              </span>
+            </div>
+          </Link>
+
+          {/* ── Desktop Nav ── */}
+          <nav
+            className="hidden md:flex items-center gap-1"
             role="navigation"
             aria-label={t('app.name')}
           >
-            <Link 
-              href="/" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.home')}
-            </Link>
-            <Link 
-              href="/directorio" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.directory')}
-            </Link>
-            <Link 
-              href="/empleos" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.jobs')}
-            </Link>
-            <Link 
-              href="/eventos" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.events')}
-            </Link>
-            <Link 
-              href="/foros" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.forums')}
-            </Link>
-            <Link 
-              href="/deportes" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.sports')}
-            </Link>
-            <Link 
-              href="/clima" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.weather')}
-            </Link>
-            <Link 
-              href="/tasas" 
-              className="text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md px-3 py-2"
-            >
-              {t('nav.rates')}
-            </Link>
+            {NAV_LINKS.map(({ href, labelKey }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'px-3 py-1.5 text-sm font-medium rounded-[var(--lt-radius-pill)] transition-all',
+                  'focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2',
+                  isActive(href)
+                    ? 'text-[var(--lt-paper)]'
+                    : 'text-[var(--lt-ink)] hover:bg-[var(--lt-ink)]/10',
+                )}
+                style={isActive(href) ? { background: 'var(--lt-ink)' } : undefined}
+                aria-current={isActive(href) ? 'page' : undefined}
+              >
+                {t(labelKey)}
+              </Link>
+            ))}
           </nav>
 
-          {/* Right side controls */}
-          <div className="flex items-center space-x-4">
-            {/* Search button */}
-            <button 
-              className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label={t('header.search.aria')}
-            >
-              <Search className="h-5 w-5" aria-hidden="true" />
-            </button>
-
-            {/* Theme toggle */}
+          {/* ── Right controls ── */}
+          <div className="flex items-center gap-2">
             <ThemeToggle />
-
-            {/* Language toggle */}
             <LanguageToggle />
 
             {/* User menu */}
             <div className="relative">
               {status === 'loading' ? (
                 <div className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
-                  <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+                  <div
+                    className="animate-spin h-5 w-5 rounded-full border-2"
+                    style={{ borderColor: 'var(--lt-ink-soft)', borderTopColor: 'var(--lt-terracota)' }}
+                  />
                 </div>
               ) : session ? (
                 <>
                   <button
                     ref={userMenuButtonRef}
                     onClick={toggleUserMenu}
-                    className="p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    className="p-2 rounded-[var(--lt-radius-sm)] min-h-[44px] min-w-[44px] flex items-center justify-center border-[1.6px] border-[var(--lt-ink)] hover:bg-[var(--lt-paper)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
+                    style={{ color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
                     aria-label={t('header.userMenu')}
                     aria-expanded={isUserMenuOpen}
                   >
                     <User className="h-5 w-5" aria-hidden="true" />
                   </button>
 
-                  {/* User dropdown menu */}
                   {isUserMenuOpen && (
                     <div
                       ref={userMenuRef}
-                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50"
+                      className="absolute right-0 mt-2 w-56 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] py-2 z-50"
+                      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
                       role="menu"
                     >
-                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      <div
+                        className="px-4 py-3 border-b-[2px] border-[var(--lt-ink)]"
+                        style={{ borderColor: 'var(--lt-ink)' }}
+                      >
+                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-serif)' }}>
                           {session.user?.name}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        <p className="text-xs truncate" style={{ color: 'var(--lt-ink-soft)' }}>
                           {session.user?.email}
                         </p>
                       </div>
 
-                      {/* Panel de Control (solo visible para personal autorizado) */}
                       {showAdminPanel && (
                         <>
                           <Link
                             href="/admin"
-                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold transition-colors hover:opacity-80"
+                            style={{ color: 'var(--lt-terracota)' }}
                             onClick={() => setIsUserMenuOpen(false)}
                             role="menuitem"
                           >
                             <Shield className="h-4 w-4" aria-hidden="true" />
                             Panel de Control
                           </Link>
-                          <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+                          <div className="border-t border-[var(--lt-ink)]/20 my-1" />
                         </>
                       )}
 
-                      <Link
-                        href="/perfil"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        role="menuitem"
-                      >
-                        <UserCircle className="h-4 w-4" aria-hidden="true" />
-                        {t('auth.profile')}
-                      </Link>
+                      {[
+                        { href: '/perfil', icon: UserCircle, label: t('auth.profile') },
+                        { href: '/perfil/configuracion', icon: Settings, label: t('profile.settings.title') },
+                        { href: '/registrar-negocio', icon: PlusCircle, label: 'Registrar mi Negocio' },
+                      ].map(({ href, icon: Icon, label }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className="flex items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-[var(--lt-bg)]"
+                          style={{ color: 'var(--lt-ink)' }}
+                          onClick={() => setIsUserMenuOpen(false)}
+                          role="menuitem"
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                          {label}
+                        </Link>
+                      ))}
 
-                      <Link
-                        href="/perfil/configuracion"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        role="menuitem"
-                      >
-                        <Settings className="h-4 w-4" aria-hidden="true" />
-                        {t('profile.settings.title')}
-                      </Link>
-
-                      <Link
-                        href="/registrar-negocio"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors font-medium"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        role="menuitem"
-                      >
-                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
-                        Registrar mi Negocio
-                      </Link>
-
-                      <div className="border-t border-gray-200 dark:border-gray-700 my-2" />
+                      <div className="border-t border-[var(--lt-ink)]/20 my-1" />
 
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors hover:bg-[var(--lt-bg)]"
+                        style={{ color: 'var(--lt-terracota)' }}
                         role="menuitem"
                       >
                         <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -286,14 +235,18 @@ export function Header() {
                   )}
                 </>
               ) : (
-                <Link
-                  href="/auth/signin"
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
+                <LtButton
+                  variant="sticker"
+                  tone="sun"
+                  size="sm"
+                  rotate={-1.2}
+                  iconLeft={<User className="h-4 w-4" aria-hidden="true" />}
+                  className="hidden md:inline-flex"
+                  onClick={() => { window.location.href = '/auth/signin' }}
                   aria-label={t('auth.login.title')}
                 >
-                  <User className="h-4 w-4" aria-hidden="true" />
-                  <span>{t('auth.login.title')}</span>
-                </Link>
+                  {t('auth.login.title')}
+                </LtButton>
               )}
             </div>
 
@@ -301,131 +254,73 @@ export function Header() {
             <button
               ref={menuButtonRef}
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-foreground/80 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="md:hidden p-2 rounded-[var(--lt-radius-sm)] min-h-[44px] min-w-[44px] flex items-center justify-center border-[1.6px] border-[var(--lt-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
+              style={{ color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
               aria-expanded={isMenuOpen}
               aria-controls="mobile-menu"
               aria-label={isMenuOpen ? t('sr.menu.closed') : t('sr.menu.open')}
             >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Menu className="h-6 w-6" aria-hidden="true" />
-              )}
+              {isMenuOpen
+                ? <X className="h-6 w-6" aria-hidden="true" />
+                : <Menu className="h-6 w-6" aria-hidden="true" />
+              }
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* ── Mobile Nav ── */}
         {isMenuOpen && (
-          <div 
-            className="md:hidden"
+          <div
             id="mobile-menu"
             role="navigation"
             aria-label="Menú de navegación móvil"
+            className="md:hidden"
           >
-            <div 
+            <div
               ref={mobileMenuRef}
-              className="px-2 pt-2 pb-3 space-y-3 sm:px-3 bg-background rounded-lg mt-2 border border-border"
+              className="px-2 pt-2 pb-4 space-y-1 rounded-[var(--lt-radius-lg)] mt-2 mb-2 border-[2px] border-[var(--lt-ink)]"
+              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
             >
-              <Link
-                href="/"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.home'), 'polite')
-                }}
-              >
-                {t('nav.home')}
-              </Link>
-              <Link
-                href="/directorio"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.directory'), 'polite')
-                }}
-              >
-                {t('nav.directory')}
-              </Link>
-              <Link
-                href="/empleos"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.jobs'), 'polite')
-                }}
-              >
-                {t('nav.jobs')}
-              </Link>
-              <Link
-                href="/eventos"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.events'), 'polite')
-                }}
-              >
-                {t('nav.events')}
-              </Link>
-              <Link
-                href="/foros"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.forums'), 'polite')
-                }}
-              >
-                {t('nav.forums')}
-              </Link>
-              <Link
-                href="/deportes"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.sports'), 'polite')
-                }}
-              >
-                {t('nav.sports')}
-              </Link>
-              <Link
-                href="/clima"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.weather'), 'polite')
-                }}
-              >
-                {t('nav.weather')}
-              </Link>
-              <Link
-                href="/tasas"
-                className="block px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] flex items-center"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  ScreenReader.announce(t('sr.nav.to.rates'), 'polite')
-                }}
-              >
-                {t('nav.rates')}
-              </Link>
+              {NAV_LINKS.map(({ href, labelKey }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'flex items-center px-4 py-3 text-base font-medium rounded-[var(--lt-radius-sm)] min-h-[48px]',
+                    'focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2',
+                    'transition-colors',
+                    isActive(href)
+                      ? 'text-[var(--lt-paper)]'
+                      : 'hover:bg-[var(--lt-bg)]',
+                  )}
+                  style={isActive(href) ? { background: 'var(--lt-ink)', color: 'var(--lt-paper)' } : { color: 'var(--lt-ink)' }}
+                  aria-current={isActive(href) ? 'page' : undefined}
+                  onClick={() => {
+                    setIsMenuOpen(false)
+                    ScreenReader.announce(t(`sr.nav.to.${labelKey.split('.')[1]}`), 'polite')
+                  }}
+                >
+                  {t(labelKey)}
+                </Link>
+              ))}
 
-              {/* Mobile user menu */}
-              <div className="border-t border-border my-2" />
-              
+              <div className="border-t-[2px] border-[var(--lt-ink)] my-2 mx-2" />
+
               {status === 'loading' ? (
                 <div className="px-4 py-3 flex items-center justify-center">
-                  <div className="animate-spin h-5 w-5 border-2 border-gray-300 border-t-blue-600 rounded-full" />
+                  <div className="animate-spin h-5 w-5 rounded-full border-2" style={{ borderColor: 'var(--lt-ink-soft)', borderTopColor: 'var(--lt-terracota)' }} />
                 </div>
               ) : session ? (
                 <>
-                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                  <div className="px-4 py-2 text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
                     {session.user?.name}
                   </div>
 
-                  {/* Panel de Control mobile (solo visible para personal autorizado) */}
                   {showAdminPanel && (
                     <Link
                       href="/admin"
-                      className="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px] transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 font-semibold rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:opacity-80"
+                      style={{ color: 'var(--lt-terracota)' }}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <Shield className="h-5 w-5" aria-hidden="true" />
@@ -433,48 +328,26 @@ export function Header() {
                     </Link>
                   )}
 
-                  <Link
-                    href="/perfil"
-                    className="flex items-center gap-3 px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/perfil" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-ink)' }} onClick={() => setIsMenuOpen(false)}>
                     <UserCircle className="h-5 w-5" aria-hidden="true" />
                     {t('auth.profile')}
                   </Link>
-                  <Link
-                    href="/registrar-negocio"
-                    className="flex items-center gap-3 px-4 py-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/registrar-negocio" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-ink)' }} onClick={() => setIsMenuOpen(false)}>
                     <Building2 className="h-5 w-5" aria-hidden="true" />
                     Registrar Negocio
                   </Link>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false)
-                      handleLogout()
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
-                  >
+                  <button onClick={() => { setIsMenuOpen(false); handleLogout() }} className="flex items-center gap-3 w-full px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-terracota)' }}>
                     <LogOut className="h-5 w-5" aria-hidden="true" />
                     {t('auth.logout')}
                   </button>
                 </>
               ) : (
                 <>
-                  <Link
-                    href="/auth/signin"
-                    className="flex items-center gap-3 px-4 py-3 text-foreground/80 hover:text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/auth/signin" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-ink)' }} onClick={() => setIsMenuOpen(false)}>
                     <User className="h-5 w-5" aria-hidden="true" />
                     {t('auth.login.title')}
                   </Link>
-                  <Link
-                    href="/auth/signup"
-                    className="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-md min-h-[48px]"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <Link href="/auth/signup" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] font-semibold" style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)' }} onClick={() => setIsMenuOpen(false)}>
                     <User className="h-5 w-5" aria-hidden="true" />
                     {t('auth.signup.title')}
                   </Link>
