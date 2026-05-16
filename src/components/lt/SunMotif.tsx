@@ -48,7 +48,7 @@ export function SunMotif({
         <line x1="55"  y1="6"   x2="53"  y2="15" opacity="0.6" />
       </g>
       {/* Círculo exterior */}
-      <circle cx="40" cy="40" r="18" fill={color} stroke="var(--lt-ink)" strokeWidth="2.5" />
+      <circle cx="40" cy="40" r="18" fill={color} />
       {/* Núcleo */}
       <circle cx="40" cy="40" r="11" fill={coreColor} />
     </svg>
