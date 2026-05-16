@@ -125,14 +125,11 @@ export function Header() {
               <Link
                 key={href}
                 href={href}
-                className={cn(
-                  'px-3 py-1.5 text-sm font-medium rounded-[var(--lt-radius-pill)] transition-all',
-                  'focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2',
-                  isActive(href)
-                    ? 'text-[var(--lt-paper)]'
-                    : 'text-[var(--lt-ink)] hover:bg-[var(--lt-ink)]/10',
-                )}
-                style={isActive(href) ? { background: 'var(--lt-ink)' } : undefined}
+                className="px-3 py-1.5 text-sm font-medium rounded-[var(--lt-radius-pill)] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
+                style={isActive(href)
+                  ? { background: 'var(--lt-ink)', color: 'var(--lt-paper)' }
+                  : { color: 'var(--lt-ink)' }
+                }
                 aria-current={isActive(href) ? 'page' : undefined}
               >
                 {t(labelKey)}
@@ -285,14 +282,7 @@ export function Header() {
                 <Link
                   key={href}
                   href={href}
-                  className={cn(
-                    'flex items-center px-4 py-3 text-base font-medium rounded-[var(--lt-radius-sm)] min-h-[48px]',
-                    'focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2',
-                    'transition-colors',
-                    isActive(href)
-                      ? 'text-[var(--lt-paper)]'
-                      : 'hover:bg-[var(--lt-bg)]',
-                  )}
+                  className="flex items-center px-4 py-3 text-base font-medium rounded-[var(--lt-radius-sm)] min-h-[48px] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2 transition-colors"
                   style={isActive(href) ? { background: 'var(--lt-ink)', color: 'var(--lt-paper)' } : { color: 'var(--lt-ink)' }}
                   aria-current={isActive(href) ? 'page' : undefined}
                   onClick={() => {
