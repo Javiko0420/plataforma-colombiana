@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search, Filter, MapPin, Phone, MessageCircle, Building2, Instagram } from 'lucide-react'
+import { Search, Filter, MapPin, Phone, MessageCircle, Building2, Instagram, X } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { LtBadge } from '@/components/lt/Badge'
+import { LtButton } from '@/components/lt/Button'
+import { HandDrawnBox } from '@/components/lt/HandDrawnBox'
+import { SunMotif } from '@/components/lt/SunMotif'
+import { cn } from '@/lib/utils'
 
-// Definimos la interfaz basada en tu modelo de Prisma
 interface Business {
   id: string
   name: string
@@ -29,14 +33,15 @@ interface DirectoryClientProps {
 }
 
 const categories = [
-  'Gastronomía', 'Servicios', 'Salud', 'Construcción', 
+  'Gastronomía', 'Servicios', 'Salud', 'Construcción',
   'Educación', 'Tecnología', 'Artesanías', 'Otros'
 ]
 
-// Lista de ciudades principales en Australia (según tu enfoque)
 const cities = [
   'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Canberra'
 ]
+
+const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1]
 
 export default function DirectoryClient({ initialBusinesses }: DirectoryClientProps) {
   const searchParams = useSearchParams()
@@ -45,221 +50,299 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
   const [selectedCity, setSelectedCity] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
-  // Lógica de Filtrado
   const filteredBusinesses = initialBusinesses.filter(business => {
-    const matchesSearch = business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         business.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      business.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      business.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = !selectedCategory || business.category === selectedCategory
     const matchesCity = !selectedCity || business.city === selectedCity
-    
     return matchesSearch && matchesCategory && matchesCity
   })
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Buscador y Filtros */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 p-6 mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+      {/* ── Buscador y filtros ── */}
+      <HandDrawnBox padding="1.25rem" className="mb-8">
         <div className="flex flex-col lg:flex-row gap-4">
-          
-          {/* Barra de Búsqueda */}
+          {/* Barra de búsqueda */}
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5"
+              aria-hidden="true"
+              style={{ color: 'var(--lt-ink-soft)' }}
+            />
+            <label htmlFor="dir-search" className="sr-only">Buscar negocios</label>
             <input
-              type="text"
-              placeholder="Buscar arepas, contadores, mecánicos..."
+              id="dir-search"
+              name="q"
+              type="search"
+              placeholder="Buscar arepas, contadores, mecánicos…"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none transition-all"
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] transition-all"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             />
           </div>
 
-          {/* Botón Filtros Móvil */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden flex items-center justify-center px-4 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
-          >
-            <Filter className="h-5 w-5 mr-2" />
-            Filtros
-          </button>
-
-          {/* Filtros Desktop */}
-          <div className="hidden lg:flex gap-4">
+          {/* Selects desktop */}
+          <div className="hidden lg:flex gap-3">
+            <label htmlFor="dir-cat" className="sr-only">Categoría</label>
             <select
+              id="dir-cat"
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none cursor-pointer"
+              onChange={e => setSelectedCategory(e.target.value)}
+              className="px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] cursor-pointer"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las categorías</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
 
+            <label htmlFor="dir-city" className="sr-only">Ciudad</label>
             <select
+              id="dir-city"
               value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white outline-none cursor-pointer"
+              onChange={e => setSelectedCity(e.target.value)}
+              className="px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] cursor-pointer"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las ciudades</option>
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
-              ))}
+              {cities.map(city => <option key={city} value={city}>{city}</option>)}
             </select>
           </div>
+
+          {/* Toggle filtros móvil */}
+          <LtButton
+            variant="outline"
+            tone="ink"
+            size="sm"
+            iconLeft={showFilters ? <X className="h-4 w-4" aria-hidden="true" /> : <Filter className="h-4 w-4" aria-hidden="true" />}
+            onClick={() => setShowFilters(!showFilters)}
+            className="lg:hidden"
+            aria-expanded={showFilters}
+            aria-controls="dir-mobile-filters"
+          >
+            Filtros
+          </LtButton>
         </div>
 
-        {/* Filtros Móvil (Desplegable) */}
+        {/* Filtros móvil */}
         {showFilters && (
-          <div className="lg:hidden mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 grid grid-cols-1 gap-4">
+          <div id="dir-mobile-filters" className="lg:hidden mt-4 pt-4 border-t-[1.6px] border-[var(--lt-ink)]/30 grid gap-4">
+            <label htmlFor="dir-cat-m" className="sr-only">Categoría</label>
             <select
+              id="dir-cat-m"
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+              onChange={e => setSelectedCategory(e.target.value)}
+              className="w-full px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las categorías</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
+              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
-
+            <label htmlFor="dir-city-m" className="sr-only">Ciudad</label>
             <select
+              id="dir-city-m"
               value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+              onChange={e => setSelectedCity(e.target.value)}
+              className="w-full px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las ciudades</option>
-              {cities.map(city => (
-                <option key={city} value={city}>{city}</option>
-              ))}
+              {cities.map(city => <option key={city} value={city}>{city}</option>)}
             </select>
           </div>
         )}
-      </div>
 
-      {/* Resultados: Contador */}
+        {/* Chips de categoría activos */}
+        {(selectedCategory || selectedCity) && (
+          <div className="mt-3 flex flex-wrap gap-2 items-center">
+            <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>Filtrando por:</span>
+            {selectedCategory && (
+              <LtBadge tone="terracota" rotate={-1}>
+                {selectedCategory}
+                <button onClick={() => setSelectedCategory('')} aria-label={`Quitar filtro ${selectedCategory}`} className="ml-1">
+                  <X className="h-3 w-3" />
+                </button>
+              </LtBadge>
+            )}
+            {selectedCity && (
+              <LtBadge tone="verde" rotate={1}>
+                {selectedCity}
+                <button onClick={() => setSelectedCity('')} aria-label={`Quitar filtro ${selectedCity}`} className="ml-1">
+                  <X className="h-3 w-3" />
+                </button>
+              </LtBadge>
+            )}
+          </div>
+        )}
+      </HandDrawnBox>
+
+      {/* ── Contador ── */}
       <div className="mb-6">
-        <p className="text-slate-600 dark:text-slate-400">
-          Mostrando <span className="font-bold text-slate-900 dark:text-white">{filteredBusinesses.length}</span> territorios latinos
+        <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
+          Mostrando{' '}
+          <strong style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-serif)' }}>
+            {filteredBusinesses.length}
+          </strong>{' '}
+          territorios latinos
         </p>
       </div>
 
-      {/* Grid de Negocios */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBusinesses.map((business) => (
-          <div key={business.id} className="group bg-white dark:bg-slate-900 rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-            
-            {/* Cabecera / Imagen */}
-            <div className="relative h-48 bg-slate-800 overflow-hidden">
-               
-               {/* LÓGICA DE IMAGEN: Si tiene fotos, muestra la primera. Si no, muestra el placeholder */}
-               {business.images && business.images.length > 0 ? (
-                   <Image
-                     src={business.images[0]}
-                     alt={business.name}
-                     fill
-                     className="object-cover group-hover:scale-105 transition-transform duration-500"
-                   />
-               ) : (
-                   // Placeholder por defecto (Edificio)
-                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
-                      <Building2 className="w-20 h-20 text-white/20 group-hover:scale-110 transition-transform duration-500" />
-                   </div>
-               )}
-               
-               {/* Badge de Verificado */}
-               {business.isVerified && (
-                 <div className="absolute top-4 right-4 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1 z-10">
-                   ✓ Oficial
-                 </div>
-               )}
-               
-               {/* Categoría */}
-               <div className="absolute bottom-4 left-4 z-10">
-                 <span className="bg-slate-900/80 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-white/10">
-                   {business.category}
-                 </span>
-               </div>
-            </div>
+      {/* ── Grid de negocios ── */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {filteredBusinesses.map((business, i) => {
+          const rotation = CARD_ROTATIONS[i % CARD_ROTATIONS.length]
+          return (
+            <article
+              key={business.id}
+              className="group flex flex-col rounded-[var(--lt-radius-md)] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 hover:-translate-y-1"
+              style={{
+                background: 'var(--lt-paper)',
+                boxShadow: 'var(--lt-shadow-sticker-lg)',
+                transform: `rotate(${rotation}deg)`,
+              }}
+              data-lt-rotate="true"
+            >
+              {/* Imagen / Placeholder */}
+              <div className="relative h-48 overflow-hidden border-b-[2px] border-[var(--lt-ink)]">
+                {business.images && business.images.length > 0 ? (
+                  <Image
+                    src={business.images[0]}
+                    alt={business.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{ background: 'var(--lt-bg)' }}
+                    aria-hidden="true"
+                  >
+                    <Building2
+                      className="w-16 h-16 group-hover:scale-110 transition-transform duration-500"
+                      style={{ color: 'var(--lt-ink)', opacity: 0.15 }}
+                    />
+                  </div>
+                )}
 
-            {/* Contenido */}
-            <div className="p-6 flex-1 flex flex-col">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-blue-500 transition-colors">
-                  {business.name}
-                </h3>
+                {/* Badge verificado */}
+                {business.isVerified && (
+                  <div className="absolute top-3 right-3 z-10">
+                    <LtBadge tone="verde" rotate={-1}>✓ Oficial</LtBadge>
+                  </div>
+                )}
+
+                {/* Badge categoría */}
+                <div className="absolute bottom-3 left-3 z-10">
+                  <LtBadge tone="paper" rotate={1}>{business.category}</LtBadge>
+                </div>
               </div>
 
-              <div className="flex items-center text-slate-500 dark:text-slate-400 text-sm mb-4">
-                <MapPin className="h-4 w-4 mr-1 text-red-500" />
-                {business.city || 'Australia'} {business.state ? `, ${business.state}` : ''}
-              </div>
-
-              <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 line-clamp-3 flex-1">
-                {business.description}
-              </p>
-
-              {/* Botones de Acción */}
-              <div className="grid grid-cols-2 gap-2 mt-auto">
-                {business.whatsapp && (
-                  <a
-                    href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-medium transition-colors"
+              {/* Contenido */}
+              <div className="p-5 flex-1 flex flex-col gap-3">
+                <div>
+                  <h2
+                    className="text-xl font-bold mb-1 group-hover:text-[var(--lt-terracota)] transition-colors line-clamp-1"
+                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
                   >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    WhatsApp
-                  </a>
-                )}
-                
-                {/* Si no tiene WhatsApp, mostramos botón de llamar */}
-                {!business.whatsapp && business.phone && (
-                   <a
-                    href={`tel:${business.phone}`}
-                    className="flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg text-sm font-medium transition-colors border border-slate-200 dark:border-slate-700"
+                    {business.name}
+                  </h2>
+                  <div
+                    className="flex items-center gap-1 text-sm"
+                    style={{ color: 'var(--lt-ink-soft)' }}
                   >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Llamar
-                  </a>
-                )}
+                    <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
+                    {business.city || 'Australia'}{business.state ? `, ${business.state}` : ''}
+                  </div>
+                </div>
 
-                {/* Si no tiene WhatsApp ni teléfono, mostramos Instagram */}
-                {!business.whatsapp && !business.phone && business.instagram && (
-                  <a
-                    href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Instagram className="h-4 w-4 mr-2" />
-                    Instagram
-                  </a>
-                )}
-
-                <Link
-                  href={`/negocio/${business.slug}`}
-                  className="flex items-center justify-center px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white rounded-lg text-sm font-medium transition-colors border border-slate-200 dark:border-slate-700"
+                <p
+                  className="text-sm leading-relaxed flex-1 line-clamp-3"
+                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
                 >
-                  Ver Perfil
-                </Link>
+                  {business.description}
+                </p>
+
+                {/* Acciones */}
+                <div className={cn('grid gap-2 mt-auto', business.whatsapp || business.phone || business.instagram ? 'grid-cols-2' : 'grid-cols-1')}>
+                  {business.whatsapp && (
+                    <a
+                      href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
+                      style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+                      aria-label={`Contactar a ${business.name} por WhatsApp`}
+                    >
+                      <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                      WhatsApp
+                    </a>
+                  )}
+                  {!business.whatsapp && business.phone && (
+                    <a
+                      href={`tel:${business.phone}`}
+                      className="flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
+                      style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
+                      aria-label={`Llamar a ${business.name}`}
+                    >
+                      <Phone className="h-4 w-4" aria-hidden="true" />
+                      Llamar
+                    </a>
+                  )}
+                  {!business.whatsapp && !business.phone && business.instagram && (
+                    <a
+                      href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
+                      style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+                      aria-label={`Ver Instagram de ${business.name}`}
+                    >
+                      <Instagram className="h-4 w-4" aria-hidden="true" />
+                      Instagram
+                    </a>
+                  )}
+                  <Link
+                    href={`/negocio/${business.slug}`}
+                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
+                    style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
+                  >
+                    Ver perfil →
+                  </Link>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            </article>
+          )
+        })}
       </div>
 
-      {/* Estado Vacío */}
+      {/* ── Estado vacío ── */}
       {filteredBusinesses.length === 0 && (
-        <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-          <Building2 className="h-16 w-16 mx-auto text-slate-400 mb-4" />
-          <h3 className="text-xl font-medium text-slate-900 dark:text-white mb-2">
+        <div
+          className="text-center py-16 rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
+          style={{ background: 'var(--lt-paper)' }}
+        >
+          <div aria-hidden="true" className="flex justify-center mb-4">
+            <SunMotif size={72} className="opacity-30" />
+          </div>
+          <h3
+            className="text-xl font-bold mb-2"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
             No encontramos negocios con esa búsqueda
           </h3>
-          <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6">
+          <p
+            className="text-sm max-w-md mx-auto mb-6"
+            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+          >
             Intenta cambiar los filtros o sé el primero en registrar un negocio en esta categoría.
           </p>
-          <Link href="/registrar-negocio" className="text-blue-600 hover:underline font-medium">
-            ¡Registra tu negocio gratis!
+          <Link href="/registrar-negocio">
+            <LtButton variant="sticker" tone="terracota" size="md" rotate={-1}>
+              ¡Registra tu negocio gratis!
+            </LtButton>
           </Link>
         </div>
       )}
