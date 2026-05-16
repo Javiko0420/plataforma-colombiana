@@ -28,7 +28,7 @@ export function SunMotif({
       {...props}
     >
       {/* Rayos exteriores */}
-      <g stroke={color} strokeWidth="3.5" strokeLinecap="round">
+      <g stroke={color} strokeWidth="2" strokeLinecap="round">
         <line x1="40" y1="4"  x2="40" y2="14" />
         <line x1="40" y1="66" x2="40" y2="76" />
         <line x1="4"  y1="40" x2="14" y2="40" />
@@ -47,10 +47,10 @@ export function SunMotif({
         <line x1="25"  y1="74"  x2="27"  y2="65" opacity="0.6" />
         <line x1="55"  y1="6"   x2="53"  y2="15" opacity="0.6" />
       </g>
-      {/* Círculo exterior */}
+      {/* Círculo exterior — anillo mostaza delgado */}
       <circle cx="40" cy="40" r="18" fill={color} />
-      {/* Núcleo */}
-      <circle cx="40" cy="40" r="11" fill={coreColor} />
+      {/* Núcleo terracota — radio aumentado para reducir el anillo amarillo */}
+      <circle cx="40" cy="40" r="14" fill={coreColor} />
     </svg>
   )
 }
