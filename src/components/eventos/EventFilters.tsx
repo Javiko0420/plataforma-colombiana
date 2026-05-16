@@ -15,13 +15,11 @@ export default function EventFilters() {
   const handleFilterChange = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
-
       if (value) {
         params.set(key, value)
       } else {
         params.delete(key)
       }
-
       startTransition(() => {
         router.replace(`${pathname}?${params.toString()}`)
       })
@@ -29,42 +27,60 @@ export default function EventFilters() {
     [searchParams, pathname, router]
   )
 
-  // Debounce para búsqueda por texto
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
+    const delay = setTimeout(() => {
       handleFilterChange('q', term)
     }, 400)
-
-    return () => clearTimeout(delayDebounceFn)
+    return () => clearTimeout(delay)
   }, [term, handleFilterChange])
 
+  const inputBase = [
+    'block w-full py-3 rounded-[var(--lt-radius-sm)]',
+    'border-[1.6px] border-[var(--lt-ink)] outline-none text-sm transition-all',
+    'focus:ring-2 focus:ring-[var(--lt-terracota)] focus:border-[var(--lt-terracota)]',
+  ].join(' ')
+
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4">
-      {/* Input de Búsqueda */}
+    <div
+      className="flex flex-col md:flex-row gap-4 p-4 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)]"
+      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)', fontFamily: 'var(--lt-font-sans)' }}
+      role="search"
+      aria-label="Filtros de eventos"
+    >
+      {/* Búsqueda */}
       <div className="relative flex-1">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <Search
-            className={`h-5 w-5 ${isPending ? 'text-red-500 animate-pulse' : 'text-gray-400 dark:text-gray-500'}`}
+            className={`h-5 w-5 transition-colors ${isPending ? 'animate-pulse' : ''}`}
+            aria-hidden="true"
+            style={{ color: isPending ? 'var(--lt-terracota)' : 'var(--lt-ink-soft)' }}
           />
         </div>
+        <label htmlFor="events-q" className="sr-only">Buscar evento</label>
         <input
-          type="text"
+          id="events-q"
+          name="q"
+          type="search"
           value={term}
-          onChange={(e) => setTerm(e.target.value)}
-          placeholder="Buscar evento..."
-          className="block w-full pl-10 pr-3 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all"
+          onChange={e => setTerm(e.target.value)}
+          placeholder="Buscar evento…"
+          className={`${inputBase} pl-10 pr-3`}
+          style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
         />
       </div>
 
-      {/* Select de Categoría */}
+      {/* Select categoría */}
       <div className="relative w-full md:w-56 shrink-0">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Tag className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+          <Tag className="h-5 w-5" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
         </div>
+        <label htmlFor="events-cat" className="sr-only">Categoría de evento</label>
         <select
-          onChange={(e) => handleFilterChange('category', e.target.value)}
+          id="events-cat"
+          onChange={e => handleFilterChange('category', e.target.value)}
           defaultValue={searchParams.get('category') || ''}
-          className="block w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm appearance-none cursor-pointer transition-all"
+          className={`${inputBase} pl-10 pr-3 appearance-none cursor-pointer`}
+          style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
         >
           <option value="">Todas las categorías</option>
           <option value="Concierto">Concierto</option>

@@ -4,16 +4,36 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CalendarDays, MapPin } from 'lucide-react'
 import type { Event } from '@prisma/client'
+import { LtBadge } from '@/components/lt/Badge'
+
+const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1]
 
 interface EventCardProps {
   event: Event
+  index?: number
 }
 
-export default function EventCard({ event }: EventCardProps) {
+export default function EventCard({ event, index = 0 }: EventCardProps) {
+  const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length]
+
+  const dateTone = ['Concierto', 'Festival', 'Fiesta'].includes(event.category)
+    ? 'terracota'
+    : event.category === 'Deportes'
+    ? 'verde'
+    : 'sun'
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col h-full overflow-hidden group">
+    <article
+      className="group flex flex-col h-full rounded-[var(--lt-radius-md)] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 hover:-translate-y-1"
+      style={{
+        background: 'var(--lt-paper)',
+        boxShadow: 'var(--lt-shadow-sticker-lg)',
+        transform: `rotate(${rotation}deg)`,
+      }}
+      data-lt-rotate="true"
+    >
       {event.imageUrl && (
-        <div className="relative w-full h-48 overflow-hidden">
+        <div className="relative w-full h-48 overflow-hidden border-b-[2px] border-[var(--lt-ink)]">
           <Image
             src={event.imageUrl}
             alt={event.title}
@@ -24,47 +44,56 @@ export default function EventCard({ event }: EventCardProps) {
         </div>
       )}
 
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="flex flex-wrap items-center gap-2 mb-3">
-          <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-full px-3 py-1 text-xs font-semibold">
-            <CalendarDays className="w-3 h-3" />
-            {format(new Date(event.eventDate), "d MMM, yyyy · HH:mm", { locale: es })}
-          </span>
-          <span className="bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300 rounded-full px-3 py-1 text-xs font-semibold">
-            {event.category}
-          </span>
+      <div className="p-5 flex flex-col flex-grow gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <LtBadge tone={dateTone as 'terracota' | 'verde' | 'sun'} rotate={-1}>
+            <CalendarDays className="w-3 h-3" aria-hidden="true" />
+            {format(new Date(event.eventDate), "d MMM · HH:mm", { locale: es })}
+          </LtBadge>
+          <LtBadge tone="neutral" rotate={1}>{event.category}</LtBadge>
           {event.ticketPrice && event.ticketPrice > 0 ? (
-            <span className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full px-3 py-1 text-xs font-semibold">
-              ${event.ticketPrice.toFixed(2)} AUD
-            </span>
+            <LtBadge tone="sun" rotate={-0.5}>${event.ticketPrice.toFixed(2)} AUD</LtBadge>
           ) : (
-            <span className="bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 rounded-full px-3 py-1 text-xs font-semibold">
-              Gratis
-            </span>
+            <LtBadge tone="verde" rotate={0.8}>Gratis</LtBadge>
           )}
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+        <h3
+          className="text-lg font-bold line-clamp-2 group-hover:text-[var(--lt-terracota)] transition-colors"
+          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+        >
           {event.title}
         </h3>
 
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3 leading-relaxed flex-grow">
+        <p
+          className="text-sm leading-relaxed line-clamp-3 flex-grow"
+          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+        >
           {event.description}
         </p>
 
-        <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 font-medium">
-            <MapPin className="w-4 h-4" />
-            {event.location}
+        <div className="flex items-center justify-between pt-3 border-t-[1.6px] border-[var(--lt-ink)]/20">
+          <span
+            className="inline-flex items-center gap-1 text-sm font-medium"
+            style={{ color: 'var(--lt-ink-soft)' }}
+          >
+            <MapPin className="w-4 h-4 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
+            <span className="line-clamp-1">{event.location}</span>
           </span>
           <Link
             href={`/eventos/${event.id}`}
-            className="inline-flex items-center px-5 py-2 rounded-full bg-gradient-to-r from-yellow-500 to-red-500 text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-md"
+            className="text-xs font-bold px-3 py-1.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all group-hover:-translate-y-0.5"
+            style={{
+              background: 'var(--lt-terracota)',
+              color: 'var(--lt-paper)',
+              boxShadow: 'var(--lt-shadow-sticker)',
+            }}
+            aria-label={`Ver detalles de ${event.title}`}
           >
-            Ver detalles
+            Ver detalles →
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   )
 }
