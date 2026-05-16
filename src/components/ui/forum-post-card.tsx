@@ -50,19 +50,29 @@ export function ForumPostCard({
 
   if (post.isDeleted) {
     return (
-      <div className="border border-border rounded-lg p-4 bg-background/50">
-        <p className="text-foreground/50 italic">{t('postDeleted')}</p>
+      <div
+        className="rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] p-4 opacity-60"
+        style={{ background: 'var(--lt-paper)' }}
+      >
+        <p className="text-sm italic" style={{ color: 'var(--lt-ink-soft)' }}>{t('postDeleted')}</p>
       </div>
     );
   }
 
   return (
-      <div className="border border-border rounded-lg p-4 bg-background hover:bg-background/80 transition-colors">
+      <div
+        className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] p-4 transition-all hover:-translate-y-0.5"
+        style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+      >
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-lg font-semibold text-primary">
+            <div
+              className="w-10 h-10 rounded-full border-[1.6px] border-[var(--lt-ink)] flex items-center justify-center shrink-0"
+              style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+              aria-hidden="true"
+            >
+              <span className="text-base font-bold">
                 {(post.author.nickname || 'A').charAt(0).toUpperCase()}
               </span>
             </div>
@@ -113,18 +123,19 @@ export function ForumPostCard({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-4 pt-3 border-t border-border">
+        <div className="flex items-center gap-3 pt-3 border-t-[1.6px] border-[var(--lt-ink)]/20">
           <button
             onClick={handleLike}
             disabled={!currentUserId || isLiking}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--lt-radius-sm)] border border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-[var(--lt-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] group"
+            style={{ fontFamily: 'var(--lt-font-sans)' }}
           >
             <Heart
-              className={`w-5 h-5 transition-colors ${
-                isLiking ? 'text-primary' : 'text-foreground/50 group-hover:text-primary'
-              }`}
+              className={`w-4 h-4 transition-colors ${isLiking ? '' : ''}`}
+              style={{ color: isLiking ? 'var(--lt-terracota)' : 'var(--lt-ink-soft)' }}
+              aria-hidden="true"
             />
-            <span className="text-sm text-foreground/70 group-hover:text-foreground">
+            <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
               {post.likesCount} {t('postLikes')}
             </span>
           </button>
@@ -132,10 +143,11 @@ export function ForumPostCard({
           <button
             onClick={() => onReply?.(post.id)}
             disabled={!currentUserId}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--lt-radius-sm)] border border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:border-[var(--lt-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] group"
+            style={{ fontFamily: 'var(--lt-font-sans)' }}
           >
-            <MessageCircle className="w-5 h-5 text-foreground/50 group-hover:text-primary" />
-            <span className="text-sm text-foreground/70 group-hover:text-foreground">
+            <MessageCircle className="w-4 h-4" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
+            <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
               {post.commentsCount} {t('postReplies')}
             </span>
           </button>
@@ -143,10 +155,11 @@ export function ForumPostCard({
           {currentUserId && (currentUserId !== post.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR') && (
             <button
               onClick={handleReportClick}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-colors group ml-auto"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--lt-radius-sm)] border border-transparent transition-all hover:border-[var(--lt-terracota)] ml-auto focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] group"
+              style={{ fontFamily: 'var(--lt-font-sans)' }}
             >
-              <Flag className="w-5 h-5 text-foreground/50 group-hover:text-red-500" />
-              <span className="text-sm text-foreground/70 group-hover:text-red-500">
+              <Flag className="w-4 h-4" aria-hidden="true" style={{ color: 'var(--lt-ink-soft)' }} />
+              <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
                 {t('postReport')}
               </span>
             </button>

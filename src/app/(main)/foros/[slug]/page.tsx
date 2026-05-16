@@ -12,24 +12,19 @@ import { prisma } from '@/lib/prisma';
 import { getServerLocale } from '@/lib/i18n-server';
 import { translate } from '@/lib/i18n';
 import ForumClient from './forum-client';
+import { LtBadge } from '@/components/lt/Badge';
+import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline';
+import { Users } from 'lucide-react';
 
 interface ForumPageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }
 
 async function getForumBySlug(slug: string) {
-  const forum = await prisma.forum.findUnique({
+  return prisma.forum.findUnique({
     where: { slug },
-    include: {
-      _count: {
-        select: { posts: true },
-      },
-    },
+    include: { _count: { select: { posts: true } } },
   });
-
-  return forum;
 }
 
 export default async function ForumPage({ params }: ForumPageProps) {
@@ -40,61 +35,69 @@ export default async function ForumPage({ params }: ForumPageProps) {
 
   const forum = await getForumBySlug(slug);
 
-  if (!forum) {
-    notFound();
-  }
+  if (!forum) notFound();
 
-  // Get user profile if logged in
   let userProfile = null;
   if (session?.user?.id) {
     userProfile = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        nickname: true,
-        reputation: true,
-        isBanned: true,
-        role: true,
-      },
+      select: { id: true, nickname: true, reputation: true, isBanned: true, role: true },
     });
   }
 
+  const expiresAt = new Date(forum.endDate).toLocaleString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Australia/Brisbane',
+  });
+
   return (
-    <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Forum Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 text-sm text-foreground/60 mb-2">
-            <Link
-              href="/foros"
-              className="hover:text-primary transition-colors"
-            >
-              {t('forums.title')}
-            </Link>
-            <span>/</span>
-            <span>{forum.name}</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh', paddingBottom: '4rem' }}>
+      <div className="container mx-auto px-4 py-10 max-w-4xl">
+
+        {/* ── Breadcrumb ── */}
+        <nav className="flex items-center gap-2 text-sm mb-6" aria-label="Miga de pan">
+          <Link
+            href="/foros"
+            className="font-medium transition-colors hover:text-[var(--lt-terracota)] focus:outline-none focus:underline"
+            style={{ color: 'var(--lt-ink-soft)' }}
+          >
+            {t('forums.title')}
+          </Link>
+          <span style={{ color: 'var(--lt-ink-soft)' }}>/</span>
+          <span className="font-semibold" style={{ color: 'var(--lt-ink)' }}>{forum.name}</span>
+        </nav>
+
+        {/* ── Header del foro ── */}
+        <div
+          className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 md:p-8 mb-8"
+          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
+        >
+          <h1
+            className="text-3xl md:text-4xl font-black mb-2"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
             {forum.name}
           </h1>
-          <p className="text-foreground/70">{forum.description}</p>
-          <div className="flex items-center gap-4 mt-4 text-sm text-foreground/60">
-            <span>
-              {t('forums.activeUntil')}:{' '}
-              {new Date(forum.endDate).toLocaleString(locale, {
-                hour: '2-digit',
-                minute: '2-digit',
-                timeZone: 'Australia/Brisbane',
-              })}
-            </span>
-            <span>•</span>
-            <span>
+          <HandDrawnUnderline width={160} color="var(--lt-sun-core)" thickness={2.5} className="mb-4" aria-hidden="true" />
+          <p
+            className="text-sm mb-4"
+            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+          >
+            {forum.description}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <LtBadge tone="neutral" rotate={-1}>
+              {t('forums.activeUntil')}: {expiresAt}
+            </LtBadge>
+            <LtBadge tone="sun" rotate={1}>
+              <Users className="w-3 h-3" aria-hidden="true" />
               {forum._count.posts} {t('forums.postsCount')}
-            </span>
+            </LtBadge>
           </div>
         </div>
 
-        {/* Client Component for Interactive Parts */}
+        {/* ── Parte interactiva (lógica intacta) ── */}
         <ForumClient
           forumId={forum.id}
           currentUser={userProfile}
@@ -147,7 +150,6 @@ export default async function ForumPage({ params }: ForumPageProps) {
           }}
         />
       </div>
-    </main>
+    </div>
   );
 }
-

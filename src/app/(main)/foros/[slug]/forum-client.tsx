@@ -264,9 +264,13 @@ export default function ForumClient({
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-foreground/70">{t.loading}</p>
+      <div className="flex flex-col items-center py-12" role="status" aria-live="polite">
+        <div
+          className="animate-spin w-12 h-12 rounded-full border-4 mx-auto mb-4"
+          style={{ borderColor: 'var(--lt-ink-soft)', borderTopColor: 'var(--lt-terracota)' }}
+          aria-hidden="true"
+        />
+        <p style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>{t.loading}</p>
       </div>
     );
   }
@@ -274,11 +278,12 @@ export default function ForumClient({
   if (error) {
     return (
       <div className="text-center py-12">
-        <AlertCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
-        <p className="text-red-500 mb-4">{error}</p>
+        <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
+        <p className="mb-4 font-medium" style={{ color: 'var(--lt-terracota)' }}>{error}</p>
         <button
           onClick={loadPosts}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+          className="px-5 py-2.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+          style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
         >
           {t.retry}
         </button>
@@ -290,26 +295,37 @@ export default function ForumClient({
     <div className="space-y-6">
       {/* Nickname Form - Show automatically if user has no nickname */}
       {currentUser && !currentUser.nickname && (
-        <div className="p-6 bg-primary/10 border border-primary/20 rounded-lg">
-          <h3 className="text-lg font-semibold text-foreground mb-2">
+        <div
+          className="p-6 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)]"
+          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+        >
+          <h3
+            className="text-lg font-bold mb-2"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
             {t.setNickname || 'Configura tu nickname'}
           </h3>
-          <p className="text-sm text-foreground/70 mb-4">
+          <p className="text-sm mb-4" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
             {t.nicknameRules || 'Para participar en los foros necesitas un nickname. Debe tener entre 3-20 caracteres (letras, números y guión bajo).'}
           </p>
           <div className="flex gap-2">
+            <label htmlFor="forum-nickname" className="sr-only">Nickname</label>
             <input
+              id="forum-nickname"
+              name="nickname"
               type="text"
               value={nicknameInput}
               onChange={(e) => setNicknameInput(e.target.value)}
               placeholder="mi_nickname"
               maxLength={20}
-              className="flex-1 px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="flex-1 px-4 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] text-sm"
+              style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
             />
             <button
               onClick={handleUpdateNickname}
               disabled={!nicknameInput.trim()}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="px-4 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[var(--lt-sun)]"
+              style={{ background: 'var(--lt-sun)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
             >
               {t.nicknameSave || 'Guardar'}
             </button>
@@ -323,14 +339,22 @@ export default function ForumClient({
           {!showNewPost ? (
             <button
               onClick={() => setShowNewPost(true)}
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-[var(--lt-radius-md)] border-[2px] border-dashed border-[var(--lt-ink)] transition-all hover:border-[var(--lt-terracota)] hover:bg-[var(--lt-paper)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+              style={{ color: 'var(--lt-ink)' }}
+              aria-expanded={false}
             >
-              <Plus className="w-5 h-5" />
-              <span className="font-semibold">{t.postNew}</span>
+              <Plus className="w-5 h-5" aria-hidden="true" />
+              <span className="font-semibold" style={{ fontFamily: 'var(--lt-font-sans)' }}>{t.postNew}</span>
             </button>
           ) : (
-            <div className="p-6 border border-border rounded-lg bg-background">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
+            <div
+              className="p-6 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)]"
+              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+            >
+              <h3
+                className="text-lg font-bold mb-4"
+                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+              >
                 {t.postNew}
               </h3>
               <ForumPostForm
@@ -345,9 +369,12 @@ export default function ForumClient({
 
       {/* Posts List */}
       {posts.length === 0 ? (
-        <div className="text-center py-12">
-          <MessageSquare className="w-16 h-16 mx-auto text-foreground/30 mb-4" />
-          <p className="text-foreground/70">{t.emptyPosts}</p>
+        <div
+          className="text-center py-12 rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
+          style={{ background: 'var(--lt-paper)' }}
+        >
+          <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--lt-ink)' }} aria-hidden="true" />
+          <p style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>{t.emptyPosts}</p>
         </div>
       ) : (
         <div className="space-y-6">
