@@ -1,320 +1,349 @@
 "use client"
 
 import Link from 'next/link'
-import { ArrowRight, Star, Users, TrendingUp, MapPin, Radio, Cloud, Trophy, Briefcase, CalendarDays } from 'lucide-react'
+import {
+  ArrowRight, Star, Users, TrendingUp, MapPin,
+  Radio, Cloud, Trophy, Briefcase, CalendarDays, Search,
+} from 'lucide-react'
 import { useTranslations } from '@/components/providers/language-provider'
+import { SunMotif }          from '@/components/lt/SunMotif'
+import { LeafSprig }         from '@/components/lt/LeafSprig'
+import { SouthernCross }     from '@/components/lt/SouthernCross'
+import { Squiggle }          from '@/components/lt/Squiggle'
+import { HandDrawnUnderline} from '@/components/lt/HandDrawnUnderline'
+import { HandDrawnBox }      from '@/components/lt/HandDrawnBox'
+import { LtButton }          from '@/components/lt/Button'
+import { LtBadge }           from '@/components/lt/Badge'
+import { LtCard, LtCardHeader, LtCardBody } from '@/components/lt/Card'
 
+/* ─────────────────────────────────────────
+   Datos estáticos — no cambia lógica
+───────────────────────────────────────── */
+const STATS = [
+  { value: '1,200+', labelKey: 'home.stats.entrepreneurs', ariaKey: 'Mil doscientos emprendedores', icon: Users,     tone: 'terracota' as const },
+  { value: '5,000+', labelKey: 'home.stats.products',      ariaKey: 'Cinco mil productos',          icon: Star,      tone: 'sun'      as const },
+  { value: '32',     labelKey: 'home.stats.departments',   ariaKey: 'Treinta y dos ciudades',        icon: MapPin,    tone: 'verde'    as const },
+  { value: '98%',    labelKey: 'home.stats.satisfaction',  ariaKey: 'Noventa y ocho por ciento',     icon: TrendingUp,tone: 'accent'   as const },
+]
+
+const FEATURES = [
+  { href: '/directorio', icon: Users,      titleKey: 'home.features.directory.title', descKey: 'home.features.directory.desc', linkKey: 'home.features.directory.link', iconTone: 'terracota' as const },
+  { href: '/emisoras',   icon: Radio,      titleKey: 'home.features.radios.title',    descKey: 'home.features.radios.desc',    linkKey: 'home.features.radios.link',    iconTone: 'sun'       as const },
+  { href: '/clima',      icon: Cloud,      titleKey: 'home.features.weather.title',   descKey: 'home.features.weather.desc',   linkKey: 'home.features.weather.link',   iconTone: 'verde'     as const },
+  { href: '/deportes',   icon: Trophy,     titleKey: 'home.features.sports.title',    descKey: 'home.features.sports.desc',    linkKey: 'home.features.sports.link',    iconTone: 'sun'       as const },
+  { href: '/foros',      icon: Users,      titleKey: 'home.features.forums.title',    descKey: 'home.features.forums.desc',    linkKey: 'home.features.forums.link',    iconTone: 'accent'    as const },
+  { href: '/tasas',      icon: TrendingUp, titleKey: 'home.features.rates.title',     descKey: 'home.features.rates.desc',     linkKey: 'home.features.rates.link',     iconTone: 'terracota' as const },
+]
+
+const CTA_LINKS = [
+  { href: '/directorio', labelKey: 'home.cta.directory', tone: 'terracota' as const, rotate: -2,   icon: ArrowRight },
+  { href: '/empleos',    labelKey: 'home.cta.jobs',      tone: 'verde'     as const, rotate:  1.5, icon: Briefcase  },
+  { href: '/eventos',    labelKey: 'home.cta.events',    tone: 'sun'       as const, rotate: -1,   icon: CalendarDays },
+  { href: '/foros',      labelKey: 'home.cta.forums',    tone: 'accent'    as const, rotate:  2,   icon: Users      },
+]
+
+/* ─────────────────────────────────────────
+   Componente principal
+───────────────────────────────────────── */
 export default function Home() {
   const { t } = useTranslations()
+
   return (
-    <div>
-      {/* Skip to main content link for screen readers */}
-      <a 
-        href="#main-content" 
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+    <div style={{ background: 'var(--lt-bg)' }}>
+      {/* Skip link */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:rounded-[var(--lt-radius-sm)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
+        style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)' }}
       >
         {t('home.skip')}
       </a>
 
-      {/* Hero Section */}
-      <section 
+      {/* ══════════════════════════════════
+          HERO
+      ══════════════════════════════════ */}
+      <section
         className="relative overflow-hidden"
         aria-labelledby="hero-title"
-        role="banner"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-blue-400/20 to-red-400/20" aria-hidden="true"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 
+        {/* Decoraciones de fondo */}
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
+          {/* Sol grande central */}
+          <SunMotif
+            size={420}
+            className="absolute opacity-[0.08]"
+            style={{ top: '-80px', right: '-60px' }}
+          />
+          {/* Hoja inferior izquierda */}
+          <LeafSprig
+            size={140}
+            className="absolute opacity-20"
+            style={{ bottom: '20px', left: '20px', transform: 'rotate(-15deg)' }}
+          />
+          {/* Cruz del Sur */}
+          <SouthernCross
+            size={56}
+            color="var(--lt-sun)"
+            className="absolute opacity-40"
+            style={{ top: '24px', left: '48px' }}
+          />
+          {/* Squiggles decorativos */}
+          <Squiggle
+            width={200} height={14}
+            color="var(--lt-sun)"
+            amplitude={5}
+            className="absolute opacity-25"
+            style={{ bottom: '40px', right: '10%' }}
+          />
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          {/* Badges flotantes */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8" aria-hidden="true">
+            <LtBadge tone="terracota" rotate={-1.5}>¡Hecho aquí! 🇨🇴</LtBadge>
+            <LtBadge tone="sun" rotate={1}>Comunidad ✦ Latina</LtBadge>
+            <LtBadge tone="verde" rotate={-0.8}>Brisbane, Australia 🌏</LtBadge>
+          </div>
+
+          {/* Título Hero */}
+          <div className="text-center mb-4">
+            <h1
               id="hero-title"
-              className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"
+              className="text-4xl md:text-6xl lg:text-7xl font-black leading-tight mb-2"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
             >
-              <span className="bg-gradient-to-r from-yellow-600 via-blue-500 to-red-600 bg-clip-text text-transparent">
-                {t('app.name')}
-              </span>
+              Bienvenidos a{' '}
+              <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>
+                tu territorio.
+              </em>
             </h1>
-            <p className="text-xl md:text-2xl text-black dark:text-gray-500 mb-8 max-w-6xl mx-auto text-center" style={{ textAlign: 'center' }}>
+            <div className="flex justify-center mb-6" aria-hidden="true">
+              <HandDrawnUnderline width={320} color="var(--lt-sun-core)" thickness={3} />
+            </div>
+            <p
+              className="text-lg md:text-xl max-w-2xl mx-auto mb-10"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+            >
               {t('home.hero.tagline')}
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
-              {/* Explorar Directorio */}
-              <Link
-                href="/directorio"
-                className="bg-gradient-to-r from-yellow-500 to-red-500 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:from-yellow-600 hover:to-red-600 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-yellow-600 focus:ring-offset-2 min-h-[44px]"
-                aria-describedby="directorio-description"
-              >
-                {t('home.cta.directory')}
-                <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </Link>
-              <span id="directorio-description" className="sr-only">
-                {t('home.cta.directory')}
-              </span>
+          </div>
 
-              {/* Ofertas de Empleo */}
+          {/* 4 CTAs sticker */}
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-12">
+            {CTA_LINKS.map(({ href, labelKey, tone, rotate, icon: Icon }) => (
               <Link
-                href="/empleos"
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 min-h-[44px]"
-                aria-describedby="empleos-description"
+                key={href}
+                href={href}
+                aria-label={t(labelKey)}
+                tabIndex={0}
               >
-                <Briefcase className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-                {t('home.cta.jobs')}
-                <ArrowRight className="ml-1.5 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                <LtButton
+                  variant="sticker"
+                  tone={tone}
+                  size="md"
+                  rotate={rotate}
+                  iconLeft={<Icon className="h-4 w-4" aria-hidden="true" />}
+                >
+                  {t(labelKey)}
+                </LtButton>
               </Link>
-              <span id="empleos-description" className="sr-only">
-                {t('home.cta.jobs')}
-              </span>
+            ))}
+          </div>
 
-              {/* Eventos */}
-              <Link
-                href="/eventos"
-                className="border-2 border-purple-500 text-purple-500 dark:text-purple-400 px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:bg-purple-500 hover:text-white dark:hover:bg-purple-400 transition-all duration-300 flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 min-h-[44px]"
-                aria-describedby="eventos-description"
-              >
-                <CalendarDays className="mr-1.5 sm:mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-                {t('home.cta.events')}
-              </Link>
-              <span id="eventos-description" className="sr-only">
-                {t('home.cta.events')}
-              </span>
-
-              {/* Únete a los Foros */}
-              <Link
-                href="/foros"
-                className="border-2 border-blue-500 text-blue-500 dark:text-blue-400 px-4 sm:px-6 py-3 sm:py-4 rounded-full font-semibold text-sm sm:text-base hover:bg-blue-500 hover:text-white dark:hover:bg-blue-400 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 min-h-[44px] flex items-center justify-center"
-                aria-describedby="foros-description"
-              >
-                {t('home.cta.forums')}
-              </Link>
-              <span id="foros-description" className="sr-only">
-                {t('home.cta.forums')}
-              </span>
-            </div>
+          {/* Search bar en HandDrawnBox */}
+          <div className="max-w-xl mx-auto">
+            <HandDrawnBox
+              padding="0.5rem"
+              className="flex items-center gap-2"
+              role="search"
+              aria-label="Buscar en Latin Territory"
+            >
+              <label htmlFor="hero-search" className="sr-only">Buscar negocios, eventos o empleos</label>
+              <Search
+                className="h-5 w-5 ml-1 shrink-0"
+                aria-hidden="true"
+                style={{ color: 'var(--lt-ink-soft)' }}
+              />
+              <input
+                id="hero-search"
+                name="q"
+                type="search"
+                placeholder="Buscar negocios, eventos o empleos…"
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--lt-ink-soft)]"
+                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
+              />
+              <LtButton variant="pill" tone="terracota" size="sm">
+                Buscar
+              </LtButton>
+            </HandDrawnBox>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* ══════════════════════════════════
+          MAIN CONTENT
+      ══════════════════════════════════ */}
       <main id="main-content">
-        {/* Stats Section */}
-        <section 
-          className="py-16 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+
+        {/* ── Stats ── */}
+        <section
+          className="py-16 border-y-[2px] border-[var(--lt-ink)]"
+          style={{ background: 'var(--lt-paper)' }}
           aria-labelledby="stats-title"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 id="stats-title" className="sr-only">
-              {t('home.stats.title')}
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center justify-items-center">
-              <div className="text-center">
-              <div 
-                className="bg-gradient-to-r from-yellow-400 to-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                aria-hidden="true"
-              >
-                <Users className="h-8 w-8 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white" aria-label="Mil doscientos emprendedores registrados">
-                1,200+
-              </div>
-              <div className="text-gray-600 dark:text-gray-400">{t('home.stats.entrepreneurs')}</div>
-              </div>
-              <div className="text-center">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-red-400 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                aria-hidden="true"
-              >
-                <Star className="h-8 w-8 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white" aria-label="Cinco mil productos disponibles">
-                5,000+
-              </div>
-              <div className="text-gray-600 dark:text-gray-400">{t('home.stats.products')}</div>
-              </div>
-              <div className="text-center">
-              <div 
-                className="bg-gradient-to-r from-blue-400 to-green-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                aria-hidden="true"
-              >
-                <MapPin className="h-8 w-8 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white" aria-label="Treinta y dos departamentos cubiertos">
-                32
-              </div>
-              <div className="text-gray-600 dark:text-gray-400">{t('home.stats.departments')}</div>
-              </div>
-              <div className="text-center">
-              <div 
-                className="bg-gradient-to-r from-green-400 to-yellow-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                aria-hidden="true"
-              >
-                <TrendingUp className="h-8 w-8 text-white" />
-              </div>
-              <div className="text-3xl font-bold text-gray-900 dark:text-white" aria-label={t('home.stats.satisfactionAria', 'Noventa y ocho por ciento de satisfacción')}>
-                98%
-              </div>
-              <div className="text-gray-600 dark:text-gray-400">{t('home.stats.satisfaction')}</div>
-              </div>
+            <h2 id="stats-title" className="sr-only">{t('home.stats.title')}</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              {STATS.map(({ value, labelKey, ariaKey, icon: Icon, tone }, i) => {
+                const rotations = [-1.5, 1.2, -1, 1.8]
+                const rot = rotations[i]
+                return (
+                  <div
+                    key={labelKey}
+                    className="flex flex-col items-center gap-3"
+                    aria-label={`${ariaKey} ${t(labelKey)}`}
+                  >
+                    {/* Icono sticker */}
+                    <div
+                      aria-hidden="true"
+                      className="w-16 h-16 rounded-[var(--lt-radius-sm)] flex items-center justify-center border-[2px] border-[var(--lt-ink)]"
+                      style={{
+                        background: `var(--lt-${tone})`,
+                        boxShadow: 'var(--lt-shadow-sticker)',
+                        transform: `rotate(${rot}deg)`,
+                        color: tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
+                      }}
+                      data-lt-rotate="true"
+                    >
+                      <Icon className="h-7 w-7" />
+                    </div>
+                    {/* Número */}
+                    <span
+                      className="text-4xl font-black"
+                      style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                    >
+                      {value}
+                    </span>
+                    <span
+                      className="text-sm font-medium"
+                      style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                    >
+                      {t(labelKey)}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-20">
+        {/* ── Features ── */}
+        <section className="py-20" aria-labelledby="features-title">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-4 text-center">
+            {/* Encabezado de sección */}
+            <div className="text-center mb-14">
+              <h2
+                id="features-title"
+                className="text-3xl md:text-4xl font-bold mb-3"
+                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+              >
                 {t('home.features.title')}
               </h2>
-              <p className="text-xl text-black dark:text-gray-500 max-w-6xl mx-auto text-center">
-               {t('home.features.subtitle')}
+              <div className="flex justify-center mb-4" aria-hidden="true">
+                <Squiggle width={160} height={12} color="var(--lt-terracota)" amplitude={4} />
+              </div>
+              <p
+                className="text-lg max-w-2xl mx-auto"
+                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+              >
+                {t('home.features.subtitle')}
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
-              {/* Directorio de Empresas */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-yellow-200 dark:border-yellow-800">
-              <div className="bg-gradient-to-r from-yellow-400 to-red-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                {t('home.features.directory.title')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('home.features.directory.desc')}
-              </p>
-              <Link
-                href="/directorio"
-                className="text-yellow-600 dark:text-yellow-400 font-medium hover:text-yellow-700 dark:hover:text-yellow-300 flex items-center"
-              >
-                {t('home.features.directory.link')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-              {/* Emisoras */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-red-200 dark:border-red-800">
-              <div className="bg-gradient-to-r from-blue-500 to-red-400 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Radio className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                {t('home.features.radios.title')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('home.features.radios.desc')}
-              </p>
-              <Link
-                href="/emisoras"
-                className="text-red-600 dark:text-red-400 font-medium hover:text-red-700 dark:hover:text-red-300 flex items-center"
-              >
-                {t('home.features.radios.link')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Clima */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-blue-200 dark:border-blue-800">
-              <div className="bg-gradient-to-r from-blue-400 to-green-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Cloud className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                {t('home.features.weather.title')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('home.features.weather.desc')}
-              </p>
-              <Link
-                href="/clima"
-                className="text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 dark:hover:text-blue-300 flex items-center"
-              >
-                {t('home.features.weather.link')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Deportes */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-green-200 dark:border-green-800">
-              <div className="bg-gradient-to-r from-green-400 to-yellow-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Trophy className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                {t('home.features.sports.title')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('home.features.sports.desc')}
-              </p>
-              <Link
-                href="/deportes"
-                className="text-green-600 dark:text-green-400 font-medium hover:text-green-700 dark:hover:text-green-300 flex items-center"
-              >
-                {t('home.features.sports.link')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Foros */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-purple-200 dark:border-purple-800">
-              <div className="bg-gradient-to-r from-purple-400 to-pink-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                {t('home.features.forums.title', 'Foros de Discusión')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('home.features.forums.desc', 'Participa en conversaciones sobre emprendimiento, negocios y oportunidades.')}
-              </p>
-              <Link
-                href="/foros"
-                className="text-purple-600 dark:text-purple-400 font-medium hover:text-purple-700 dark:hover:text-purple-300 flex items-center"
-              >
-                {t('home.features.forums.link', 'Unirse ahora')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </div>
-
-            {/* Tasas de Cambio */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-indigo-200 dark:border-indigo-800">
-              <div className="bg-gradient-to-r from-indigo-400 to-purple-500 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                {t('home.features.rates.title')}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
-                {t('home.features.rates.desc')}
-              </p>
-              <Link
-                href="/tasas"
-                className="text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center"
-              >
-                {t('home.features.rates.link')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-              </div>
+            {/* Grid de features */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {FEATURES.map(({ href, icon: Icon, titleKey, descKey, linkKey, iconTone }, i) => (
+                <LtCard key={href} index={i} shadow="md" className="flex flex-col">
+                  <LtCardHeader
+                    icon={<Icon className="h-5 w-5" aria-hidden="true" />}
+                    iconTone={iconTone}
+                  >
+                    <h3
+                      className="text-lg font-bold"
+                      style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                    >
+                      {t(titleKey)}
+                    </h3>
+                  </LtCardHeader>
+                  <LtCardBody className="flex flex-col flex-1 gap-4">
+                    <p
+                      className="text-sm leading-relaxed flex-1"
+                      style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                    >
+                      {t(descKey)}
+                    </p>
+                    <Link
+                      href={href}
+                      className="inline-flex items-center gap-1 text-sm font-semibold transition-colors hover:gap-2 focus:outline-none focus:underline"
+                      style={{ color: 'var(--lt-terracota)' }}
+                    >
+                      {t(linkKey)}
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </LtCardBody>
+                </LtCard>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 bg-gradient-to-r from-yellow-500 via-blue-500 to-red-500">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 text-center">
+        {/* ── CTA emprendedor ── */}
+        <section
+          className="py-20 relative overflow-hidden"
+          aria-labelledby="cta-title"
+        >
+          {/* Fondo terracota con sombra sticker XL */}
+          <div
+            className="max-w-4xl mx-auto mx-4 sm:mx-6 lg:mx-auto px-8 py-14 rounded-[var(--lt-radius-lg)] border-[2.5px] border-[var(--lt-ink)] text-center relative"
+            style={{
+              background: 'var(--lt-terracota)',
+              boxShadow: 'var(--lt-shadow-sticker-xl)',
+              transform: 'rotate(-0.4deg)',
+            }}
+            data-lt-rotate="true"
+          >
+            {/* Decoraciones internas */}
+            <div aria-hidden="true" className="absolute top-4 right-6 opacity-20">
+              <SunMotif size={80} color="var(--lt-paper)" coreColor="var(--lt-sun)" />
+            </div>
+            <div aria-hidden="true" className="absolute bottom-4 left-6 opacity-15">
+              <LeafSprig size={60} color="var(--lt-paper)" />
+            </div>
+
+            <h2
+              id="cta-title"
+              className="text-3xl md:text-4xl font-black mb-4 relative"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-paper)' }}
+            >
               {t('home.cta.hero.title')}
             </h2>
-            <p className="text-xl text-white/90 mb-8 text-center">
+            <p
+              className="text-lg mb-8 max-w-xl mx-auto relative"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-paper)', opacity: 0.9 }}
+            >
               {t('home.cta.hero.desc')}
             </p>
-            <div className="flex justify-center">
-              <Link
-                href="/registrar-negocio"
-                className="bg-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-gray-100 transition-colors inline-flex items-center justify-center group"
-              >
-                <span className="bg-gradient-to-r from-yellow-600 via-blue-600 to-red-600 bg-clip-text text-transparent">
+            <div className="flex justify-center relative">
+              <Link href="/registrar-negocio">
+                <LtButton variant="sticker" tone="paper" size="lg" rotate={-1.2}>
                   {t('home.cta.hero.link')}
-                </span>
-                <ArrowRight className="ml-2 h-5 w-5 text-blue-600 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                </LtButton>
               </Link>
             </div>
           </div>
         </section>
+
       </main>
     </div>
   )
