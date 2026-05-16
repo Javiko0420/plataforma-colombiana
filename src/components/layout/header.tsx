@@ -109,7 +109,21 @@ export function Header() {
             className="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2 rounded-lg p-1 group"
             aria-label={`${t('app.name')} - ${t('nav.home')}`}
           >
-            <SunMotif size={40} className="shrink-0 transition-transform group-hover:scale-105" />
+            <div className="relative shrink-0 transition-transform group-hover:scale-105">
+              <SunMotif size={48} />
+              <span
+                className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{
+                  fontFamily: 'var(--lt-font-serif)',
+                  fontStyle: 'italic',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  color: '#fff',
+                  lineHeight: 1,
+                }}
+                aria-hidden="true"
+              >L</span>
+            </div>
             <div className="flex flex-col leading-tight">
               <span
                 className="text-lg font-bold tracking-tight"
