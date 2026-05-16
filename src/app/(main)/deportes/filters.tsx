@@ -3,7 +3,6 @@
 import { useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import TeamAutocomplete from '@/components/ui/team-autocomplete'
-import { AccessibleButton } from '@/components/ui/accessible-button'
 import { useTranslations } from '@/components/providers/language-provider'
 
 export default function SportsFilters({
@@ -40,8 +39,7 @@ export default function SportsFilters({
     if (live) params.set('live', 'all')
     else params.delete('live')
 
-    const to = `${pathname}?${params.toString()}`
-    router.push(to)
+    router.push(`${pathname}?${params.toString()}`)
   }, [router, pathname, searchParams])
 
   return (
@@ -55,15 +53,31 @@ export default function SportsFilters({
             defaultTeamId={defaultTeamId}
           />
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="live" defaultChecked={defaultLiveChecked} /> {t('sports.filters.live')}
+        <label
+          className="flex items-center gap-2 text-sm font-medium cursor-pointer"
+          style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
+        >
+          <input
+            type="checkbox"
+            name="live"
+            defaultChecked={defaultLiveChecked}
+            className="w-4 h-4 rounded accent-[var(--lt-terracota)]"
+          />
+          {t('sports.filters.live')}
         </label>
       </div>
-      <AccessibleButton type="submit" variant="primary" size="lg" className="ml-auto rounded-full border-2 border-blue-700 dark:border-blue-500 hover:border-blue-800 dark:hover:border-blue-400 shadow-none">
+      <button
+        type="submit"
+        className="ml-auto px-5 py-2.5 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
+        style={{
+          background: 'var(--lt-terracota)',
+          color: 'var(--lt-paper)',
+          boxShadow: 'var(--lt-shadow-sticker)',
+          fontFamily: 'var(--lt-font-sans)',
+        }}
+      >
         {t('sports.filters.apply')}
-      </AccessibleButton>
+      </button>
     </form>
   )
 }
-
-
