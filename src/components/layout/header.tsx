@@ -13,6 +13,16 @@ import { SunMotif } from '@/components/lt/SunMotif'
 import { LtButton } from '@/components/lt/Button'
 import { cn } from '@/lib/utils'
 
+function useScrolled(threshold = 8) {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > threshold)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [threshold])
+  return scrolled
+}
+
 const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
 
 const NAV_LINKS = [
@@ -30,6 +40,7 @@ export function Header() {
   const { t } = useTranslations()
   const { data: session, status } = useSession()
   const pathname = usePathname()
+  const scrolled = useScrolled()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -85,7 +96,7 @@ export function Header() {
 
   return (
     <header
-      className="border-b-[2px] border-[var(--lt-ink)]"
+      className={cn('transition-shadow duration-200', scrolled && 'shadow-[0_2px_0_rgba(34,21,15,0.10)]')}
       style={{ background: 'var(--lt-bg)' }}
       role="banner"
     >
@@ -234,7 +245,7 @@ export function Header() {
               ) : (
                 <LtButton
                   variant="sticker"
-                  tone="sun"
+                  tone="terracota"
                   size="sm"
                   rotate={-1.2}
                   iconLeft={<User className="h-4 w-4" aria-hidden="true" />}

@@ -19,18 +19,17 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10"
+      className="inline-flex items-center justify-center w-10 h-10 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--lt-terracota)]"
+      style={{ color: 'var(--lt-ink)' }}
+      onMouseOver={e => (e.currentTarget.style.background = 'rgba(34,21,15,0.05)')}
+      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
     >
       {mounted ? (
-        <>
-          {isDark ? (
-            <Sun className="h-[1.2rem] w-[1.2rem]" />
-          ) : (
-            <Moon className="h-[1.2rem] w-[1.2rem]" />
-          )}
-        </>
+        isDark
+          ? <Sun className="h-5 w-5" aria-hidden="true" />
+          : <Moon className="h-5 w-5" aria-hidden="true" />
       ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem]" />
+        <Moon className="h-5 w-5" aria-hidden="true" />
       )}
       <span className="sr-only">{t('theme.toggle', 'Toggle theme')}</span>
     </button>

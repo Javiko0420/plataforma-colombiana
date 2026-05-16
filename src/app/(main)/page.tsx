@@ -157,20 +157,22 @@ export default function Home() {
             <SouthernCross size={16} color="var(--lt-sun)" />
           </div>
 
-          {/* Sticker izquierda — absoluto */}
+          {/* Sticker izquierda — zona alta, flanqueando el badge superior */}
           <div
-            className="absolute left-[2%] top-[38%] hidden lg:block"
-            style={{ transform: 'rotate(-7deg)' }}
+            className="absolute left-[6%] top-[14%] hidden lg:block z-[2]"
+            style={{ transform: 'rotate(-8deg)' }}
             data-lt-rotate="true"
+            aria-hidden="true"
           >
             <StickerBadge tone="terracota" text="¡Hecho aquí!" />
           </div>
 
-          {/* Sticker derecha — absoluto */}
+          {/* Sticker derecha — zona alta, flanqueando el badge superior */}
           <div
-            className="absolute right-[2%] top-[34%] hidden lg:block"
-            style={{ transform: 'rotate(8deg)' }}
+            className="absolute right-[6%] top-[18%] hidden lg:block z-[2]"
+            style={{ transform: 'rotate(9deg)' }}
             data-lt-rotate="true"
+            aria-hidden="true"
           >
             <StickerBadge tone="verde" text="Comunidad ✦ Latina" />
           </div>
