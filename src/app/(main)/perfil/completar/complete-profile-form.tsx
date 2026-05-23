@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Calendar } from 'lucide-react'
 import { AccessibleInput } from '@/components/ui/accessible-input'
 import { AccessibleButton } from '@/components/ui/accessible-button'
@@ -18,6 +18,10 @@ import { LEGAL_VERSIONS, validateDateOfBirth } from '@/lib/legal'
 export default function CompleteProfileForm() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Destination after profile completion — defaults to /perfil
+  const callbackUrl = searchParams.get('callbackUrl') || '/perfil'
 
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -25,6 +29,14 @@ export default function CompleteProfileForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [showContractModal, setShowContractModal] = useState(false)
   const [contractAccepted, setContractAccepted] = useState(false)
+
+  // If profile is already complete, redirect to the intended destination.
+  // Using useEffect avoids calling router.push during the render phase.
+  useEffect(() => {
+    if (session?.user?.hasCompletedProfile) {
+      router.push(callbackUrl)
+    }
+  }, [session?.user?.hasCompletedProfile, router, callbackUrl])
 
   // While session is loading, show a brief loading state
   if (status === 'loading') {
@@ -35,9 +47,8 @@ export default function CompleteProfileForm() {
     )
   }
 
-  // If profile is already complete, redirect to profile page
+  // Don't render the form while a redirect is in progress
   if (session?.user?.hasCompletedProfile) {
-    router.push('/perfil')
     return null
   }
 
@@ -88,7 +99,8 @@ export default function CompleteProfileForm() {
       await update()
 
       setShowContractModal(false)
-      router.push('/perfil')
+      // Redirect to the original destination (e.g. /registrar-negocio) or /perfil
+      router.push(callbackUrl)
       router.refresh()
     } catch (err) {
       console.error('Profile completion error:', err)
@@ -118,8 +130,15 @@ export default function CompleteProfileForm() {
               Un último paso
             </h1>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Para cumplir con la legislación vigente, necesitamos verificar tu edad y que aceptes nuestros términos legales.
+              {callbackUrl === '/registrar-negocio'
+                ? 'Para registrar tu negocio, primero necesitamos verificar tu edad y que aceptes nuestros términos legales.'
+                : 'Para cumplir con la legislación vigente, necesitamos verificar tu edad y que aceptes nuestros términos legales.'}
             </p>
+            {callbackUrl === '/registrar-negocio' && (
+              <p className="mt-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
+                Al finalizar serás llevado directamente al formulario de registro de negocio.
+              </p>
+            )}
           </div>
 
           {/* Error alert */}

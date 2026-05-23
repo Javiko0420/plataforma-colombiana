@@ -57,8 +57,12 @@ export async function middleware(req: NextRequest) {
     // Usamos `=== false` (no falsy) para no afectar tokens existentes
     // creados antes de esta feature (donde hasCompletedProfile es undefined).
     // Solo tokens nuevos que explícitamente tengan `false` serán redirigidos.
+    // Preservamos el callbackUrl para que el usuario vuelva a su destino
+    // original (ej: /registrar-negocio) después de completar el perfil.
     if (token.hasCompletedProfile === false && !path.startsWith('/perfil/completar')) {
-      return NextResponse.redirect(new URL('/perfil/completar', req.url))
+      const completeUrl = new URL('/perfil/completar', req.url)
+      completeUrl.searchParams.set('callbackUrl', path)
+      return NextResponse.redirect(completeUrl)
     }
   }
 
