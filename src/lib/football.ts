@@ -3,6 +3,11 @@
 // Docs: https://www.api-football.com/documentation-v3
 
 import { CALENDAR_YEAR_LEAGUE_IDS, CONTINENTAL_CUP_LEAGUE_IDS } from '@/lib/leagues'
+import {
+  getCachedStandings,
+  getFreshCachedStandings,
+  saveCachedStandings,
+} from '@/lib/sports-standings-cache'
 
 export type SimpleFixture = {
   id: number
@@ -345,21 +350,71 @@ type ApiStandingsResponse = {
 
 export async function fetchStandings(
   leagueId: number | string,
-  season: number | string
+  season: number | string,
+  opts: { allowSeasonFallback?: boolean } = {}
 ): Promise<SimpleStanding[]> {
+  const leagueNum = Number(leagueId)
+  const seasonNum = Number(season)
   const qp = new URLSearchParams({ league: String(leagueId), season: String(season) })
   const path = '/standings'
   const key = stableKey(path, qp)
   const now = Date.now()
-  const cached = standingsCache.get(key)
   const ttlMs = 10 * 60 * 1000
-  if (cached && now - cached.ts < cached.ttlMs) return cached.value
+  const cached = standingsCache.get(key)
+  if (cached && now - cached.ts < cached.ttlMs && cached.value.length > 0) return cached.value
 
+  if (Number.isFinite(leagueNum) && Number.isFinite(seasonNum)) {
+    const freshDb = await getFreshCachedStandings(leagueNum, seasonNum)
+    if (freshDb?.length) {
+      standingsCache.set(key, { ts: now, ttlMs, value: freshDb })
+      return freshDb
+    }
+  }
+
+  try {
+    const out = await fetchStandingsFromApi(leagueId, season)
+    if (out.length > 0) {
+      if (Number.isFinite(leagueNum) && Number.isFinite(seasonNum)) {
+        await saveCachedStandings(leagueNum, seasonNum, out)
+      }
+      standingsCache.set(key, { ts: now, ttlMs, value: out })
+      return out
+    }
+
+    if (
+      opts.allowSeasonFallback !== false &&
+      Number.isFinite(seasonNum) &&
+      seasonNum > 2000
+    ) {
+      const prev = await fetchStandings(leagueId, seasonNum - 1, { allowSeasonFallback: false })
+      if (prev.length > 0) return prev
+    }
+  } catch (err) {
+    console.warn(
+      `[sports] standings API failed league=${leagueId} season=${season}:`,
+      err
+    )
+  }
+
+  if (Number.isFinite(leagueNum) && Number.isFinite(seasonNum)) {
+    const staleDb = await getCachedStandings(leagueNum, seasonNum)
+    if (staleDb?.rows.length) return staleDb.rows
+  }
+
+  return []
+}
+
+async function fetchStandingsFromApi(
+  leagueId: number | string,
+  season: number | string
+): Promise<SimpleStanding[]> {
+  const qp = new URLSearchParams({ league: String(leagueId), season: String(season) })
+  const path = '/standings'
   const json = await apiFetch<ApiStandingsResponse>(path, qp)
   const list = Array.isArray(json?.response) ? json.response : []
   const groups: ApiStandingRow[][] = (list?.[0]?.league?.standings as ApiStandingRow[][]) || []
   const flattened: ApiStandingRow[] = groups.flat()
-  const out: SimpleStanding[] = flattened.map((row) => ({
+  return flattened.map((row) => ({
     rank: Number(row.rank ?? 0),
     team: {
       id: Number(row.team?.id ?? 0),
@@ -376,8 +431,6 @@ export async function fetchStandings(
     goalsDiff: Number(row.goalsDiff ?? (Number(row.all?.goals?.for ?? 0) - Number(row.all?.goals?.against ?? 0))),
     group: row.group ? String(row.group) : undefined,
   }))
-  standingsCache.set(key, { ts: now, ttlMs, value: out })
-  return out
 }
 
 // -------------------- Leagues --------------------
@@ -551,7 +604,8 @@ export type LeagueDashboardRow = {
   dayFx: SimpleFixture[]
 }
 
-const DASHBOARD_CONCURRENCY = 4
+const DASHBOARD_CONCURRENCY = 2
+const DASHBOARD_BATCH_DELAY_MS = 150
 
 async function runPool<T, R>(items: T[], fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
   const results: R[] = new Array(items.length)
@@ -559,6 +613,9 @@ async function runPool<T, R>(items: T[], fn: (item: T, index: number) => Promise
     const slice = items.slice(i, i + DASHBOARD_CONCURRENCY)
     const chunk = await Promise.all(slice.map((item, j) => fn(item, i + j)))
     for (let j = 0; j < chunk.length; j++) results[i + j] = chunk[j]!
+    if (i + DASHBOARD_CONCURRENCY < items.length && DASHBOARD_BATCH_DELAY_MS > 0) {
+      await new Promise((r) => setTimeout(r, DASHBOARD_BATCH_DELAY_MS))
+    }
   }
   return results
 }

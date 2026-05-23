@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/purge-jobs",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-sports-standings",
+      "schedule": "0 */2 * * *"
     }
   ]
 }

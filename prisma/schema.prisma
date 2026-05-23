@@ -540,3 +540,16 @@ model MobileRefreshToken {
   @@index([expiresAt])
   @@index([isRevoked])
 }
+
+/// Shared cache for league standings (survives Vercel serverless cold starts).
+model SportsStandingsCache {
+  id        String   @id @default(cuid())
+  leagueId  Int
+  season    Int
+  data      Json
+  fetchedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([leagueId, season])
+  @@index([fetchedAt])
+}
