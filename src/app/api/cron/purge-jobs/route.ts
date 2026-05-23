@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { refreshDefaultStandings } from '@/lib/refresh-sports-standings';
 
 export async function GET(req: Request) {
   // Verificación del token del Cron de Vercel
@@ -22,10 +23,17 @@ export async function GET(req: Request) {
       }
     });
 
+    const standings = await refreshDefaultStandings().catch(() => ({
+      refreshed: 0,
+      total: 0,
+      results: [],
+    }));
+
     return NextResponse.json({
       status: 'success',
       message: 'Protocolo de purga completado.',
-      recordsDeleted: purgeResult.count
+      recordsDeleted: purgeResult.count,
+      standings,
     });
   } catch (error) {
     console.error('Fallo en el protocolo de purga:', error);

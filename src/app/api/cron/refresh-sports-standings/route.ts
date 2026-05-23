@@ -5,8 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { fetchStandings, resolveSeasonForLeague } from '@/lib/football'
-import { getDefaultStandingsLeagues } from '@/lib/leagues'
+import { refreshDefaultStandings } from '@/lib/refresh-sports-standings'
 import { logger } from '@/lib/logger'
 
 export const dynamic = 'force-dynamic'
@@ -24,40 +23,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    const leagues = getDefaultStandingsLeagues((key) => key)
-    const results: Array<{ leagueId: number; season: number; rows: number; ok: boolean }> = []
-
-    for (const lg of leagues) {
-      try {
-        const season = await resolveSeasonForLeague(lg.id)
-        const table = await fetchStandings(lg.id, season)
-        results.push({
-          leagueId: lg.id,
-          season,
-          rows: table.length,
-          ok: table.length > 0,
-        })
-        await new Promise((r) => setTimeout(r, 250))
-      } catch (err) {
-        logger.warn('Sports standings cron league failed', {
-          leagueId: lg.id,
-          alias: lg.alias,
-          error: err instanceof Error ? err.message : String(err),
-        })
-        results.push({ leagueId: lg.id, season: 0, rows: 0, ok: false })
-      }
-    }
-
-    const refreshed = results.filter((r) => r.ok).length
+    const { refreshed, total, results } = await refreshDefaultStandings()
 
     logger.info('Sports standings cron completed', {
-      leagues: leagues.length,
+      leagues: total,
       refreshed,
     })
 
     return NextResponse.json({
       success: true,
-      data: { refreshed, total: leagues.length, results },
+      data: { refreshed, total, results },
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
