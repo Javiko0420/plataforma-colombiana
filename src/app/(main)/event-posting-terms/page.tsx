@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { LtPageShell, LtPanel } from '@/components/lt'
 
 export const metadata: Metadata = {
   title: 'Términos de Publicación de Eventos | Latin Territory',
@@ -9,30 +10,38 @@ export const metadata: Metadata = {
 
 export default function EventPostingTermsPage() {
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <LtPageShell maxWidth="5xl">
+      <Link
+        href="/perfil"
+        className="inline-flex items-center gap-2 text-sm mb-6 transition-colors hover:opacity-80"
+        style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Volver a mi perfil
+      </Link>
 
-        <Link
-          href="/perfil"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Volver a mi perfil
-        </Link>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 md:p-12">
+      <LtPanel className="p-8 md:p-12">
 
           {/* ── ES ── */}
-          <section className="prose dark:prose-invert max-w-none mb-16">
-            <h1 className="text-3xl font-extrabold tracking-tight">
+          <section
+            className="max-w-none space-y-4 text-sm leading-relaxed mb-16 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:pt-4 [&_h2]:text-[var(--lt-ink)] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-[var(--lt-terracota)] [&_a]:underline [&_strong]:text-[var(--lt-ink)]"
+            style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+          >
+            <h1
+              className="text-3xl font-extrabold tracking-tight"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
               (ES) Términos de Publicación de Eventos
-              <span className="block text-lg font-normal text-gray-500 dark:text-gray-400 mt-1">
+              <span
+                className="block text-lg font-normal mt-1"
+                style={{ color: 'var(--lt-ink-soft)' }}
+              >
                 Acuerdo para Anunciantes
               </span>
             </h1>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              <strong>Latinterritory.com</strong> &bull; URL: /event-posting-terms &bull; Última actualización: 17 de febrero de 2026
+            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+              <strong style={{ color: 'var(--lt-ink)' }}>Latinterritory.com</strong> &bull; URL: /event-posting-terms &bull; Última actualización: 17 de febrero de 2026
             </p>
 
             <p>Estos Términos de Publicación de Eventos (el &quot;Acuerdo&quot;) regulan la publicación de anuncios de eventos (cada uno, un &quot;Evento&quot;) en latinterritory.com (la &quot;Plataforma&quot;) por parte de cualquier usuario que publique como organizador, promotor, venue, representante autorizado, negocio u organización (el &quot;Anunciante&quot;).</p>
@@ -126,19 +135,28 @@ export default function EventPostingTermsPage() {
             <p>Asuntos de privacidad/datos: <a href="mailto:privacy@latinterritory.com">privacy@latinterritory.com</a></p>
           </section>
 
-          <hr className="my-12 border-gray-200 dark:border-gray-700" />
+          <hr className="my-12 border-[var(--lt-ink)]" />
 
           {/* ── EN ── */}
-          <section className="prose dark:prose-invert max-w-none">
-            <h1 className="text-3xl font-extrabold tracking-tight">
+          <section
+            className="max-w-none space-y-4 text-sm leading-relaxed [&_h2]:text-xl [&_h2]:font-bold [&_h2]:pt-4 [&_h2]:text-[var(--lt-ink)] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-[var(--lt-terracota)] [&_a]:underline [&_strong]:text-[var(--lt-ink)]"
+            style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+          >
+            <h1
+              className="text-3xl font-extrabold tracking-tight"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
               (EN) Event Posting Terms
-              <span className="block text-lg font-normal text-gray-500 dark:text-gray-400 mt-1">
+              <span
+                className="block text-lg font-normal mt-1"
+                style={{ color: 'var(--lt-ink-soft)' }}
+              >
                 Advertiser Agreement
               </span>
             </h1>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              <strong>Latinterritory.com</strong> &bull; URL: /event-posting-terms &bull; Last updated: 17 February 2026
+            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+              <strong style={{ color: 'var(--lt-ink)' }}>Latinterritory.com</strong> &bull; URL: /event-posting-terms &bull; Last updated: 17 February 2026
             </p>
 
             <p>These Event Posting Terms (the &quot;Agreement&quot;) govern the posting of event listings (each an &quot;Event&quot;) on latinterritory.com (the &quot;Platform&quot;) by any user posting as an organiser, promoter, venue, authorised representative, business or organisation (the &quot;Advertiser&quot;).</p>
@@ -229,8 +247,7 @@ export default function EventPostingTermsPage() {
             <h2>16) Contact</h2>
             <p>Privacy/data matters: <a href="mailto:privacy@latinterritory.com">privacy@latinterritory.com</a></p>
           </section>
-        </div>
-      </div>
-    </main>
+      </LtPanel>
+    </LtPageShell>
   )
 }

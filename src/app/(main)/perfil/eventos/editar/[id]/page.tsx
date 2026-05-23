@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import EventForm from '@/components/eventos/EventForm'
+import { LtPageShell, LtPanel } from '@/components/lt'
 
 export default async function EditarEventoPage({
   params,
@@ -23,7 +24,6 @@ export default async function EditarEventoPage({
     where: { id },
   })
 
-  // Verificar que existe y que el usuario es el dueño (o admin/moderador)
   if (!event) {
     redirect('/perfil/eventos')
   }
@@ -37,49 +37,45 @@ export default async function EditarEventoPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Botón volver */}
-        <Link
-          href="/perfil/eventos"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
+    <LtPageShell maxWidth="2xl">
+      <Link
+        href="/perfil/eventos"
+        className="inline-flex items-center gap-2 text-sm mb-6 transition-colors hover:underline"
+        style={{ color: 'var(--lt-ink-soft)' }}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Volver a mis eventos
+      </Link>
+
+      <div className="text-center mb-8 space-y-2">
+        <h1
+          className="text-3xl md:text-4xl font-extrabold tracking-tight"
+          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
         >
-          <ArrowLeft className="w-4 h-4" />
-          Volver a mis eventos
-        </Link>
-
-        {/* Cabecera */}
-        <div className="text-center mb-8 space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-            Editar{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-red-500">
-              evento
-            </span>
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Actualiza los datos de tu evento. Los cambios se reflejarán
-            inmediatamente en el muro.
-          </p>
-        </div>
-
-        {/* Formulario en modo edición */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 shadow-lg border border-gray-200 dark:border-gray-700">
-          <EventForm
-            mode="edit"
-            eventId={event.id}
-            initialData={{
-              title: event.title,
-              description: event.description,
-              category: event.category,
-              eventDate: event.eventDate.toISOString(),
-              location: event.location,
-              imageUrl: event.imageUrl,
-              ticketLink: event.ticketLink,
-              ticketPrice: event.ticketPrice,
-            }}
-          />
-        </div>
+          Editar evento
+        </h1>
+        <p className="text-lg" style={{ color: 'var(--lt-ink-soft)' }}>
+          Actualiza los datos de tu evento. Los cambios se reflejarán
+          inmediatamente en el muro.
+        </p>
       </div>
-    </div>
+
+      <LtPanel className="p-6 md:p-8">
+        <EventForm
+          mode="edit"
+          eventId={event.id}
+          initialData={{
+            title: event.title,
+            description: event.description,
+            category: event.category,
+            eventDate: event.eventDate.toISOString(),
+            location: event.location,
+            imageUrl: event.imageUrl,
+            ticketLink: event.ticketLink,
+            ticketPrice: event.ticketPrice,
+          }}
+        />
+      </LtPanel>
+    </LtPageShell>
   )
 }

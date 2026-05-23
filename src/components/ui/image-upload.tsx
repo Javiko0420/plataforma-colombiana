@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CldUploadWidget } from "next-cloudinary";
-import { ImagePlus, Trash, X } from "lucide-react";
+import { ImagePlus, Trash } from "lucide-react";
 import Image from "next/image";
 
 interface ImageUploadProps {
@@ -24,8 +24,8 @@ export default function ImageUpload({
     setIsMounted(true);
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onUpload = (result: any) => {
-    // Cloudinary devuelve la URL segura de la imagen
     onChange(result.info.secure_url);
   };
 
@@ -33,15 +33,18 @@ export default function ImageUpload({
 
   return (
     <div>
-      {/* 1. Grid de imágenes ya subidas */}
       <div className="mb-4 flex flex-wrap gap-4">
         {value.map((url) => (
-          <div key={url} className="relative w-[200px] h-[200px] rounded-lg overflow-hidden border border-slate-700">
+          <div
+            key={url}
+            className="relative w-[200px] h-[200px] rounded-[var(--lt-radius-sm)] overflow-hidden border-[2px] border-[var(--lt-ink)]"
+          >
             <div className="z-10 absolute top-2 right-2">
               <button
                 type="button"
                 onClick={() => onRemove(url)}
-                className="bg-red-600 hover:bg-red-500 text-white p-1.5 rounded-full transition-colors shadow-lg"
+                className="p-1.5 rounded-full transition-colors border-[2px] border-[var(--lt-ink)]"
+                style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)' }}
               >
                 <Trash className="w-4 h-4" />
               </button>
@@ -56,52 +59,50 @@ export default function ImageUpload({
         ))}
       </div>
 
-      {/* 2. Botón de Carga (Cloudinary Widget) */}
-      {value.length < 5 && ( // 👈 Límite de 5 imágenes visualmente
-        <CldUploadWidget 
-          onSuccess={onUpload} // Cambio en v6: usamos onSuccess en vez de onUpload
-          uploadPreset="latinterritory_uploads" // ⚠️ PON AQUÍ EL NOMBRE DE TU PRESET
+      {value.length < 5 && (
+        <CldUploadWidget
+          onSuccess={onUpload}
+          uploadPreset="latinterritory_uploads"
           options={{
             cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-            maxFiles: 5 - value.length, // Restamos las que ya subió
-            maxFileSize: 2000000, // 2MB máximo (en bytes)
+            maxFiles: 5 - value.length,
+            maxFileSize: 2000000,
             sources: ['local', 'url', 'camera'],
             styles: {
-                palette: {
-                    window: "#0F172A",
-                    sourceBg: "#1E293B",
-                    windowBorder: "#334155",
-                    tabIcon: "#3B82F6",
-                    inactiveTabIcon: "#94A3B8",
-                    menuIcons: "#64748B",
-                    link: "#3B82F6",
-                    action: "#3B82F6",
-                    inProgress: "#0078FF",
-                    complete: "#22C55E",
-                    error: "#EF4444",
-                    textDark: "#0F172A",
-                    textLight: "#F8FAFC"
-                }
-            }
+              palette: {
+                window: '#fff3d8',
+                sourceBg: '#fffaee',
+                windowBorder: '#22150f',
+                tabIcon: '#b34020',
+                inactiveTabIcon: '#7a4f3b',
+                menuIcons: '#7a4f3b',
+                link: '#b34020',
+                action: '#b34020',
+                inProgress: '#f0a932',
+                complete: '#336940',
+                error: '#b33868',
+                textDark: '#22150f',
+                textLight: '#fffaee',
+              },
+            },
           }}
         >
-          {({ open }) => {
-            return (
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={() => open()}
-                className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-3 rounded-xl border border-dashed border-slate-600 transition-all w-full justify-center"
-              >
-                <ImagePlus className="w-5 h-5" />
-                Subir Imágenes (Máx {5 - value.length})
-              </button>
-            );
-          }}
+          {({ open }) => (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => open()}
+              className="flex items-center gap-2 px-4 py-3 rounded-[var(--lt-radius-sm)] border-[2px] border-dashed border-[var(--lt-ink)] transition-all w-full justify-center"
+              style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+            >
+              <ImagePlus className="w-5 h-5" />
+              Subir Imágenes (Máx {5 - value.length})
+            </button>
+          )}
         </CldUploadWidget>
       )}
-      
-      <p className="text-xs text-slate-500 mt-2">
+
+      <p className="text-xs mt-2" style={{ color: 'var(--lt-ink-soft)' }}>
         Máximo 5 fotos de 2MB cada una. Formatos: JPG, PNG, WEBP.
       </p>
     </div>

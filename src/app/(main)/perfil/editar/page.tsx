@@ -10,8 +10,8 @@ import { User, Camera, Save, ArrowLeft, Trash2, AlertTriangle } from "lucide-rea
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
+import { LtPageShell, LtPanel, LtButton } from "@/components/lt";
 
-// Esquema local
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   nickname: z.string().optional(),
@@ -21,7 +21,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function EditProfilePage() {
-  const { data: session, update } = useSession(); // update permite actualizar la sesión del lado cliente
+  const { data: session, update } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,7 +34,6 @@ export default function EditProfilePage() {
     },
   });
 
-  // Cargar datos iniciales cuando la sesión esté ready
   useEffect(() => {
     if (session?.user) {
       form.reset({
@@ -47,7 +46,6 @@ export default function EditProfilePage() {
   }, [session, form]);
 
   const handleDeleteAccount = async () => {
-    // Doble confirmación para evitar accidentes
     const confirm1 = window.confirm("⚠️ ¿Estás seguro de que quieres eliminar tu cuenta permanentemente?");
     if (!confirm1) return;
 
@@ -62,7 +60,6 @@ export default function EditProfilePage() {
 
       if (!res.ok) throw new Error("Error al eliminar cuenta");
 
-      // Cerrar sesión y mandar al home
       await signOut({ callbackUrl: "/" });
 
     } catch (error) {
@@ -82,7 +79,6 @@ export default function EditProfilePage() {
 
       if (!res.ok) throw new Error("Error al actualizar");
 
-      // ⚠️ TRUCO CLAVE: Actualizamos la sesión del navegador para ver la foto nueva al instante
       await update({
         ...session,
         user: {
@@ -102,35 +98,48 @@ export default function EditProfilePage() {
     }
   };
 
-  if (!session) return <div className="p-8 text-center">Cargando...</div>;
+  if (!session) {
+    return (
+      <LtPageShell maxWidth="2xl">
+        <p className="p-8 text-center" style={{ color: 'var(--lt-ink-soft)' }}>Cargando...</p>
+      </LtPageShell>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 md:p-8 flex justify-center">
-      <div className="max-w-2xl w-full space-y-8">
-        
-        {/* Header */}
+    <LtPageShell maxWidth="2xl">
+      <div className="space-y-8">
         <div className="flex items-center gap-4">
-          <Link href="/perfil" className="p-2 bg-slate-900 rounded-full hover:bg-slate-800 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
+          <Link
+            href="/perfil"
+            className="p-2 rounded-full border-2 border-[var(--lt-ink)] transition-colors hover:-translate-y-0.5"
+            style={{ background: 'var(--lt-paper)' }}
+          >
+            <ArrowLeft className="w-5 h-5" style={{ color: 'var(--lt-ink)' }} />
           </Link>
-          <h1 className="text-2xl font-bold text-white">Editar mi Perfil</h1>
+          <h1
+            className="text-2xl font-bold"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
+            Editar mi Perfil
+          </h1>
         </div>
 
-        <div className="bg-slate-900/50 p-8 rounded-2xl border border-slate-800 shadow-xl">
+        <LtPanel className="p-8">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            
-            {/* FOTO DE PERFIL (Circular) */}
             <div className="flex flex-col items-center gap-4">
-              <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-950 group">
+              <div
+                className="relative w-32 h-32 rounded-full overflow-hidden border-[3px] border-[var(--lt-ink)] group"
+                style={{ background: 'var(--lt-bg)' }}
+              >
                 {form.watch("image") ? (
                   <Image src={form.watch("image")!} alt="Avatar" fill className="object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-700">
-                    <User className="w-16 h-16" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User className="w-16 h-16" style={{ color: 'var(--lt-ink-soft)' }} />
                   </div>
                 )}
                 
-                {/* Overlay de Edición */}
                 <CldUploadWidget
                   onSuccess={(result: any) => {
                     form.setValue("image", result.info.secure_url, { shouldValidate: true });
@@ -155,73 +164,91 @@ export default function EditProfilePage() {
                   )}
                 </CldUploadWidget>
               </div>
-              <p className="text-xs text-slate-500">Haz clic en la foto para cambiarla</p>
+              <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
+                Haz clic en la foto para cambiarla
+              </p>
             </div>
 
-            {/* CAMPOS DE TEXTO */}
             <div className="space-y-4">
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-300">Nombre Completo</label>
+                <label className="lt-label">Nombre Completo</label>
                 <input
                   {...form.register("name")}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="lt-input"
                 />
-                {form.formState.errors.name && <p className="text-red-400 text-xs">{form.formState.errors.name.message}</p>}
+                {form.formState.errors.name && (
+                  <p className="text-red-500 text-xs">{form.formState.errors.name.message}</p>
+                )}
               </div>
 
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-slate-300">Apodo (Nickname)</label>
+                <label className="lt-label">Apodo (Nickname)</label>
                 <input
                   {...form.register("nickname")}
                   placeholder="Ej: JaviDev"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="lt-input"
                 />
-                <p className="text-xs text-slate-500">Así te verán en los foros y comentarios.</p>
+                <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
+                  Así te verán en los foros y comentarios.
+                </p>
               </div>
             </div>
 
-            {/* BOTÓN GUARDAR */}
-            <button
+            <LtButton
               type="submit"
+              variant="sticker"
+              tone="terracota"
+              size="md"
+              className="w-full"
               disabled={isSubmitting}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
+              loading={isSubmitting}
+              loadingText="Guardando..."
+              iconLeft={!isSubmitting ? <Save className="w-5 h-5" /> : undefined}
             >
-              {isSubmitting ? "Guardando..." : (
-                <>
-                  <Save className="w-5 h-5" /> Guardar Cambios
-                </>
-              )}
-            </button>
-
+              Guardar Cambios
+            </LtButton>
           </form>
 
-          <hr className="my-8 border-slate-700" />
+          <hr className="my-8 border-[var(--lt-ink)] opacity-20" />
 
-          {/* ZONA DE PELIGRO */}
-          <div className="bg-red-950/30 border border-red-900/50 rounded-xl p-6">
+          <div
+            className="rounded-[var(--lt-radius-lg)] border-2 border-red-500 p-6"
+            style={{ background: 'var(--lt-bg)' }}
+          >
             <div className="flex items-start gap-4">
-              <div className="p-3 bg-red-900/30 rounded-full text-red-400">
-                <AlertTriangle className="w-6 h-6" />
+              <div
+                className="p-3 rounded-full border-2 border-red-500"
+                style={{ background: 'var(--lt-paper)' }}
+              >
+                <AlertTriangle className="w-6 h-6 text-red-500" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-red-400 mb-1">Eliminar Cuenta</h3>
-                <p className="text-sm text-red-400/70 mb-4">
+                <h3
+                  className="text-lg font-bold mb-1"
+                  style={{ color: 'var(--lt-ink)' }}
+                >
+                  Eliminar Cuenta
+                </h3>
+                <p className="text-sm mb-4" style={{ color: 'var(--lt-ink-soft)' }}>
                   Si eliminas tu cuenta, perderás acceso a todos tus negocios y reseñas. Esta acción no se puede deshacer.
                 </p>
-                <button
-                  onClick={handleDeleteAccount}
+                <LtButton
                   type="button"
+                  variant="sticker"
+                  tone="ink"
+                  size="sm"
+                  onClick={handleDeleteAccount}
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                  iconLeft={<Trash2 className="w-4 h-4" />}
+                  style={{ background: '#dc2626', color: 'white', borderColor: '#991b1b' }}
                 >
-                  <Trash2 className="w-4 h-4" />
                   Sí, eliminar mi cuenta definitivamente
-                </button>
+                </LtButton>
               </div>
             </div>
           </div>
-        </div>
+        </LtPanel>
       </div>
-    </div>
+    </LtPageShell>
   );
 }

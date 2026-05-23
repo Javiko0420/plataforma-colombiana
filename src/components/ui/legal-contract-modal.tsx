@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { FileText, X, Loader2, CheckCircle } from 'lucide-react'
+import { FileText, X, CheckCircle } from 'lucide-react'
+import { LtButton, LtPanel } from '@/components/lt'
 
 interface LegalContractModalProps {
   isOpen: boolean
@@ -33,50 +34,66 @@ export default function LegalContractModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+      style={{ background: 'rgba(34, 21, 15, 0.75)' }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="contract-modal-title"
     >
-      <div className="bg-white dark:bg-slate-950 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
-
-        {/* Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <LtPanel shadow="lg" className="w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        <div className="p-6 border-b-[2px] border-[var(--lt-ink)] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full text-blue-600">
+            <div
+              className="p-2 rounded-full border-[2px] border-[var(--lt-ink)]"
+              style={{ background: 'var(--lt-bg)', color: 'var(--lt-terracota)' }}
+            >
               <FileText className="w-6 h-6" />
             </div>
             <div>
-              <h3 id="contract-modal-title" className="text-lg font-bold text-slate-900 dark:text-white">
+              <h3
+                id="contract-modal-title"
+                className="text-lg font-bold"
+                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+              >
                 Contrato de Usuario Registrado
               </h3>
-              <p className="text-xs text-slate-500">Debes aceptar para continuar con tu registro.</p>
+              <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
+                Debes aceptar para continuar con tu registro.
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1"
+            className="transition-colors p-1 hover:opacity-70"
+            style={{ color: 'var(--lt-ink-soft)' }}
             aria-label="Cerrar modal"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Scrollable Body — Full Contract Text */}
-        <div className="p-6 overflow-y-auto text-sm text-slate-600 dark:text-slate-300 space-y-6 leading-relaxed bg-slate-50 dark:bg-slate-900/50">
+        <div
+          className="p-6 overflow-y-auto text-sm space-y-6 leading-relaxed"
+          style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+        >
 
-          {/* Contract Header */}
-          <div className="text-center border-b border-slate-200 dark:border-slate-700 pb-6">
-            <h4 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          <div className="text-center border-b-[2px] border-[var(--lt-ink)] pb-6">
+            <h4
+              className="text-xl font-bold mb-2"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
               CONTRATO DE USUARIO REGISTRADO
             </h4>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
               (Acuerdo de Registro y Uso)
             </p>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">
+            <p
+              className="text-sm font-medium mt-3"
+              style={{ color: 'var(--lt-ink)' }}
+            >
               Latinterritory.com
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
               Última actualización: 03 de febrero de 2026
             </p>
           </div>
@@ -93,18 +110,18 @@ export default function LegalContractModal({
 
           {/* 1. Binding documents */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">1) Documentos vinculantes</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>1) Documentos vinculantes</h5>
             <p className="mb-2">Este Acuerdo se complementa con:</p>
             <ol className="list-decimal pl-6 space-y-1 mb-2">
-              <li><Link href="/terminos" target="_blank" className="text-blue-600 hover:underline">Términos de Uso de la Plataforma</Link>, y</li>
-              <li><Link href="/privacidad" target="_blank" className="text-blue-600 hover:underline">Política de Privacidad</Link>.</li>
+              <li><Link href="/terminos" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Términos de Uso de la Plataforma</Link>, y</li>
+              <li><Link href="/privacidad" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Política de Privacidad</Link>.</li>
             </ol>
             <p>En caso de conflicto, prevalecerá el documento más específico para la funcionalidad que estés usando.</p>
           </div>
 
           {/* 2. Eligibility */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">2) Elegibilidad y capacidad</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>2) Elegibilidad y capacidad</h5>
             <ul className="space-y-2">
               <li><strong>2.1.</strong> Debes tener 16 años o más para registrarte.</li>
               <li><strong>2.2.</strong> Garantizas que tienes capacidad legal para celebrar este Acuerdo y cumplirlo.</li>
@@ -114,7 +131,7 @@ export default function LegalContractModal({
 
           {/* 3. Account registration */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">3) Registro de cuenta y seguridad</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>3) Registro de cuenta y seguridad</h5>
             <ul className="space-y-2">
               <li><strong>3.1.</strong> Para registrarte, debes proporcionar un correo electrónico y crear una contraseña.</li>
               <li><strong>3.2.</strong> Eres responsable de mantener tus credenciales seguras y de toda actividad realizada desde tu cuenta.</li>
@@ -125,7 +142,7 @@ export default function LegalContractModal({
 
           {/* 4. Profile and identity */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">4) Perfil, identidad y datos visibles</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>4) Perfil, identidad y datos visibles</h5>
             <ul className="space-y-2">
               <li><strong>4.1.</strong> La Plataforma podrá mostrar públicamente información asociada a tu actividad, incluyendo reseñas y publicaciones en foros.</li>
               <li><strong>4.2.</strong> Al publicar una reseña, aceptas que se muestre públicamente tu ciudad (por ejemplo, Brisbane, Sydney, etc.) como parte del contexto del contenido.</li>
@@ -136,7 +153,7 @@ export default function LegalContractModal({
 
           {/* 5. Conduct rules */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">5) Reglas de conducta y uso permitido</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>5) Reglas de conducta y uso permitido</h5>
             <p className="mb-2">Te comprometes a NO:</p>
             <ol className="list-[lower-alpha] pl-6 space-y-1">
               <li>publicar contenido ilegal, fraudulento o engañoso;</li>
@@ -152,7 +169,7 @@ export default function LegalContractModal({
 
           {/* 6. User generated content */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">6) Contenido generado por el usuario (UGC)</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>6) Contenido generado por el usuario (UGC)</h5>
             <ul className="space-y-2">
               <li><strong>6.1.</strong> &quot;Contenido&quot; incluye reseñas, publicaciones en foros, textos, imágenes (donde estén permitidas), logos y cualquier material que subas.</li>
               <li><strong>6.2.</strong> Eres el único responsable de tu Contenido y garantizas que:
@@ -169,7 +186,7 @@ export default function LegalContractModal({
 
           {/* 7. Reviews */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">7) Reseñas (publicación, visibilidad y moderación posterior)</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>7) Reseñas (publicación, visibilidad y moderación posterior)</h5>
             <ul className="space-y-2">
               <li><strong>7.1.</strong> Las reseñas requieren inicio de sesión.</li>
               <li><strong>7.2.</strong> <em>Visibilidad:</em> por diseño, las reseñas publicadas se muestran públicamente y la Plataforma puede mostrar todas las reseñas (positivas, neutrales o negativas), salvo que infrinjan este Acuerdo, los Términos, o la ley.</li>
@@ -190,7 +207,7 @@ export default function LegalContractModal({
 
           {/* 8. Forums */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">8) Foros (V1: solo texto) y contenido efímero</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>8) Foros (V1: solo texto) y contenido efímero</h5>
             <ul className="space-y-2">
               <li><strong>8.1.</strong> En V1, los foros son solo texto. No está permitido subir imágenes, archivos o adjuntos en foros.</li>
               <li><strong>8.2.</strong> En V1, las publicaciones del foro están diseñadas para borrado automático tras aproximadamente 24 horas.</li>
@@ -202,7 +219,7 @@ export default function LegalContractModal({
 
           {/* 9. Business directory */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">9) Directorio de negocios y administración de fichas</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>9) Directorio de negocios y administración de fichas</h5>
             <ul className="space-y-2">
               <li><strong>9.1.</strong> Si creas o administras una ficha de negocio, declaras que eres el dueño o representante autorizado y que tienes derecho a publicar datos como nombre comercial, correo, teléfono, dirección, web y material gráfico.</li>
               <li><strong>9.2.</strong> Aceptas que estos datos pueden ser visibles públicamente sin login y ser indexados por motores de búsqueda.</li>
@@ -213,7 +230,7 @@ export default function LegalContractModal({
 
           {/* 10. Jobs */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">10) Empleos (V1) y enlaces externos</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>10) Empleos (V1) y enlaces externos</h5>
             <ul className="space-y-2">
               <li><strong>10.1.</strong> En V1, la Plataforma muestra anuncios de empleo y dirige a procesos de postulación externos mediante enlaces. No recopilamos CVs ni gestionamos postulaciones internas en V1.</li>
               <li><strong>10.2.</strong> No garantizamos la veracidad, legalidad o disponibilidad de sitios externos. Al salir de la Plataforma aplican términos/privacidad de terceros.</li>
@@ -224,7 +241,7 @@ export default function LegalContractModal({
 
           {/* 11. Moderation */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">11) Moderación, automatización e IA</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>11) Moderación, automatización e IA</h5>
             <ul className="space-y-2">
               <li><strong>11.1.</strong> Podemos moderar contenido manualmente y/o con herramientas automatizadas (incluida IA) para prevenir abuso, fraude y contenido prohibido.</li>
               <li><strong>11.2.</strong> La moderación automatizada puede equivocarse. Puedes solicitar revisión mediante los canales oficiales de soporte/reporte.</li>
@@ -234,7 +251,7 @@ export default function LegalContractModal({
 
           {/* 12. Reports */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">12) Reportes, quejas y &quot;takedown&quot;</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>12) Reportes, quejas y &quot;takedown&quot;</h5>
             <ul className="space-y-2">
               <li><strong>12.1.</strong> Puedes reportar contenido o conducta.</li>
               <li><strong>12.2.</strong> Podemos solicitar información adicional para investigar.</li>
@@ -245,7 +262,7 @@ export default function LegalContractModal({
 
           {/* 13. Suspension and termination */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">13) Suspensión y terminación</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>13) Suspensión y terminación</h5>
             <ul className="space-y-2">
               <li><strong>13.1.</strong> Puedes cerrar tu cuenta conforme a los mecanismos disponibles.</li>
               <li><strong>13.2.</strong> Podemos suspender o terminar tu acceso si:
@@ -261,7 +278,7 @@ export default function LegalContractModal({
 
           {/* 14. Security and availability */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">14) Seguridad, disponibilidad y cambios</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>14) Seguridad, disponibilidad y cambios</h5>
             <ul className="space-y-2">
               <li><strong>14.1.</strong> La Plataforma se ofrece &quot;tal cual&quot; y &quot;según disponibilidad&quot;.</li>
               <li><strong>14.2.</strong> Podemos cambiar, actualizar o discontinuar funciones en cualquier momento por mantenimiento o mejoras.</li>
@@ -271,7 +288,7 @@ export default function LegalContractModal({
 
           {/* 15. Limitation of liability */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">15) Limitación de responsabilidad</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>15) Limitación de responsabilidad</h5>
             <ul className="space-y-2">
               <li><strong>15.1.</strong> En la medida permitida por la ley, Latinterritory no será responsable por:
                 <ul className="list-disc pl-6 mt-1 space-y-1">
@@ -287,7 +304,7 @@ export default function LegalContractModal({
 
           {/* 16. Indemnity */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">16) Indemnidad</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>16) Indemnidad</h5>
             <p>
               En la medida permitida por la ley, aceptas defender, indemnizar y mantener indemne a Latinterritory frente a reclamaciones de terceros derivadas de:
             </p>
@@ -301,7 +318,7 @@ export default function LegalContractModal({
 
           {/* 17. Applicable law */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">17) Ley aplicable y jurisdicción</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>17) Ley aplicable y jurisdicción</h5>
             <p>
               Este Acuerdo se rige por las leyes de Queensland, Australia, y las partes se someten a la jurisdicción de sus tribunales, salvo que la ley disponga lo contrario.
             </p>
@@ -309,75 +326,67 @@ export default function LegalContractModal({
 
           {/* 18. Contact */}
           <div className="text-justify">
-            <h5 className="font-bold text-slate-900 dark:text-white mb-2">18) Contacto</h5>
+            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>18) Contacto</h5>
             <p>
-              Para privacidad, reportes o solicitudes: <a href="mailto:privacy@latinterritory.com" className="text-blue-600 hover:underline">privacy@latinterritory.com</a>
+              Para privacidad, reportes o solicitudes: <a href="mailto:privacy@latinterritory.com" className="text-[var(--lt-terracota)] hover:underline">privacy@latinterritory.com</a>
             </p>
           </div>
 
         </div>
 
-        {/* Footer — Checkbox and Buttons */}
-        <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-b-2xl">
-
-          {/* Acceptance Checkbox */}
+        <div className="p-6 border-t-[2px] border-[var(--lt-ink)]">
           <label className="flex items-start gap-3 cursor-pointer mb-6 group">
             <div className="relative flex items-center mt-0.5">
               <input
                 type="checkbox"
                 checked={accepted}
                 onChange={(e) => onAcceptedChange(e.target.checked)}
-                className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 checked:bg-blue-600 transition-all cursor-pointer accent-blue-600"
+                className="w-5 h-5 border-[2px] border-[var(--lt-ink)] rounded accent-[var(--lt-terracota)] cursor-pointer"
                 aria-describedby="contract-acceptance-description"
               />
             </div>
             <span
               id="contract-acceptance-description"
-              className="text-sm text-slate-700 dark:text-slate-300 select-none group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
+              className="text-sm select-none transition-colors"
+              style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
             >
-              Al crear mi cuenta, declaro que tengo <strong>16 años o más</strong> y acepto los{' '}
-              <Link href="/terminos" target="_blank" className="text-blue-600 hover:underline">Términos de Uso</Link>, la{' '}
-              <Link href="/privacidad" target="_blank" className="text-blue-600 hover:underline">Política de Privacidad</Link> y el{' '}
-              <strong>Contrato de Usuario Registrado</strong>.
+              Al crear mi cuenta, declaro que tengo <strong style={{ color: 'var(--lt-ink)' }}>16 años o más</strong> y acepto los{' '}
+              <Link href="/terminos" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Términos de Uso</Link>, la{' '}
+              <Link href="/privacidad" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Política de Privacidad</Link> y el{' '}
+              <strong style={{ color: 'var(--lt-ink)' }}>Contrato de Usuario Registrado</strong>.
             </span>
           </label>
 
           <div className="flex gap-3">
-            <button
+            <LtButton
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+              variant="outline"
+              tone="paper"
+              size="md"
+              className="flex-1"
             >
               Cancelar
-            </button>
+            </LtButton>
 
-            <button
+            <LtButton
               onClick={onConfirm}
               disabled={!accepted || isLoading}
-              className={`flex-1 px-4 py-3 rounded-xl font-bold text-white flex justify-center items-center gap-2 transition-all shadow-lg
-                ${accepted && !isLoading
-                  ? 'bg-blue-600 hover:bg-blue-500 hover:scale-[1.02]'
-                  : 'bg-slate-300 dark:bg-slate-700 text-slate-400 cursor-not-allowed shadow-none'
-                }
-              `}
+              variant="sticker"
+              tone="terracota"
+              size="md"
+              rotate={-1}
+              loading={isLoading}
+              loadingText="Procesando..."
+              iconLeft={!isLoading ? <CheckCircle className="h-5 w-5" /> : undefined}
+              className="flex-1"
               aria-label={isLoading ? 'Procesando...' : submitLabel}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  <span>Procesando...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-5 w-5" />
-                  <span>{submitLabel}</span>
-                </>
-              )}
-            </button>
+              {submitLabel}
+            </LtButton>
           </div>
         </div>
-
-      </div>
+      </LtPanel>
     </div>
   )
 }

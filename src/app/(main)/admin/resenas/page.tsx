@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { ReviewModerationCard } from '@/components/admin/review-moderation-card'
+import { LtBadge, LtPanel } from '@/components/lt'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,28 +36,34 @@ export default async function ReviewsModerationPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1
+            className="text-2xl font-bold text-[var(--lt-ink)]"
+            style={{ fontFamily: 'var(--lt-font-serif)' }}
+          >
             Moderación de Reseñas
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
             Reseñas reportadas por usuarios que requieren revisión.
           </p>
         </div>
-        <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium">
+        <LtBadge tone="accent">
           Pendientes: {flaggedReviews.length}
-        </div>
+        </LtBadge>
       </div>
 
       {flaggedReviews.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-xl border border-dashed border-gray-300 dark:border-slate-700">
+        <LtPanel className="text-center py-20 border-dashed" shadow="sm">
           <div className="text-4xl mb-4">🎉</div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+          <h3
+            className="text-lg font-medium text-[var(--lt-ink)]"
+            style={{ fontFamily: 'var(--lt-font-serif)' }}
+          >
             ¡Todo limpio!
           </h3>
-          <p className="text-gray-500">
+          <p className="text-[var(--lt-ink-soft)]">
             No hay reseñas pendientes de moderación.
           </p>
-        </div>
+        </LtPanel>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {flaggedReviews.map((review) => (

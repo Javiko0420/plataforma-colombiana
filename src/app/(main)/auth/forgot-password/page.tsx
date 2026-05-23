@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { LtPageShell, LtPanel, LtButton } from '@/components/lt';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -38,29 +39,41 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+    <LtPageShell maxWidth="md" className="flex items-center">
+      <LtPanel className="p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Recuperar contraseña</h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <h2
+            className="text-3xl font-bold mb-2"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
+            Recuperar contraseña
+          </h2>
+          <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
             Ingresa tu correo y te enviaremos un enlace para restablecerla.
           </p>
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+          <div
+            className="mt-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500 text-sm"
+            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
+            role="alert"
+          >
             {error}
           </div>
         )}
 
         {success ? (
-          <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-lg text-sm text-center">
+          <div
+            className="mt-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-verde)] text-sm text-center"
+            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
+          >
             Si el correo está registrado, recibirás un enlace de recuperación en breve.
           </div>
         ) : (
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label htmlFor="email" className="lt-label">
                 Correo electrónico
               </label>
               <input
@@ -70,27 +83,36 @@ export default function ForgotPasswordPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="lt-input"
                 placeholder="tu@correo.com"
               />
             </div>
 
-            <button
+            <LtButton
               type="submit"
+              variant="sticker"
+              tone="terracota"
+              size="md"
+              className="w-full"
               disabled={isLoading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              loading={isLoading}
+              loadingText="Enviando..."
             >
-              {isLoading ? 'Enviando...' : 'Enviar enlace'}
-            </button>
+              Enviar enlace
+            </LtButton>
           </form>
         )}
 
-        <div className="text-center mt-4">
-          <Link href="/auth/signin" className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+        <div className="text-center mt-6">
+          <Link
+            href="/auth/signin"
+            className="text-sm font-medium hover:underline"
+            style={{ color: 'var(--lt-terracota)' }}
+          >
             Volver al inicio de sesión
           </Link>
         </div>
-      </div>
-    </div>
+      </LtPanel>
+    </LtPageShell>
   );
 }

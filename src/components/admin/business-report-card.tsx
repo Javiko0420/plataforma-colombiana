@@ -7,6 +7,7 @@ import {
   dismissBusinessReport,
   deactivateReportedBusiness,
 } from '@/app/(main)/admin/negocios/actions'
+import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
 /** Maps Prisma ReportReason enum to readable Spanish labels */
 const REASON_LABELS: Record<string, string> = {
@@ -59,37 +60,37 @@ export function BusinessReportCard({ business }: BusinessReportCardProps) {
   if (isDismissed) return null
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-red-200 dark:border-red-900/30 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+    <LtPanel className="overflow-hidden border-[var(--lt-terracota)] hover:shadow-[var(--lt-shadow-sticker-lg)] transition-shadow p-0" shadow="md">
       {/* Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-start bg-red-50/50 dark:bg-red-900/10">
+      <div className="p-4 border-b-[2.2px] border-[var(--lt-ink)] flex justify-between items-start bg-[var(--lt-bg)]">
         <div>
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+          <p className="text-sm font-semibold text-[var(--lt-ink)]">
             {business.name}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-[var(--lt-ink-soft)] mt-0.5">
             {business.city || 'Sin ciudad'} &bull; Dueño: {business.owner.name || business.owner.email}
           </p>
         </div>
-        <div className="flex items-center gap-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 px-2 py-1 rounded text-xs font-bold shrink-0">
+        <LtBadge tone="terracota" className="shrink-0">
           ⚠️ {business._count.reports} reporte{business._count.reports !== 1 ? 's' : ''}
-        </div>
+        </LtBadge>
       </div>
 
       {/* Reports */}
       <div className="p-4">
-        <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-2">
+        <p className="text-xs font-semibold text-[var(--lt-terracota)] uppercase tracking-wide mb-2">
           Motivos de denuncia:
         </p>
-        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-2 list-disc pl-4">
+        <ul className="text-xs text-[var(--lt-ink-soft)] space-y-2 list-disc pl-4">
           {business.reports.slice(0, 5).map((report) => (
             <li key={report.id}>
-              <span className="font-medium text-gray-900 dark:text-gray-200">
+              <span className="font-medium text-[var(--lt-ink)]">
                 {REASON_LABELS[report.reason] || report.reason}
               </span>
               {report.details && (
-                <span className="text-gray-500"> - &ldquo;{report.details}&rdquo;</span>
+                <span className="text-[var(--lt-ink-soft)]"> - &ldquo;{report.details}&rdquo;</span>
               )}
-              <div className="text-gray-400 mt-0.5">
+              <div className="text-[var(--lt-ink-soft)] opacity-80 mt-0.5">
                 Por: {report.reporter.name || report.reporter.email} &bull;{' '}
                 {formatDistanceToNow(new Date(report.createdAt), {
                   addSuffix: true,
@@ -102,22 +103,30 @@ export function BusinessReportCard({ business }: BusinessReportCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="p-3 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-2">
-        <button
+      <div className="p-3 bg-[var(--lt-bg)] border-t-[2.2px] border-[var(--lt-ink)] flex justify-end gap-2">
+        <LtButton
+          variant="outline"
+          tone="paper"
+          size="sm"
           onClick={handleDeactivate}
           disabled={isPending}
-          className="px-4 py-2 text-sm font-medium text-red-600 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition-colors"
+          loading={isPending}
+          loadingText="Procesando..."
         >
-          {isPending ? 'Procesando...' : '🚫 Desactivar Negocio'}
-        </button>
-        <button
+          🚫 Desactivar Negocio
+        </LtButton>
+        <LtButton
+          variant="sticker"
+          tone="verde"
+          size="sm"
           onClick={handleDismiss}
           disabled={isPending}
-          className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors shadow-sm"
+          loading={isPending}
+          loadingText="Procesando..."
         >
-          {isPending ? 'Procesando...' : '✅ Descartar Reportes'}
-        </button>
+          ✅ Descartar Reportes
+        </LtButton>
       </div>
-    </div>
+    </LtPanel>
   )
 }

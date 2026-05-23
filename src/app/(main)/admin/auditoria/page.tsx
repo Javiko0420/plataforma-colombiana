@@ -57,10 +57,13 @@ export default async function AuditPage({
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1
+            className="text-2xl font-bold text-[var(--lt-ink)]"
+            style={{ fontFamily: 'var(--lt-font-serif)' }}
+          >
             Centro de Auditoría
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
             Registro inmutable de todas las acciones del sistema y eventos de
             seguridad.
           </p>
@@ -68,8 +71,8 @@ export default async function AuditPage({
       </div>
 
       {/* Tabs de Navegación */}
-      <div className="border-b border-gray-200 dark:border-slate-700">
-        <nav className="-mb-px flex space-x-8">
+      <div className="border-b-[2.2px] border-[var(--lt-ink)]">
+        <nav className="-mb-[2.2px] flex space-x-8">
           <TabLink
             active={tab === 'audit'}
             href="/admin/auditoria?tab=audit"
@@ -88,7 +91,7 @@ export default async function AuditPage({
       {/* Contenido Dinámico */}
       {content}
 
-      <div className="text-right text-xs text-gray-400">
+      <div className="text-right text-xs text-[var(--lt-ink-soft)]">
         Mostrando últimos eventos. Total histórico: {totalItems}
       </div>
     </div>
@@ -109,10 +112,10 @@ function TabLink({
   return (
     <Link
       href={href}
-      className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+      className={`group inline-flex items-center py-4 px-1 border-b-[2.2px] font-medium text-sm transition-colors ${
         active
-          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ? 'border-[var(--lt-terracota)] text-[var(--lt-terracota)]'
+          : 'border-transparent text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)] hover:border-[var(--lt-ink-soft)]'
       }`}
     >
       <span className="mr-2">{icon}</span>

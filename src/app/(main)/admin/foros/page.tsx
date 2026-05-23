@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { ForumModerationView } from '@/components/admin/forum-moderation-view'
 import { ForumSettingsPanel } from '@/components/admin/forum-settings-panel'
+import { LtBadge } from '@/components/lt'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,42 +75,48 @@ export default async function ForumModerationPage() {
       <section>
         <div className="flex justify-between items-end mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1
+              className="text-2xl font-bold text-[var(--lt-ink)]"
+              style={{ fontFamily: 'var(--lt-font-serif)' }}
+            >
               Gestión de Foros
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
               Configura los títulos y temas del día para los foros activos.
             </p>
           </div>
-          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+          <LtBadge tone="accent">
             {forumsForSettings.length} Activos
-          </span>
+          </LtBadge>
         </div>
 
         <ForumSettingsPanel forums={forumsForSettings} />
       </section>
 
       {/* Separador visual */}
-      <hr className="border-gray-200 dark:border-slate-700" />
+      <hr className="border-[2.2px] border-[var(--lt-ink)] opacity-20" />
 
       {/* Sección 2: Moderación de Contenido Reportado */}
       <section>
         <div className="flex justify-between items-end mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+            <h2
+              className="text-xl font-bold text-[var(--lt-ink)]"
+              style={{ fontFamily: 'var(--lt-font-serif)' }}
+            >
               Moderación de Contenido
             </h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
               Revisa y gestiona el contenido reportado por la comunidad.
             </p>
           </div>
           <div className="flex gap-2 text-xs">
-            <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full font-medium">
+            <LtBadge tone="terracota">
               {formattedPosts.length} Posts
-            </span>
-            <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full font-medium">
+            </LtBadge>
+            <LtBadge tone="sun">
               {formattedComments.length} Comentarios
-            </span>
+            </LtBadge>
           </div>
         </div>
 

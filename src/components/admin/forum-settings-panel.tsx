@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { updateForumDetails } from '@/app/(main)/admin/foros/actions'
+import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
 interface ActiveForum {
   id: string
@@ -20,15 +21,15 @@ export function ForumSettingsPanel({ forums }: ForumSettingsPanelProps) {
   return (
     <div className="space-y-4">
       {forums.length === 0 ? (
-        <div className="text-center py-8 bg-white dark:bg-slate-800 rounded-lg border border-dashed border-gray-300 dark:border-slate-700">
+        <LtPanel className="text-center py-8 border-dashed" shadow="sm">
           <span className="text-4xl">📭</span>
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2 text-[var(--lt-ink-soft)]">
             No hay foros activos en este momento.
           </p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-[var(--lt-ink-soft)] opacity-80 mt-1">
             Los foros se crean automáticamente cada día por el cron job.
           </p>
-        </div>
+        </LtPanel>
       ) : (
         forums.map((forum) => (
           <ForumEditCard key={forum.id} forum={forum} />
@@ -69,28 +70,29 @@ function ForumEditCard({ forum }: { forum: ActiveForum }) {
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <LtPanel className="overflow-hidden p-0" shadow="md">
       {/* Header con badge del topic */}
-      <div className="flex items-center justify-between px-6 py-3 bg-gray-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700">
+      <div className="flex items-center justify-between px-6 py-3 bg-[var(--lt-bg)] border-b-[2.2px] border-[var(--lt-ink)]">
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+          <LtBadge tone="accent">
             💬 {topicLabel}
-          </span>
-          <span className="text-xs text-gray-400">
-            slug: <code className="bg-gray-100 dark:bg-slate-700 px-1.5 py-0.5 rounded text-[11px]">{forum.slug}</code>
+          </LtBadge>
+          <span className="text-xs text-[var(--lt-ink-soft)]">
+            slug: <code className="bg-[var(--lt-paper)] border-[1.6px] border-[var(--lt-ink)] px-1.5 py-0.5 rounded text-[11px]">{forum.slug}</code>
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-[var(--lt-ink-soft)]">
             {forum.postsCount} publicaciones
           </span>
           {!isEditing && (
-            <button
+            <LtButton
+              variant="outline"
+              size="sm"
               onClick={() => setIsEditing(true)}
-              className="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800 transition-colors"
             >
               ✏️ Editar
-            </button>
+            </LtButton>
           )}
         </div>
       </div>
@@ -100,10 +102,10 @@ function ForumEditCard({ forum }: { forum: ActiveForum }) {
         {/* Feedback message */}
         {message && (
           <div
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
+            className={`px-4 py-2 rounded-[var(--lt-radius-sm)] text-sm font-medium border-[2.2px] ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
+                ? 'bg-[var(--lt-bg)] text-[var(--lt-verde)] border-[var(--lt-verde)]'
+                : 'bg-[var(--lt-bg)] text-[var(--lt-terracota)] border-[var(--lt-terracota)]'
             }`}
           >
             {message.text}
@@ -116,7 +118,7 @@ function ForumEditCard({ forum }: { forum: ActiveForum }) {
             <div>
               <label
                 htmlFor={`forum-name-${forum.id}`}
-                className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                className="lt-label uppercase tracking-wider text-xs"
               >
                 Título del Foro
               </label>
@@ -126,17 +128,17 @@ function ForumEditCard({ forum }: { forum: ActiveForum }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={100}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow"
+                className="lt-input"
                 placeholder="Ej: Emprendimiento Digital en Colombia"
               />
-              <p className="mt-1 text-xs text-gray-400">{name.length}/100 caracteres</p>
+              <p className="mt-1 text-xs text-[var(--lt-ink-soft)]">{name.length}/100 caracteres</p>
             </div>
 
             {/* Editable description */}
             <div>
               <label
                 htmlFor={`forum-desc-${forum.id}`}
-                className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5"
+                className="lt-label uppercase tracking-wider text-xs"
               >
                 Descripción / Tema del Día
               </label>
@@ -146,52 +148,60 @@ function ForumEditCard({ forum }: { forum: ActiveForum }) {
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={300}
                 rows={3}
-                className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-shadow resize-none"
+                className="lt-input resize-none"
                 placeholder="Ej: Hoy discutimos estrategias de marketing digital para PYMEs colombianas..."
               />
-              <p className="mt-1 text-xs text-gray-400">{description.length}/300 caracteres</p>
+              <p className="mt-1 text-xs text-[var(--lt-ink-soft)]">{description.length}/300 caracteres</p>
             </div>
 
             {/* Action buttons */}
             <div className="flex items-center justify-end gap-3 pt-2">
-              <button
+              <LtButton
+                variant="outline"
+                size="sm"
                 onClick={handleCancel}
                 disabled={isPending}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md transition-colors disabled:opacity-50"
               >
                 Cancelar
-              </button>
-              <button
+              </LtButton>
+              <LtButton
+                variant="sticker"
+                tone="accent"
+                size="sm"
                 onClick={handleSave}
                 disabled={isPending || !hasChanges}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={isPending}
+                loadingText="Guardando..."
               >
-                {isPending ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
+                Guardar Cambios
+              </LtButton>
             </div>
           </>
         ) : (
           <>
             {/* Read-only display */}
             <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+              <p className="lt-label uppercase tracking-wider text-xs mb-1">
                 Título del Foro
               </p>
-              <p className="text-lg font-bold text-gray-900 dark:text-white">
+              <p
+                className="text-lg font-bold text-[var(--lt-ink)]"
+                style={{ fontFamily: 'var(--lt-font-serif)' }}
+              >
                 {forum.name}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
+              <p className="lt-label uppercase tracking-wider text-xs mb-1">
                 Descripción / Tema del Día
               </p>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
+              <p className="text-sm text-[var(--lt-ink-soft)]">
                 {forum.description}
               </p>
             </div>
           </>
         )}
       </div>
-    </div>
+    </LtPanel>
   )
 }

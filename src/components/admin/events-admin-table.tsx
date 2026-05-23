@@ -6,6 +6,7 @@ import { Trash2, ExternalLink, CalendarDays, Edit, AlertTriangle } from 'lucide-
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
 type AdminEvent = {
   id: string
@@ -45,21 +46,21 @@ export default function EventsAdminTable({
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700">
-        <p className="text-gray-500 dark:text-gray-400">
+      <LtPanel className="text-center py-12" shadow="sm">
+        <p className="text-[var(--lt-ink-soft)]">
           No hay eventos registrados en el sistema.
         </p>
-      </div>
+      </LtPanel>
     )
   }
 
   const now = new Date()
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <LtPanel className="overflow-hidden p-0" shadow="md">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 dark:bg-slate-700/50 text-gray-500 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-slate-700">
+          <thead className="bg-[var(--lt-bg)] text-[var(--lt-ink-soft)] font-medium border-b-[2.2px] border-[var(--lt-ink)]">
             <tr>
               <th className="px-6 py-3">Evento</th>
               <th className="px-6 py-3">Organizador</th>
@@ -68,44 +69,44 @@ export default function EventsAdminTable({
               <th className="px-6 py-3 text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+          <tbody className="divide-y-[2px] divide-[var(--lt-ink)]/15">
             {events.map((evt) => {
               const isPast = new Date(evt.eventDate) < now
 
               return (
                 <tr
                   key={evt.id}
-                  className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors"
+                  className="hover:bg-[var(--lt-bg)] transition-colors"
                 >
                   {/* Evento */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-900 dark:text-white line-clamp-1 max-w-[220px]">
+                      <span className="font-semibold text-[var(--lt-ink)] line-clamp-1 max-w-[220px]">
                         {evt.title}
                       </span>
                       <Link
                         href={`/eventos/${evt.id}`}
                         target="_blank"
-                        className="text-blue-500 hover:text-blue-700"
+                        className="text-[var(--lt-accent)] hover:text-[var(--lt-terracota)]"
                       >
                         <ExternalLink className="w-4 h-4" />
                       </Link>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-[var(--lt-ink-soft)]">
                         {evt.category}
                       </span>
-                      <span className="text-xs text-gray-400">·</span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                      <span className="text-xs text-[var(--lt-ink-soft)] opacity-50">·</span>
+                      <span className="text-xs text-[var(--lt-ink-soft)]">
                         {evt.location}
                       </span>
-                      <span className="text-xs text-gray-400">·</span>
+                      <span className="text-xs text-[var(--lt-ink-soft)] opacity-50">·</span>
                       {evt.ticketPrice && evt.ticketPrice > 0 ? (
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">
+                        <span className="text-xs font-medium text-[var(--lt-accent)]">
                           ${evt.ticketPrice.toFixed(2)} AUD
                         </span>
                       ) : (
-                        <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                        <span className="text-xs font-medium text-[var(--lt-verde)]">
                           Gratis
                         </span>
                       )}
@@ -114,18 +115,18 @@ export default function EventsAdminTable({
 
                   {/* Organizador */}
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <div className="text-sm font-medium text-[var(--lt-ink)]">
                       {evt.user.name || 'Sin nombre'}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-[var(--lt-ink-soft)]">
                       {evt.user.email}
                     </div>
                   </td>
 
                   {/* Fecha */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                      <CalendarDays className="w-4 h-4 text-gray-400" />
+                    <div className="flex items-center gap-1.5 text-[var(--lt-ink)]">
+                      <CalendarDays className="w-4 h-4 text-[var(--lt-ink-soft)]" />
                       {format(new Date(evt.eventDate), "d MMM, yyyy · HH:mm", {
                         locale: es,
                       })}
@@ -135,18 +136,14 @@ export default function EventsAdminTable({
                   {/* Estado */}
                   <td className="px-6 py-4 text-center">
                     {evt.isHidden ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50">
+                      <LtBadge tone="sun" className="inline-flex items-center gap-1">
                         <AlertTriangle className="w-3 h-3" />
                         Reportado
-                      </span>
+                      </LtBadge>
                     ) : isPast ? (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
-                        Finalizado
-                      </span>
+                      <LtBadge tone="neutral">Finalizado</LtBadge>
                     ) : (
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800/50">
-                        Activo
-                      </span>
+                      <LtBadge tone="verde">Activo</LtBadge>
                     )}
                   </td>
 
@@ -154,23 +151,24 @@ export default function EventsAdminTable({
                   <td className="px-6 py-4 text-right space-x-2">
                     <Link
                       href={`/perfil/eventos/editar/${evt.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-md transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border-[2px] border-[var(--lt-ink)] text-[var(--lt-ink)] bg-[var(--lt-paper)] hover:bg-[var(--lt-bg)] rounded-[var(--lt-radius-sm)] transition-colors text-sm font-medium"
                       title="Editar evento"
                     >
                       <Edit className="w-4 h-4" />
                       Editar
                     </Link>
-                    <button
+                    <LtButton
+                      variant="sticker"
+                      tone="terracota"
+                      size="sm"
                       onClick={() => handleDelete(evt.id, evt.title)}
                       disabled={loadingActionId !== null}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-transparent bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-md transition-colors disabled:opacity-50"
-                      title="Eliminar evento"
+                      loading={loadingActionId === `delete-${evt.id}`}
+                      loadingText="Borrando..."
                     >
                       <Trash2 className="w-4 h-4" />
-                      {loadingActionId === `delete-${evt.id}`
-                        ? 'Borrando...'
-                        : 'Eliminar'}
-                    </button>
+                      Eliminar
+                    </LtButton>
                   </td>
                 </tr>
               )
@@ -178,6 +176,6 @@ export default function EventsAdminTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </LtPanel>
   )
 }

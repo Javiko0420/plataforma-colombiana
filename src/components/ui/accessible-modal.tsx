@@ -125,12 +125,16 @@ export function AccessibleModal({
               <Dialog.Panel
                 ref={modalRef}
                 className={`
-                  w-full ${sizeClasses[size]} transform overflow-hidden rounded-2xl
-                  bg-white dark:bg-gray-800 p-6 text-left align-middle shadow-xl
-                  transition-all border border-gray-200 dark:border-gray-700
-                  focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                  dark:focus:ring-blue-400
+                  w-full ${sizeClasses[size]} transform overflow-hidden
+                  rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)]
+                  p-6 text-left align-middle transition-all
+                  focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2
                 `}
+                style={{
+                  background: 'var(--lt-paper)',
+                  boxShadow: 'var(--lt-shadow-sticker-xl)',
+                  color: 'var(--lt-ink)',
+                }}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
@@ -141,7 +145,8 @@ export function AccessibleModal({
                   <Dialog.Title
                     as="h2"
                     id="modal-title"
-                    className="text-lg font-semibold leading-6 text-gray-900 dark:text-white"
+                    className="text-lg font-bold leading-6"
+                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
                   >
                     {title}
                   </Dialog.Title>
@@ -151,12 +156,12 @@ export function AccessibleModal({
                       type="button"
                       onClick={onClose}
                       className="
-                        rounded-md p-2 text-gray-400 hover:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-blue-600
-                        dark:text-gray-500 dark:hover:text-gray-400
-                        dark:focus:ring-blue-400 min-h-[44px] min-w-[44px]
-                        flex items-center justify-center
+                        rounded-[var(--lt-radius-sm)] p-2
+                        focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]
+                        min-h-[44px] min-w-[44px]
+                        flex items-center justify-center transition-opacity hover:opacity-70
                       "
+                      style={{ color: 'var(--lt-ink-soft)' }}
                       aria-label="Cerrar modal"
                     >
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -168,7 +173,8 @@ export function AccessibleModal({
                 {description && (
                   <Dialog.Description
                     id="modal-description"
-                    className="text-sm text-gray-600 dark:text-gray-400 mb-4"
+                    className="text-sm mb-4"
+                    style={{ color: 'var(--lt-ink-soft)' }}
                   >
                     {description}
                   </Dialog.Description>

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import RegisterForm from '@/components/ui/register-form'
+import { LtPageShell } from '@/components/lt'
 
 export const metadata: Metadata = {
   title: 'Crear Cuenta | Plataforma Colombiana',
@@ -15,7 +16,6 @@ export default async function SignUpPage({
   searchParams: Promise<{ callbackUrl?: string }>
 }) {
   const params = await searchParams
-  // Check if user is already logged in
   const session = await getServerSession(authOptions)
   
   if (session) {
@@ -23,11 +23,8 @@ export default async function SignUpPage({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="container mx-auto">
-        <RegisterForm callbackUrl={params.callbackUrl} />
-      </div>
-    </main>
+    <LtPageShell maxWidth="md" className="flex items-center">
+      <RegisterForm callbackUrl={params.callbackUrl} />
+    </LtPageShell>
   )
 }
-

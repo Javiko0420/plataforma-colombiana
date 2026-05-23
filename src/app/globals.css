@@ -171,4 +171,28 @@ a {
   .text-accent-foreground { color: var(--accent-foreground); }
   .ring-ring           { --tw-ring-color: var(--ring); }
   .bg-input            { background-color: var(--input); }
+
+  /* Formularios — sistema Sol */
+  .lt-input {
+    width: 100%;
+    background: var(--lt-bg);
+    color: var(--lt-ink);
+    border: 2px solid var(--lt-ink);
+    border-radius: var(--lt-radius-sm);
+    padding: 0.625rem 0.75rem;
+    font-family: var(--lt-font-sans);
+    outline: none;
+    transition: box-shadow 0.15s;
+  }
+  .lt-input:focus {
+    box-shadow: 0 0 0 2px var(--lt-terracota);
+  }
+  .lt-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: var(--lt-font-sans);
+    color: var(--lt-ink);
+    margin-bottom: 0.375rem;
+  }
 }

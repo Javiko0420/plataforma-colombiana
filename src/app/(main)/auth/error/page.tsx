@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
+import { LtPageShell, LtPanel, LtButton } from '@/components/lt'
 
 export const metadata: Metadata = {
   title: 'Error de Autenticación | Latin Territory',
@@ -15,8 +16,6 @@ export default async function AuthErrorPage({
   const params = await searchParams
 
   const error = params.error || 'Default'
-
-  // Error-specific messages and whether to show the "use credentials" hint
   const isAccountNotLinked = error === 'OAuthAccountNotLinked'
 
   const errorMessages: Record<string, string> = {
@@ -31,38 +30,40 @@ export default async function AuthErrorPage({
   const errorMessage = errorMessages[error] || errorMessages.Default
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center px-4">
-      <div className="max-w-md w-full">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-            <AlertTriangle className="h-10 w-10 text-red-600 dark:text-red-400" />
-          </div>
-          
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {isAccountNotLinked ? 'Cuenta ya registrada' : 'Error de Autenticación'}
-          </h1>
-          
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {errorMessage}
-          </p>
-
-          <div className="space-y-3">
-            <Link
-              href="/auth/signin"
-              className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-            >
-              {isAccountNotLinked ? 'Iniciar sesión con credenciales' : 'Intentar nuevamente'}
-            </Link>
-            
-            <Link
-              href="/"
-              className="block w-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200"
-            >
-              Volver al inicio
-            </Link>
-          </div>
+    <LtPageShell maxWidth="md" className="flex items-center">
+      <LtPanel className="p-8 text-center">
+        <div
+          className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center border-2 border-red-500"
+          style={{ background: 'var(--lt-bg)' }}
+        >
+          <AlertTriangle className="h-10 w-10 text-red-600" />
         </div>
-      </div>
-    </main>
+        
+        <h1
+          className="text-2xl font-bold mb-2"
+          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+        >
+          {isAccountNotLinked ? 'Cuenta ya registrada' : 'Error de Autenticación'}
+        </h1>
+        
+        <p className="mb-6" style={{ color: 'var(--lt-ink-soft)' }}>
+          {errorMessage}
+        </p>
+
+        <div className="space-y-3">
+          <Link href="/auth/signin" className="block">
+            <LtButton variant="sticker" tone="terracota" size="md" className="w-full">
+              {isAccountNotLinked ? 'Iniciar sesión con credenciales' : 'Intentar nuevamente'}
+            </LtButton>
+          </Link>
+          
+          <Link href="/" className="block">
+            <LtButton variant="outline" tone="paper" size="md" className="w-full">
+              Volver al inicio
+            </LtButton>
+          </Link>
+        </div>
+      </LtPanel>
+    </LtPageShell>
   )
 }

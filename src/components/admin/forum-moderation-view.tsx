@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { moderateForumContent } from '@/app/(main)/admin/foros/actions'
+import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
 interface FlaggedItem {
   id: string
@@ -49,23 +50,23 @@ export function ForumModerationView({
   return (
     <div className="space-y-6">
       {/* Tabs de Navegación */}
-      <div className="flex space-x-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-lg w-fit">
+      <div className="flex space-x-1 bg-[var(--lt-bg)] border-[2.2px] border-[var(--lt-ink)] p-1 rounded-[var(--lt-radius-sm)] w-fit">
         <button
           onClick={() => setActiveTab('posts')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+          className={`px-4 py-2 text-sm font-medium rounded-[var(--lt-radius-sm)] transition-all ${
             activeTab === 'posts'
-              ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-[var(--lt-paper)] text-[var(--lt-accent)] shadow-[var(--lt-shadow-sticker)] border-[2px] border-[var(--lt-ink)]'
+              : 'text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)]'
           }`}
         >
           Publicaciones ({posts.length})
         </button>
         <button
           onClick={() => setActiveTab('comments')}
-          className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+          className={`px-4 py-2 text-sm font-medium rounded-[var(--lt-radius-sm)] transition-all ${
             activeTab === 'comments'
-              ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-[var(--lt-paper)] text-[var(--lt-accent)] shadow-[var(--lt-shadow-sticker)] border-[2px] border-[var(--lt-ink)]'
+              : 'text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)]'
           }`}
         >
           Comentarios ({comments.length})
@@ -75,37 +76,38 @@ export function ForumModerationView({
       {/* Lista de Contenido */}
       <div className="grid gap-4">
         {items.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-lg border border-dashed border-gray-300 dark:border-slate-700">
+          <LtPanel className="text-center py-12 border-dashed" shadow="sm">
             <span className="text-4xl">👍</span>
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-[var(--lt-ink-soft)]">
               No hay{' '}
               {activeTab === 'posts' ? 'publicaciones' : 'comentarios'}{' '}
               reportados.
             </p>
-          </div>
+          </LtPanel>
         ) : (
           items.map((item) => (
-            <div
+            <LtPanel
               key={item.id}
-              className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-6"
+              className="p-6 flex flex-col md:flex-row gap-6"
+              shadow="md"
             >
               {/* Información del Autor y Contexto */}
-              <div className="md:w-1/4 space-y-3 border-b md:border-b-0 md:border-r border-gray-100 dark:border-slate-700 pb-4 md:pb-0 md:pr-4">
+              <div className="md:w-1/4 space-y-3 border-b-[2px] md:border-b-0 md:border-r-[2px] border-[var(--lt-ink)]/20 pb-4 md:pb-0 md:pr-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[var(--lt-accent)] border-[2px] border-[var(--lt-ink)] flex items-center justify-center text-[var(--lt-paper)] font-bold shrink-0">
                     {item.author.name?.[0] || '?'}
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate">
+                    <p className="text-sm font-medium truncate text-[var(--lt-ink)]">
                       {item.author.name || 'Anónimo'}
                     </p>
-                    <p className="text-xs text-gray-500 truncate">
+                    <p className="text-xs text-[var(--lt-ink-soft)] truncate">
                       {item.author.email}
                     </p>
                   </div>
                 </div>
 
-                <div className="text-xs text-gray-500 space-y-1">
+                <div className="text-xs text-[var(--lt-ink-soft)] space-y-1">
                   <p>
                     📅{' '}
                     {formatDistanceToNow(new Date(item.createdAt), {
@@ -116,50 +118,58 @@ export function ForumModerationView({
                   {item.forumName && (
                     <p>
                       📌 Foro:{' '}
-                      <span className="font-medium">{item.forumName}</span>
+                      <span className="font-medium text-[var(--lt-ink)]">{item.forumName}</span>
                     </p>
                   )}
                   {item.postTitle && (
                     <p>
                       💬 En:{' '}
-                      <span className="font-medium truncate block">
+                      <span className="font-medium truncate block text-[var(--lt-ink)]">
                         {item.postTitle}
                       </span>
                     </p>
                   )}
                 </div>
 
-                <div className="bg-red-50 text-red-700 px-3 py-1.5 rounded text-xs font-bold inline-flex items-center gap-1">
+                <LtBadge tone="terracota">
                   🚩 {item.reportsCount} Reportes
-                </div>
+                </LtBadge>
               </div>
 
               {/* Contenido y Acciones */}
               <div className="md:w-3/4 flex flex-col justify-between">
-                <div className="bg-gray-50 dark:bg-slate-900/50 p-4 rounded-md border border-gray-100 dark:border-slate-700 mb-4">
-                  <p className="text-gray-800 dark:text-gray-200 text-sm whitespace-pre-wrap font-mono">
+                <div className="bg-[var(--lt-bg)] p-4 rounded-[var(--lt-radius-sm)] border-[2px] border-[var(--lt-ink)]/20 mb-4">
+                  <p className="text-[var(--lt-ink)] text-sm whitespace-pre-wrap font-mono">
                     {item.content}
                   </p>
                 </div>
 
                 <div className="flex justify-end gap-3">
-                  <button
+                  <LtButton
+                    variant="outline"
+                    tone="paper"
+                    size="sm"
                     onClick={() => handleDecision(item.id, 'delete')}
                     disabled={processingId === item.id}
-                    className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md border border-red-200 transition-colors disabled:opacity-50"
+                    loading={processingId === item.id}
+                    loadingText="..."
                   >
                     🗑️ Eliminar y Penalizar
-                  </button>
-                  <button
+                  </LtButton>
+                  <LtButton
+                    variant="sticker"
+                    tone="verde"
+                    size="sm"
                     onClick={() => handleDecision(item.id, 'approve')}
                     disabled={processingId === item.id}
-                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md shadow-sm transition-colors disabled:opacity-50"
+                    loading={processingId === item.id}
+                    loadingText="..."
                   >
                     ✅ Mantener (Falso Reporte)
-                  </button>
+                  </LtButton>
                 </div>
               </div>
-            </div>
+            </LtPanel>
           ))
         )}
       </div>

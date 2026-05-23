@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { LtPageShell, LtPanel } from "@/components/lt";
 
 export const metadata: Metadata = {
   title: "Política de Privacidad | Latinterritory",
@@ -8,19 +9,24 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 p-8 md:p-12 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-        {/* Encabezado */}
-        <div className="border-b border-slate-200 dark:border-slate-800 pb-8 mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+    <LtPageShell maxWidth="5xl">
+      <LtPanel className="p-8 md:p-12">
+        <div className="border-b-[2px] border-[var(--lt-ink)] pb-8 mb-8">
+          <h1
+            className="text-3xl md:text-4xl font-bold mb-4"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
             Política de Privacidad — Latinterritory
           </h1>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
             Última actualización: 31 de enero de 2026
           </p>
         </div>
 
-        <article className="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300">
+        <article
+          className="max-w-none space-y-4 text-sm leading-relaxed [&_h2]:text-xl [&_h2]:font-bold [&_h2]:pt-4 [&_h2]:text-[var(--lt-ink)] [&_h3]:font-semibold [&_h3]:pt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-[var(--lt-terracota)] [&_a]:underline [&_strong]:text-[var(--lt-ink)]"
+          style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+        >
           <p>
             Esta Política de Privacidad describe cómo{" "}
             <strong>Latinterritory</strong> (&quot;nosotros&quot;) recopila,
@@ -388,7 +394,7 @@ export default function PrivacyPage() {
             </li>
           </ul>
         </article>
-      </div>
-    </div>
+      </LtPanel>
+    </LtPageShell>
   );
 }

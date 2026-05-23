@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { AccessibleModal } from '@/components/ui/accessible-modal'
+import { LtButton } from '@/components/lt'
 
-// Mapeo de razones del Enum de Prisma a texto legible
 const REPORT_REASONS = [
   { value: 'SPAM', label: 'Es spam o publicidad no deseada' },
   { value: 'HARASSMENT', label: 'Acoso o comportamiento ofensivo' },
@@ -38,7 +38,6 @@ export function ReportModal({
     setError(null)
 
     try {
-      // Endpoint dinámico basado en el tipo de contenido
       const endpointMap: Record<string, string> = {
         business: `/api/businesses/${targetId}/report`,
         review: `/api/reviews/${targetId}/report`,
@@ -53,7 +52,6 @@ export function ReportModal({
       })
 
       if (!res.ok) {
-        // Duplicate report (409 Conflict)
         if (res.status === 409) {
           setError('Ya reportaste este contenido anteriormente. Nuestro equipo lo revisará pronto.')
           return
@@ -61,7 +59,6 @@ export function ReportModal({
         throw new Error('Error al enviar reporte')
       }
 
-      // Reset y cierre
       setReason('')
       setDetails('')
       onClose()
@@ -89,9 +86,7 @@ export function ReportModal({
     >
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            ¿Cuál es el problema?
-          </label>
+          <label className="lt-label">¿Cuál es el problema?</label>
           <div className="grid gap-2">
             {REPORT_REASONS.map((r) => (
               <div
@@ -106,11 +101,16 @@ export function ReportModal({
                 role="radio"
                 aria-checked={reason === r.value}
                 tabIndex={0}
-                className={`p-3 rounded-md border cursor-pointer text-sm transition-all ${
+                className={`p-3 rounded-[var(--lt-radius-sm)] border-[2px] cursor-pointer text-sm transition-all ${
                   reason === r.value
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-medium'
-                    : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'border-[var(--lt-terracota)] font-medium shadow-[var(--lt-shadow-sticker)]'
+                    : 'border-[var(--lt-ink)] hover:opacity-90'
                 }`}
+                style={{
+                  background: reason === r.value ? 'var(--lt-bg)' : 'var(--lt-paper)',
+                  color: reason === r.value ? 'var(--lt-terracota)' : 'var(--lt-ink-soft)',
+                  fontFamily: 'var(--lt-font-sans)',
+                }}
               >
                 {r.label}
               </div>
@@ -120,50 +120,57 @@ export function ReportModal({
 
         {reason === 'OTHER' && (
           <div>
-            <label
-              htmlFor="report-details"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
+            <label htmlFor="report-details" className="lt-label">
               Describe el problema
             </label>
             <textarea
               id="report-details"
-              className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm bg-transparent focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+              className="lt-input resize-none"
               placeholder="Proporciona detalles adicionales..."
               rows={3}
               maxLength={500}
               value={details}
               onChange={(e) => setDetails(e.target.value)}
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
               {500 - details.length} caracteres restantes
             </p>
           </div>
         )}
 
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-sm text-red-600 dark:text-red-400">
+          <div
+            className="p-3 rounded-[var(--lt-radius-sm)] border-[2px] text-sm"
+            style={{ background: 'var(--lt-bg)', borderColor: 'var(--lt-accent)', color: 'var(--lt-accent)' }}
+          >
             {error}
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-          <button
+        <div className="flex justify-end gap-2 pt-4 border-t-[2px] border-[var(--lt-ink)]">
+          <LtButton
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            variant="outline"
+            tone="paper"
+            size="sm"
           >
             Cancelar
-          </button>
-          <button
+          </LtButton>
+          <LtButton
             type="button"
             onClick={handleSubmit}
             disabled={!reason || isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            variant="sticker"
+            tone="accent"
+            size="sm"
+            rotate={-1}
+            loading={isSubmitting}
+            loadingText="Enviando..."
           >
-            {isSubmitting ? 'Enviando...' : 'Enviar Reporte'}
-          </button>
+            Enviar Reporte
+          </LtButton>
         </div>
       </div>
     </AccessibleModal>

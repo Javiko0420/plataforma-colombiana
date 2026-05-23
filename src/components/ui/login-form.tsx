@@ -5,10 +5,10 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from '@/components/providers/language-provider'
-import { AccessibleButton } from './accessible-button'
 import { AccessibleInput } from './accessible-input'
-import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { GoogleSignInButton } from './google-sign-in-button'
+import { LtPanel, LtButton } from '@/components/lt'
 
 interface LoginFormProps {
   callbackUrl?: string
@@ -60,52 +60,53 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
       ...prev,
       [e.target.name]: e.target.value,
     }))
-    // Clear error when user starts typing
     if (error) setError(null)
   }
 
   return (
-    <div className={`w-full max-w-md mx-auto ${className}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+    <div className={`w-full ${className}`}>
+      <LtPanel className="p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1
+            className="text-3xl font-bold mb-2"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
             {t('auth.login.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p style={{ color: 'var(--lt-ink-soft)' }}>
             {t('auth.login.subtitle')}
           </p>
         </div>
 
-        {/* Google Sign-In Button */}
         <GoogleSignInButton callbackUrl={callbackUrl} />
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+            <div className="w-full border-t-2 border-[var(--lt-ink)] opacity-20" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            <span
+              className="px-4"
+              style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
+            >
               o con tu correo
             </span>
           </div>
         </div>
 
         {error && (
-          <div 
-            className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+          <div
+            className="mb-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500"
+            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
             role="alert"
           >
-            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            <p className="text-sm">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="email" className="lt-label">
               {t('auth.login.email')}
             </label>
             <AccessibleInput
@@ -119,15 +120,12 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
               required
               autoComplete="email"
               disabled={isLoading}
-              className="w-full"
+              className="lt-input"
             />
           </div>
 
           <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="password" className="lt-label">
               {t('auth.login.password')}
             </label>
             <div className="relative">
@@ -142,12 +140,13 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
                 required
                 autoComplete="current-password"
                 disabled={isLoading}
-                className="w-full pr-12"
+                className="lt-input pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--lt-ink-soft)' }}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? (
@@ -162,45 +161,41 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
           <div className="flex items-center justify-between">
             <Link
               href="/auth/forgot-password"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className="text-sm font-medium hover:underline transition-colors"
+              style={{ color: 'var(--lt-terracota)' }}
             >
               {t('auth.login.forgotPassword')}
             </Link>
           </div>
 
-          <AccessibleButton
+          <LtButton
             type="submit"
+            variant="sticker"
+            tone="terracota"
+            size="md"
+            className="w-full"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            aria-label={isLoading ? t('auth.login.loading') : t('auth.login.submit')}
+            loading={isLoading}
+            loadingText={t('auth.login.loading')}
+            iconLeft={!isLoading ? <LogIn className="h-5 w-5" /> : undefined}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>{t('auth.login.loading')}</span>
-              </>
-            ) : (
-              <>
-                <LogIn className="h-5 w-5" />
-                <span>{t('auth.login.submit')}</span>
-              </>
-            )}
-          </AccessibleButton>
+            {t('auth.login.submit')}
+          </LtButton>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
             {t('auth.login.noAccount')}{' '}
             <Link
               href={callbackUrl && callbackUrl !== '/' ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/signup'}
-              className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className="font-medium hover:underline transition-colors"
+              style={{ color: 'var(--lt-terracota)' }}
             >
               {t('auth.login.signUp')}
             </Link>
           </p>
         </div>
-      </div>
+      </LtPanel>
     </div>
   )
 }
-

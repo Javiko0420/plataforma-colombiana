@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from '@/components/providers/language-provider'
-import { AccessibleButton } from './accessible-button'
 import { AccessibleInput } from './accessible-input'
-import { Eye, EyeOff, UserPlus, Loader2, CheckCircle, Calendar } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, CheckCircle, Calendar } from 'lucide-react'
 import { GoogleSignInButton } from './google-sign-in-button'
 import LegalContractModal from './legal-contract-modal'
 import { LEGAL_VERSIONS, calculateAge } from '@/lib/legal'
+import { LtPanel, LtButton } from '@/components/lt'
 
 interface RegisterFormProps {
   callbackUrl?: string
@@ -23,8 +23,6 @@ interface FormData {
   confirmPassword: string
   dateOfBirth: string
 }
-
-// LEGAL_VERSIONS and calculateAge are imported from @/lib/legal
 
 export default function RegisterForm({ callbackUrl, className = '' }: RegisterFormProps) {
   const router = useRouter()
@@ -43,18 +41,15 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
   })
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  // Estados para el modal de contrato legal
   const [showContractModal, setShowContractModal] = useState(false)
   const [contractAccepted, setContractAccepted] = useState(false)
   const [pendingData, setPendingData] = useState<FormData | null>(null)
 
-  // Primer paso: Validar formulario y mostrar modal de contrato
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setFieldErrors({})
 
-    // Validación del lado del cliente
     const errors: Record<string, string> = {}
     
     if (!formData.name) {
@@ -77,7 +72,6 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
       errors.confirmPassword = t('auth.validation.passwordMatch')
     }
 
-    // Validación de fecha de nacimiento
     if (!formData.dateOfBirth) {
       errors.dateOfBirth = 'La fecha de nacimiento es requerida'
     } else {
@@ -101,13 +95,11 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
       return
     }
 
-    // Guardar datos y mostrar modal de contrato
     setPendingData(formData)
     setContractAccepted(false)
     setShowContractModal(true)
   }
 
-  // Segundo paso: Enviar datos después de aceptar el contrato
   const handleFinalSubmit = async () => {
     if (!contractAccepted || !pendingData) return
 
@@ -150,7 +142,6 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
         return
       }
 
-      // Éxito — redirigir al login preservando el destino original
       setShowContractModal(false)
       setSuccess(true)
       setIsLoading(false)
@@ -182,7 +173,6 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
       ...prev,
       [name]: value,
     }))
-    // Clear errors when user starts typing
     if (error) setError(null)
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
@@ -195,69 +185,77 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
 
   if (success) {
     return (
-      <div className={`w-full max-w-md mx-auto ${className}`}>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+      <div className={`w-full ${className}`}>
+        <LtPanel className="p-8">
           <div className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-              <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
+            <div
+              className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center border-2 border-[var(--lt-verde)]"
+              style={{ background: 'var(--lt-bg)' }}
+            >
+              <CheckCircle className="h-10 w-10" style={{ color: 'var(--lt-verde)' }} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2
+              className="text-2xl font-bold mb-2"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
               {t('auth.signup.success')}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p style={{ color: 'var(--lt-ink-soft)' }}>
               Redirigiendo al inicio de sesión...
             </p>
           </div>
-        </div>
+        </LtPanel>
       </div>
     )
   }
 
   return (
-    <div className={`w-full max-w-md mx-auto ${className}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+    <div className={`w-full ${className}`}>
+      <LtPanel className="p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1
+            className="text-3xl font-bold mb-2"
+            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+          >
             {t('auth.signup.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p style={{ color: 'var(--lt-ink-soft)' }}>
             {t('auth.signup.subtitle')}
           </p>
         </div>
 
-        {/* Google Sign-In Button */}
         <GoogleSignInButton
           callbackUrl={callbackUrl}
           label="Registrarse con Google"
         />
 
-        {/* Divider */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+            <div className="w-full border-t-2 border-[var(--lt-ink)] opacity-20" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+            <span
+              className="px-4"
+              style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
+            >
               o con tu correo
             </span>
           </div>
         </div>
 
         {error && (
-          <div 
-            className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+          <div
+            className="mb-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500"
+            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
             role="alert"
           >
-            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            <p className="text-sm">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleInitialSubmit} className="space-y-5">
           <div>
-            <label 
-              htmlFor="name" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="name" className="lt-label">
               {t('auth.signup.name')}
             </label>
             <AccessibleInput
@@ -271,16 +269,13 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
               required
               autoComplete="name"
               disabled={isLoading}
-              className="w-full"
+              className="lt-input"
               error={fieldErrors.name}
             />
           </div>
 
           <div>
-            <label 
-              htmlFor="email" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="email" className="lt-label">
               {t('auth.signup.email')}
             </label>
             <AccessibleInput
@@ -294,16 +289,13 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
               required
               autoComplete="email"
               disabled={isLoading}
-              className="w-full"
+              className="lt-input"
               error={fieldErrors.email}
             />
           </div>
 
           <div>
-            <label 
-              htmlFor="dateOfBirth" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="dateOfBirth" className="lt-label">
               Fecha de Nacimiento
             </label>
             <div className="relative">
@@ -318,24 +310,24 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
                 required
                 autoComplete="bday"
                 disabled={isLoading}
-                className="w-full pr-12"
+                className="lt-input pr-12"
                 error={fieldErrors.dateOfBirth}
                 max={new Date().toISOString().split('T')[0]}
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <div
+                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: 'var(--lt-ink-soft)' }}
+              >
                 <Calendar className="h-5 w-5" />
               </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
               Debes tener al menos 16 años para registrarte
             </p>
           </div>
 
           <div>
-            <label 
-              htmlFor="password" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="password" className="lt-label">
               {t('auth.signup.password')}
             </label>
             <div className="relative">
@@ -350,13 +342,14 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
                 required
                 autoComplete="new-password"
                 disabled={isLoading}
-                className="w-full pr-12"
+                className="lt-input pr-12"
                 error={fieldErrors.password}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--lt-ink-soft)' }}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? (
@@ -366,16 +359,13 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
                 )}
               </button>
             </div>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
               {t('auth.validation.passwordStrength')}
             </p>
           </div>
 
           <div>
-            <label 
-              htmlFor="confirmPassword" 
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-            >
+            <label htmlFor="confirmPassword" className="lt-label">
               {t('auth.signup.confirmPassword')}
             </label>
             <div className="relative">
@@ -390,13 +380,14 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
                 required
                 autoComplete="new-password"
                 disabled={isLoading}
-                className="w-full pr-12"
+                className="lt-input pr-12"
                 error={fieldErrors.confirmPassword}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                style={{ color: 'var(--lt-ink-soft)' }}
                 aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showConfirmPassword ? (
@@ -408,51 +399,46 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
             </div>
           </div>
 
-          <div className="text-xs text-gray-600 dark:text-gray-400">
+          <div className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
             {t('auth.signup.terms')}{' '}
-            <Link href="/terminos" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/terminos" className="hover:underline" style={{ color: 'var(--lt-terracota)' }}>
               {t('auth.signup.termsLink')}
             </Link>{' '}
             {t('auth.signup.and')}{' '}
-            <Link href="/privacidad" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/privacidad" className="hover:underline" style={{ color: 'var(--lt-terracota)' }}>
               {t('auth.signup.privacyLink')}
             </Link>
           </div>
 
-          <AccessibleButton
+          <LtButton
             type="submit"
+            variant="sticker"
+            tone="terracota"
+            size="md"
+            className="w-full"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            aria-label={isLoading ? t('auth.signup.loading') : t('auth.signup.submit')}
+            loading={isLoading}
+            loadingText={t('auth.signup.loading')}
+            iconLeft={!isLoading ? <UserPlus className="h-5 w-5" /> : undefined}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-5 w-5 animate-spin" />
-                <span>{t('auth.signup.loading')}</span>
-              </>
-            ) : (
-              <>
-                <UserPlus className="h-5 w-5" />
-                <span>{t('auth.signup.submit')}</span>
-              </>
-            )}
-          </AccessibleButton>
+            {t('auth.signup.submit')}
+          </LtButton>
         </form>
 
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
             {t('auth.signup.hasAccount')}{' '}
             <Link
               href={callbackUrl ? `/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/signin'}
-              className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              className="font-medium hover:underline transition-colors"
+              style={{ color: 'var(--lt-terracota)' }}
             >
               {t('auth.signup.signIn')}
             </Link>
           </p>
         </div>
-      </div>
+      </LtPanel>
 
-      {/* Shared Legal Contract Modal */}
       <LegalContractModal
         isOpen={showContractModal}
         onClose={handleCloseModal}
@@ -465,4 +451,3 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
     </div>
   )
 }
-

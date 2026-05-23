@@ -2,6 +2,8 @@
 
 import { format } from 'date-fns'
 import type { JsonValue } from '@prisma/client/runtime/library'
+import { LtPanel, LtBadge } from '@/components/lt'
+import type { BadgeTone } from '@/components/lt'
 
 interface SecurityLog {
   id: string
@@ -19,24 +21,24 @@ interface SecurityTableProps {
 }
 
 export function SecurityTable({ logs }: SecurityTableProps) {
-  const getSeverityColor = (severity: string) => {
+  const getSeverityTone = (severity: string): BadgeTone => {
     switch (severity.toLowerCase()) {
       case 'high':
       case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'terracota'
       case 'medium':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'sun'
       case 'low':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'accent'
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
+        return 'neutral'
     }
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+    <LtPanel className="overflow-hidden p-0" shadow="md">
       <table className="w-full text-sm text-left">
-        <thead className="bg-gray-50 dark:bg-slate-700/50 text-gray-500 font-medium border-b border-gray-200 dark:border-slate-700">
+        <thead className="bg-[var(--lt-bg)] text-[var(--lt-ink-soft)] font-medium border-b-[2.2px] border-[var(--lt-ink)]">
           <tr>
             <th className="px-6 py-3">Severidad</th>
             <th className="px-6 py-3">Evento</th>
@@ -45,28 +47,26 @@ export function SecurityTable({ logs }: SecurityTableProps) {
             <th className="px-6 py-3">Fecha Exacta</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+        <tbody className="divide-y-[2px] divide-[var(--lt-ink)]/15">
           {logs.map((log) => (
             <tr
               key={log.id}
-              className="hover:bg-gray-50 dark:hover:bg-slate-700/30"
+              className="hover:bg-[var(--lt-bg)]"
             >
               <td className="px-6 py-4">
-                <span
-                  className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${getSeverityColor(log.severity)}`}
-                >
+                <LtBadge tone={getSeverityTone(log.severity)} className="uppercase text-[10px]">
                   {log.severity}
-                </span>
+                </LtBadge>
               </td>
-              <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+              <td className="px-6 py-4 font-medium text-[var(--lt-ink)]">
                 {log.event}
               </td>
-              <td className="px-6 py-4 text-gray-500 font-mono text-xs">
+              <td className="px-6 py-4 text-[var(--lt-ink-soft)] font-mono text-xs">
                 {log.ip || 'Unknown'}
               </td>
-              <td className="px-6 py-4 text-gray-500">
+              <td className="px-6 py-4 text-[var(--lt-ink-soft)]">
                 {log.userId ? (
-                  <span className="text-blue-600">
+                  <span className="text-[var(--lt-accent)]">
                     ID: {log.userId.slice(0, 8)}...
                   </span>
                 ) : (
@@ -75,13 +75,13 @@ export function SecurityTable({ logs }: SecurityTableProps) {
                     : 'N/A')
                 )}
               </td>
-              <td className="px-6 py-4 text-gray-500 text-xs">
+              <td className="px-6 py-4 text-[var(--lt-ink-soft)] text-xs">
                 {format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm:ss')}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+    </LtPanel>
   )
 }

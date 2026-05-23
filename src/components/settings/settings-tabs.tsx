@@ -8,6 +8,7 @@ import { z } from "zod";
 import { User, Lock, /* CreditCard, */ Save, /* ShieldCheck, */ Eye, EyeOff, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
+import { LtPanel, LtButton } from "@/components/lt";
 
 // VALIDACIÓN FRONTEND (Debe coincidir con backend)
 const settingsSchema = z.object({
@@ -217,13 +218,29 @@ export default function SettingsTabs() {
       <aside className="w-full md:w-64 space-y-2">
         <button
           onClick={() => setActiveTab("general")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === "general" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-ink)] transition-all font-medium ${
+            activeTab === "general"
+              ? "shadow-[var(--lt-shadow-sticker)]"
+              : "hover:-translate-y-0.5"
+          }`}
+          style={{
+            background: activeTab === "general" ? 'var(--lt-terracota)' : 'var(--lt-paper)',
+            color: activeTab === "general" ? 'var(--lt-paper)' : 'var(--lt-ink-soft)',
+          }}
         >
           <User className="w-5 h-5" /> General
         </button>
         <button
           onClick={() => setActiveTab("security")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === "security" ? "bg-blue-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-ink)] transition-all font-medium ${
+            activeTab === "security"
+              ? "shadow-[var(--lt-shadow-sticker)]"
+              : "hover:-translate-y-0.5"
+          }`}
+          style={{
+            background: activeTab === "security" ? 'var(--lt-terracota)' : 'var(--lt-paper)',
+            color: activeTab === "security" ? 'var(--lt-paper)' : 'var(--lt-ink-soft)',
+          }}
         >
           <Lock className="w-5 h-5" /> Seguridad
         </button>
@@ -242,18 +259,28 @@ export default function SettingsTabs() {
         
         {/* PESTAÑA: GENERAL */}
         {activeTab === "general" && (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Información Personal</h2>
+          <LtPanel className="p-8">
+            <h2
+              className="text-xl font-bold mb-6"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
+              Información Personal
+            </h2>
             
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               
               {/* Foto de Perfil */}
               <div className="flex items-center gap-6">
-                 <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-slate-200 dark:border-slate-700">
+                 <div
+                   className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-[var(--lt-ink)]"
+                   style={{ background: 'var(--lt-bg)' }}
+                 >
                     {form.watch("image") ? (
                         <Image src={form.watch("image")!} alt="Avatar" fill className="object-cover" />
                     ) : (
-                        <div className="bg-slate-100 dark:bg-slate-800 w-full h-full flex items-center justify-center"><User /></div>
+                        <div className="w-full h-full flex items-center justify-center">
+                          <User style={{ color: 'var(--lt-ink-soft)' }} />
+                        </div>
                     )}
                  </div>
                  <CldUploadWidget
@@ -265,7 +292,12 @@ export default function SettingsTabs() {
                     uploadPreset="latinterritory_uploads"
                   >
                     {({ open }) => (
-                      <button type="button" onClick={() => open()} className="text-sm text-blue-600 font-bold hover:underline">
+                      <button
+                        type="button"
+                        onClick={() => open()}
+                        className="text-sm font-bold hover:underline"
+                        style={{ color: 'var(--lt-terracota)' }}
+                      >
                         Cambiar foto
                       </button>
                     )}
@@ -274,67 +306,88 @@ export default function SettingsTabs() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre Completo</label>
-                  <input {...form.register("name")} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700" />
+                  <label className="lt-label">Nombre Completo</label>
+                  <input {...form.register("name")} className="lt-input" />
                   {form.formState.errors.name && <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Apodo (Nickname)</label>
-                  <input {...form.register("nickname")} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700" />
+                  <label className="lt-label">Apodo (Nickname)</label>
+                  <input {...form.register("nickname")} className="lt-input" />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                  <input {...form.register("email")} disabled className="w-full p-3 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 cursor-not-allowed" title="Para cambiar el email, ve a Seguridad" />
+                  <label className="lt-label">Email</label>
+                  <input
+                    {...form.register("email")}
+                    disabled
+                    className="lt-input opacity-60 cursor-not-allowed"
+                    title="Para cambiar el email, ve a Seguridad"
+                  />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Teléfono (Australia)</label>
-                  <input {...form.register("phoneNumber")} placeholder="0412 345 678" className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700" />
+                  <label className="lt-label">Teléfono (Australia)</label>
+                  <input {...form.register("phoneNumber")} placeholder="0412 345 678" className="lt-input" />
                   {form.formState.errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{form.formState.errors.phoneNumber.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fecha de Nacimiento</label>
-                  <input type="date" {...form.register("dateOfBirth")} className="w-full p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700" />
-                  <p className="text-xs text-slate-500 mt-1">Debes ser mayor de 16 años.</p>
+                  <label className="lt-label">Fecha de Nacimiento</label>
+                  <input type="date" {...form.register("dateOfBirth")} className="lt-input" />
+                  <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>Debes ser mayor de 16 años.</p>
                   {form.formState.errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{form.formState.errors.dateOfBirth.message}</p>}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-                <button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all">
-                    {isSubmitting ? "Guardando..." : <><Save className="w-5 h-5" /> Guardar Cambios</>}
-                </button>
+              <div className="pt-4 border-t border-[var(--lt-ink)] opacity-20">
+                <LtButton
+                  type="submit"
+                  variant="sticker"
+                  tone="terracota"
+                  size="md"
+                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                  loadingText="Guardando..."
+                  iconLeft={!isSubmitting ? <Save className="w-5 h-5" /> : undefined}
+                >
+                  Guardar Cambios
+                </LtButton>
               </div>
             </form>
-          </div>
+          </LtPanel>
         )}
 
         {/* PESTAÑA: SEGURIDAD */}
         {activeTab === "security" && (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4">Seguridad de la Cuenta</h2>
+          <LtPanel className="p-8 space-y-6">
+            <h2
+              className="text-xl font-bold mb-4"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
+              Seguridad de la Cuenta
+            </h2>
 
-            {/* --- Contraseña --- */}
-            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-              <div className="p-4 flex justify-between items-center">
+            <div className="border-2 border-[var(--lt-ink)] rounded-[var(--lt-radius-sm)] overflow-hidden">
+              <div className="p-4 flex justify-between items-center" style={{ background: 'var(--lt-bg)' }}>
                 <div>
-                  <h3 className="font-bold text-slate-900 dark:text-white">Contraseña</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <h3 className="font-bold" style={{ color: 'var(--lt-ink)' }}>Contraseña</h3>
+                  <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
                     Se recomienda cambiarla cada 3 meses.
                   </p>
                 </div>
 
-                {/* Google-only users cannot change password here */}
                 {isGoogleUser && !hasPassword ? (
-                  <span className="text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full font-medium">
+                  <span
+                    className="text-xs px-3 py-1.5 rounded-full font-medium border-2 border-[var(--lt-ink)]"
+                    style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
+                  >
                     Gestionada por Google
                   </span>
                 ) : (
                   <button
                     type="button"
-                    className="text-blue-600 font-bold text-sm hover:underline"
+                    className="font-bold text-sm hover:underline"
+                    style={{ color: 'var(--lt-terracota)' }}
                     onClick={() => {
                       setShowPasswordForm((prev) => !prev);
                       setPasswordMessage(null);
@@ -346,18 +399,21 @@ export default function SettingsTabs() {
                 )}
               </div>
 
-              {/* Google-only informational message */}
               {isGoogleUser && !hasPassword && (
                 <div className="px-4 pb-4">
-                  <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                  <div
+                    className="flex items-start gap-3 rounded-[var(--lt-radius-sm)] border-2 border-amber-500 p-3"
+                    style={{ background: 'var(--lt-bg)' }}
+                  >
                     <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-sm text-amber-700 dark:text-amber-400">
+                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
                       Tu cuenta está vinculada a Google. Para cambiar tu contraseña, hazlo directamente desde tu{" "}
                       <a
                         href="https://myaccount.google.com/security"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="underline font-medium"
+                        style={{ color: 'var(--lt-terracota)' }}
                       >
                         cuenta de Google
                       </a>.
@@ -366,27 +422,24 @@ export default function SettingsTabs() {
                 </div>
               )}
 
-              {/* Password change form */}
               {showPasswordForm && hasPassword && (
-                <div className="border-t border-slate-200 dark:border-slate-700 p-4 space-y-5">
+                <div className="border-t-2 border-[var(--lt-ink)] p-4 space-y-5" style={{ background: 'var(--lt-paper)' }}>
                   <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
-                    {/* Current password */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Contraseña actual
-                      </label>
+                      <label className="lt-label">Contraseña actual</label>
                       <div className="relative">
                         <input
                           {...passwordForm.register("currentPassword")}
                           type={showCurrentPw ? "text" : "password"}
                           autoComplete="current-password"
-                          className="w-full p-3 pr-12 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          className="lt-input pr-12"
                           placeholder="Ingresa tu contraseña actual"
                         />
                         <button
                           type="button"
                           onClick={() => setShowCurrentPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          className="absolute right-3 top-1/2 -translate-y-1/2"
+                          style={{ color: 'var(--lt-ink-soft)' }}
                           aria-label={showCurrentPw ? "Ocultar contraseña" : "Mostrar contraseña"}
                         >
                           {showCurrentPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -399,23 +452,21 @@ export default function SettingsTabs() {
                       )}
                     </div>
 
-                    {/* New password */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Nueva contraseña
-                      </label>
+                      <label className="lt-label">Nueva contraseña</label>
                       <div className="relative">
                         <input
                           {...passwordForm.register("newPassword")}
                           type={showNewPw ? "text" : "password"}
                           autoComplete="new-password"
-                          className="w-full p-3 pr-12 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          className="lt-input pr-12"
                           placeholder="Mínimo 8 caracteres"
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          className="absolute right-3 top-1/2 -translate-y-1/2"
+                          style={{ color: 'var(--lt-ink-soft)' }}
                           aria-label={showNewPw ? "Ocultar contraseña" : "Mostrar contraseña"}
                         >
                           {showNewPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -427,7 +478,6 @@ export default function SettingsTabs() {
                         </p>
                       )}
 
-                      {/* Strength indicator */}
                       {watchedNewPassword && (
                         <div className="mt-3 space-y-2">
                           <div className="flex gap-1">
@@ -441,7 +491,7 @@ export default function SettingsTabs() {
                                       : passwordStrength.score <= 3
                                         ? "bg-amber-500"
                                         : "bg-emerald-500"
-                                    : "bg-slate-200 dark:bg-slate-700"
+                                    : "bg-[var(--lt-ink)] opacity-20"
                                 }`}
                               />
                             ))}
@@ -452,9 +502,9 @@ export default function SettingsTabs() {
                                 {check.passed ? (
                                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                                 ) : (
-                                  <XCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                  <XCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--lt-ink-soft)' }} />
                                 )}
-                                <span className={check.passed ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"}>
+                                <span style={{ color: check.passed ? 'var(--lt-verde)' : 'var(--lt-ink-soft)' }}>
                                   {check.label}
                                 </span>
                               </li>
@@ -464,23 +514,21 @@ export default function SettingsTabs() {
                       )}
                     </div>
 
-                    {/* Confirm new password */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                        Confirmar nueva contraseña
-                      </label>
+                      <label className="lt-label">Confirmar nueva contraseña</label>
                       <div className="relative">
                         <input
                           {...passwordForm.register("confirmPassword")}
                           type={showConfirmPw ? "text" : "password"}
                           autoComplete="new-password"
-                          className="w-full p-3 pr-12 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          className="lt-input pr-12"
                           placeholder="Repite la nueva contraseña"
                         />
                         <button
                           type="button"
                           onClick={() => setShowConfirmPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                          className="absolute right-3 top-1/2 -translate-y-1/2"
+                          style={{ color: 'var(--lt-ink-soft)' }}
                           aria-label={showConfirmPw ? "Ocultar contraseña" : "Mostrar contraseña"}
                         >
                           {showConfirmPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -493,65 +541,73 @@ export default function SettingsTabs() {
                       )}
                     </div>
 
-                    {/* Status message */}
                     {passwordMessage && (
                       <div
-                        className={`flex items-center gap-2 p-3 rounded-lg text-sm ${
+                        className={`flex items-center gap-2 p-3 rounded-[var(--lt-radius-sm)] text-sm border-2 ${
                           passwordMessage.type === "success"
-                            ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
-                            : "bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800"
+                            ? "border-emerald-500"
+                            : "border-red-500"
                         }`}
+                        style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
                       >
                         {passwordMessage.type === "success" ? (
-                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
                         ) : (
-                          <XCircle className="w-4 h-4 shrink-0" />
+                          <XCircle className="w-4 h-4 shrink-0 text-red-500" />
                         )}
                         {passwordMessage.text}
                       </div>
                     )}
 
-                    {/* Submit */}
-                    <button
+                    <LtButton
                       type="submit"
+                      variant="sticker"
+                      tone="terracota"
+                      size="sm"
                       disabled={passwordSubmitting}
-                      className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all"
+                      loading={passwordSubmitting}
+                      loadingText="Actualizando..."
+                      iconLeft={!passwordSubmitting ? <Lock className="w-4 h-4" /> : undefined}
                     >
-                      {passwordSubmitting ? (
-                        <>
-                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Actualizando...
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4" />
-                          Cambiar Contraseña
-                        </>
-                      )}
-                    </button>
+                      Cambiar Contraseña
+                    </LtButton>
                   </form>
                 </div>
               )}
             </div>
 
-            {/* --- 2FA --- */}
-            <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center">
+            <div
+              className="p-4 border-2 border-[var(--lt-ink)] rounded-[var(--lt-radius-sm)] flex justify-between items-center"
+              style={{ background: 'var(--lt-bg)' }}
+            >
                 <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Autenticación de 2 Factores</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Agrega una capa extra de seguridad.</p>
+                    <h3 className="font-bold" style={{ color: 'var(--lt-ink)' }}>Autenticación de 2 Factores</h3>
+                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>Agrega una capa extra de seguridad.</p>
                 </div>
-                <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Próximamente</span>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-bold border-2 border-[var(--lt-ink)]"
+                  style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
+                >
+                  Próximamente
+                </span>
             </div>
 
-            {/* --- Verificación de Identidad --- */}
-            <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl flex justify-between items-center">
+            <div
+              className="p-4 border-2 border-[var(--lt-ink)] rounded-[var(--lt-radius-sm)] flex justify-between items-center"
+              style={{ background: 'var(--lt-bg)' }}
+            >
                 <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">Verificación de Identidad</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Verifica tu cuenta con ID australiano.</p>
+                    <h3 className="font-bold" style={{ color: 'var(--lt-ink)' }}>Verificación de Identidad</h3>
+                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>Verifica tu cuenta con ID australiano.</p>
                 </div>
-                <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 px-3 py-1 rounded-full text-xs font-bold">Próximamente</span>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-bold border-2 border-[var(--lt-ink)]"
+                  style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
+                >
+                  Próximamente
+                </span>
             </div>
-          </div>
+          </LtPanel>
         )}
 
         {/* TODO: Habilitar cuando se lance la monetización de la plataforma

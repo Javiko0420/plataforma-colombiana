@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { LtPanel, LtButton } from '@/components/lt'
 
 export const dynamic = 'force-dynamic' // Siempre datos frescos
 
@@ -72,8 +73,13 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400">
+        <h1
+          className="text-3xl font-bold tracking-tight text-[var(--lt-ink)]"
+          style={{ fontFamily: 'var(--lt-font-serif)' }}
+        >
+          Dashboard
+        </h1>
+        <p className="text-[var(--lt-ink-soft)]">
           Bienvenido al centro de comando de Plataforma Colombiana.
         </p>
       </div>
@@ -143,23 +149,33 @@ export default async function AdminDashboard() {
 
       {/* Paneles inferiores */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className="col-span-4 bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm h-[400px]">
-          <h3 className="font-semibold mb-4">Actividad Reciente</h3>
-          <div className="flex items-center justify-center h-full text-gray-400">
+        <LtPanel className="col-span-4 p-6 h-[400px]" shadow="md">
+          <h3
+            className="font-semibold mb-4 text-[var(--lt-ink)]"
+            style={{ fontFamily: 'var(--lt-font-serif)' }}
+          >
+            Actividad Reciente
+          </h3>
+          <div className="flex items-center justify-center h-full text-[var(--lt-ink-soft)]">
             [Gráfico de Actividad de Usuarios - Próximamente]
           </div>
-        </div>
-        <div className="col-span-3 bg-white dark:bg-slate-800 p-6 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm h-[400px]">
-          <h3 className="font-semibold mb-4">Acciones Rápidas</h3>
+        </LtPanel>
+        <LtPanel className="col-span-3 p-6 h-[400px]" shadow="md">
+          <h3
+            className="font-semibold mb-4 text-[var(--lt-ink)]"
+            style={{ fontFamily: 'var(--lt-font-serif)' }}
+          >
+            Acciones Rápidas
+          </h3>
           <div className="space-y-4">
-            <button className="w-full text-left px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-100 transition text-sm font-medium">
+            <LtButton variant="sticker" tone="sun" size="md" className="w-full justify-start">
               ⚡ Disparar Webhook n8n (Sincronización Manual)
-            </button>
-            <button className="w-full text-left px-4 py-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg hover:bg-gray-100 transition text-sm font-medium">
+            </LtButton>
+            <LtButton variant="outline" tone="paper" size="md" className="w-full justify-start">
               📄 Revisar Documentos Pendientes
-            </button>
+            </LtButton>
           </div>
-        </div>
+        </LtPanel>
       </div>
     </div>
   )
@@ -181,29 +197,28 @@ function StatCard({
   const isAlert = trend === 'requires_action' && value > 0
 
   return (
-    <div
-      className={`p-6 rounded-xl border bg-white dark:bg-slate-800 shadow-sm ${
-        isAlert
-          ? 'border-red-200 bg-red-50 dark:bg-red-900/10'
-          : 'border-gray-200 dark:border-slate-700'
-      }`}
+    <LtPanel
+      className={`p-6 ${isAlert ? 'border-[var(--lt-terracota)] bg-[var(--lt-paper)]' : ''}`}
+      shadow="sm"
+      tone="paper"
     >
       <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="tracking-tight text-sm font-medium text-gray-500 dark:text-gray-400">
+        <h3 className="tracking-tight text-sm font-medium text-[var(--lt-ink-soft)]">
           {title}
         </h3>
         <span className="text-xl">{icon}</span>
       </div>
       <div className="mt-2">
         <div
-          className={`text-2xl font-bold ${isAlert ? 'text-red-600' : ''}`}
+          className={`text-2xl font-bold text-[var(--lt-ink)] ${isAlert ? 'text-[var(--lt-terracota)]' : ''}`}
+          style={isAlert ? undefined : { fontFamily: 'var(--lt-font-serif)' }}
         >
           {value}
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+        <p className="text-xs text-[var(--lt-ink-soft)] mt-1">
           {description}
         </p>
       </div>
-    </div>
+    </LtPanel>
   )
 }

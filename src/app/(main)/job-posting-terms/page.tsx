@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { LtPageShell, LtPanel } from '@/components/lt'
 
 export const metadata: Metadata = {
   title: 'Términos de Publicación de Empleos | Latin Territory',
@@ -9,32 +10,40 @@ export const metadata: Metadata = {
 
 export default function JobPostingTermsPage() {
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <LtPageShell maxWidth="5xl">
+      <Link
+        href="/perfil"
+        className="inline-flex items-center gap-2 text-sm mb-6 transition-colors hover:opacity-80"
+        style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Volver a mi perfil
+      </Link>
 
-        <Link
-          href="/perfil"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Volver a mi perfil
-        </Link>
-
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 md:p-12">
+      <LtPanel className="p-8 md:p-12">
 
           {/* ── ES ── */}
-          <section className="prose dark:prose-invert max-w-none mb-16">
-            <h1 className="text-3xl font-extrabold tracking-tight">
+          <section
+            className="max-w-none space-y-4 text-sm leading-relaxed mb-16 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:pt-4 [&_h2]:text-[var(--lt-ink)] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-[var(--lt-terracota)] [&_a]:underline [&_strong]:text-[var(--lt-ink)] [&_code]:bg-[var(--lt-bg)] [&_code]:px-1 [&_code]:rounded"
+            style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+          >
+            <h1
+              className="text-3xl font-extrabold tracking-tight"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
               (ES) Términos de Publicación de Empleos
-              <span className="block text-lg font-normal text-gray-500 dark:text-gray-400 mt-1">
+              <span
+                className="block text-lg font-normal mt-1"
+                style={{ color: 'var(--lt-ink-soft)' }}
+              >
                 Acuerdo para Anunciantes
               </span>
             </h1>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              <strong>Latinterritory.com</strong><br />
+            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+              <strong style={{ color: 'var(--lt-ink)' }}>Latinterritory.com</strong><br />
               URL:{' '}
-              <a href="/job-posting-terms" className="text-blue-600 dark:text-blue-400 hover:underline">
+              <a href="/job-posting-terms" className="underline">
                 latinterritory.com/job-posting-terms
               </a>
               <br />
@@ -83,7 +92,7 @@ export default function JobPostingTermsPage() {
               <li>es real, actual y ofrecido de buena fe; y</li>
               <li>
                 cumple como mínimo con las entitlements y mínimos legales aplicables (por ejemplo, el instrumento laboral aplicable o el salario mínimo nacional) en la jurisdicción donde se realizará el trabajo.{' '}
-                <a href="https://www.fairwork.gov.au/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                <a href="https://www.fairwork.gov.au/" target="_blank" rel="noopener noreferrer" className="text-[var(--lt-terracota)] underline">
                   Fair Work Ombudsman
                 </a>
               </li>
@@ -152,24 +161,33 @@ export default function JobPostingTermsPage() {
             <p>Podemos actualizar este Acuerdo. Publicaremos la versión vigente en <code>/job-posting-terms</code> y podremos solicitar re-aceptación al publicar o editar Anuncios.</p>
 
             <h2>14) Contacto</h2>
-            <p>Para asuntos de privacidad y datos: <a href="mailto:privacy@latinterritory.com" className="text-blue-600 dark:text-blue-400 hover:underline">privacy@latinterritory.com</a></p>
+            <p>Para asuntos de privacidad y datos: <a href="mailto:privacy@latinterritory.com" className="text-[var(--lt-terracota)] underline">privacy@latinterritory.com</a></p>
           </section>
 
-          <hr className="border-gray-200 dark:border-gray-700 my-12" />
+          <hr className="border-[var(--lt-ink)] my-12" />
 
           {/* ── EN ── */}
-          <section className="prose dark:prose-invert max-w-none">
-            <h1 className="text-3xl font-extrabold tracking-tight">
+          <section
+            className="max-w-none space-y-4 text-sm leading-relaxed [&_h2]:text-xl [&_h2]:font-bold [&_h2]:pt-4 [&_h2]:text-[var(--lt-ink)] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-[var(--lt-terracota)] [&_a]:underline [&_strong]:text-[var(--lt-ink)] [&_code]:bg-[var(--lt-bg)] [&_code]:px-1 [&_code]:rounded"
+            style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+          >
+            <h1
+              className="text-3xl font-extrabold tracking-tight"
+              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+            >
               (EN) Job Posting Terms
-              <span className="block text-lg font-normal text-gray-500 dark:text-gray-400 mt-1">
+              <span
+                className="block text-lg font-normal mt-1"
+                style={{ color: 'var(--lt-ink-soft)' }}
+              >
                 Advertiser Agreement
               </span>
             </h1>
 
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              <strong>Latinterritory.com</strong><br />
+            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+              <strong style={{ color: 'var(--lt-ink)' }}>Latinterritory.com</strong><br />
               URL:{' '}
-              <a href="/job-posting-terms" className="text-blue-600 dark:text-blue-400 hover:underline">
+              <a href="/job-posting-terms" className="underline">
                 latinterritory.com/job-posting-terms
               </a>
               <br />
@@ -218,7 +236,7 @@ export default function JobPostingTermsPage() {
               <li>is genuine and offered in good faith; and</li>
               <li>
                 meets minimum legal entitlements applicable to the work location (e.g., applicable instrument or national minimum wage).{' '}
-                <a href="https://www.fairwork.gov.au/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                <a href="https://www.fairwork.gov.au/" target="_blank" rel="noopener noreferrer" className="text-[var(--lt-terracota)] underline">
                   Fair Work Ombudsman
                 </a>
               </li>
@@ -272,11 +290,10 @@ export default function JobPostingTermsPage() {
             <p>We may update this Agreement and may require re-acceptance when posting or editing if changes are material.</p>
 
             <h2>14) Contact</h2>
-            <p>Privacy/data matters: <a href="mailto:privacy@latinterritory.com" className="text-blue-600 dark:text-blue-400 hover:underline">privacy@latinterritory.com</a></p>
+            <p>Privacy/data matters: <a href="mailto:privacy@latinterritory.com" className="text-[var(--lt-terracota)] underline">privacy@latinterritory.com</a></p>
           </section>
 
-        </div>
-      </div>
-    </main>
+      </LtPanel>
+    </LtPageShell>
   )
 }

@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { BusinessTable } from '@/components/admin/business-table'
 import { BusinessReportCard } from '@/components/admin/business-report-card'
+import { LtBadge } from '@/components/lt'
 import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -88,16 +89,19 @@ export default async function AdminBusinessesPage({
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-xl font-bold text-red-600 dark:text-red-400">
+              <h2
+                className="text-xl font-bold text-[var(--lt-terracota)]"
+                style={{ fontFamily: 'var(--lt-font-serif)' }}
+              >
                 Negocios Reportados
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
                 Negocios con reportes pendientes de revisión por la comunidad.
               </p>
             </div>
-            <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg text-sm font-medium">
+            <LtBadge tone="terracota">
               {reportedBusinesses.length} pendiente{reportedBusinesses.length !== 1 ? 's' : ''}
-            </div>
+            </LtBadge>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -112,17 +116,20 @@ export default async function AdminBusinessesPage({
       <div className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1
+              className="text-2xl font-bold text-[var(--lt-ink)]"
+              style={{ fontFamily: 'var(--lt-font-serif)' }}
+            >
               Gestión de Negocios
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
               Administra el directorio, verifica empresas y gestiona la
               visibilidad.
             </p>
           </div>
-          <div className="text-right text-xs text-gray-500">
+          <div className="text-right text-xs text-[var(--lt-ink-soft)]">
             Total:{' '}
-            <span className="font-bold text-gray-900 dark:text-white">
+            <span className="font-bold text-[var(--lt-ink)]">
               {totalItems}
             </span>{' '}
             negocios encontrados

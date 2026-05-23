@@ -15,7 +15,8 @@ export function ReportBusinessButton({ businessId }: ReportBusinessButtonProps) 
     <>
       <button
         onClick={() => setIsReportOpen(true)}
-        className="text-xs text-slate-400 hover:text-red-600 flex items-center gap-1 transition-colors"
+        className="text-xs flex items-center gap-1 transition-colors hover:opacity-80"
+        style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
         aria-label="Reportar este negocio"
       >
         <Flag className="w-3 h-3" />

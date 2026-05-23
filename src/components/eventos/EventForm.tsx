@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { AlertCircle, ImagePlus, Trash } from 'lucide-react'
 import { createEvent, updateEvent } from '@/app/(main)/eventos/actions'
+import { LtButton, LtPanel } from '@/components/lt'
 
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
 
@@ -115,16 +116,19 @@ export default function EventForm({
     }
   }
 
-  const inputClasses =
-    'w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all'
-
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="mb-8 border-b border-gray-200 dark:border-gray-700 pb-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="mb-8 border-b-[2px] border-[var(--lt-ink)] pb-4">
+        <h2
+          className="text-2xl font-bold"
+          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+        >
           {isEdit ? 'Editar evento' : 'Publicar nuevo evento'}
         </h2>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+        <p
+          className="text-sm mt-1"
+          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+        >
           {isEdit
             ? 'Modifica los campos que necesites actualizar.'
             : 'Completa los campos para que tu evento sea visible en el muro de eventos.'}
@@ -132,33 +136,28 @@ export default function EventForm({
       </div>
 
       <form action={handleSubmit} className="space-y-6">
-        {/* Título y Categoría */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Título del evento
-            </label>
+            <label htmlFor="title" className="lt-label">Título del evento</label>
             <input
+              id="title"
               name="title"
               required
               defaultValue={initialData?.title}
-              className={inputClasses}
+              className="lt-input"
               placeholder="Ej: Noche de Salsa en Vivo"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Categoría
-            </label>
+            <label htmlFor="category" className="lt-label">Categoría</label>
             <select
+              id="category"
               name="category"
               required
               defaultValue={initialData?.category || ''}
-              className={`${inputClasses} appearance-none cursor-pointer`}
+              className="lt-input appearance-none cursor-pointer"
             >
-              <option value="" disabled>
-                Selecciona una categoría
-              </option>
+              <option value="" disabled>Selecciona una categoría</option>
               <option value="Concierto">Concierto</option>
               <option value="Teatro">Teatro</option>
               <option value="Comedia">Comedia</option>
@@ -172,28 +171,24 @@ export default function EventForm({
           </div>
         </div>
 
-        {/* Descripción */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Descripción
-          </label>
+          <label htmlFor="description" className="lt-label">Descripción</label>
           <textarea
+            id="description"
             name="description"
             required
             rows={5}
             defaultValue={initialData?.description}
-            className={`${inputClasses} resize-none`}
+            className="lt-input resize-none"
             placeholder="Describe tu evento: qué van a encontrar los asistentes, artistas, horarios..."
           />
         </div>
 
-        {/* Fecha y Ubicación */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Fecha y hora
-            </label>
+            <label htmlFor="eventDate" className="lt-label">Fecha y hora</label>
             <input
+              id="eventDate"
               name="eventDate"
               type="datetime-local"
               required
@@ -202,82 +197,77 @@ export default function EventForm({
                   ? new Date(initialData.eventDate).toISOString().slice(0, 16)
                   : ''
               }
-              className={inputClasses}
+              className="lt-input"
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Ubicación
-            </label>
+            <label htmlFor="location" className="lt-label">Ubicación</label>
             <input
+              id="location"
               name="location"
               required
               defaultValue={initialData?.location}
-              className={inputClasses}
+              className="lt-input"
               placeholder="Ej: Cultural Center, Brisbane"
             />
           </div>
         </div>
 
-        {/* Precio y Link de entradas (opcionales) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="ticketPrice" className="lt-label">
               Precio del ticket (AUD){' '}
-              <span className="text-gray-400 font-normal">(opcional)</span>
+              <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(opcional)</span>
             </label>
             <input
+              id="ticketPrice"
               name="ticketPrice"
               type="number"
               min="0"
               step="0.01"
               defaultValue={initialData?.ticketPrice ?? ''}
-              className={inputClasses}
+              className="lt-input"
               placeholder="0.00 = Gratis"
             />
-            <p className="text-xs text-gray-400">
+            <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
               Déjalo vacío o en 0 si el evento es gratuito.
             </p>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="ticketLink" className="lt-label">
               Link para comprar entradas{' '}
-              <span className="text-gray-400 font-normal">(opcional)</span>
+              <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(opcional)</span>
             </label>
             <input
+              id="ticketLink"
               name="ticketLink"
               type="url"
               defaultValue={initialData?.ticketLink ?? ''}
-              className={inputClasses}
+              className="lt-input"
               placeholder="https://tuevento.com/entradas"
             />
           </div>
         </div>
 
-        {/* Imagen con Cloudinary */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="lt-label">
             Imagen del evento{' '}
-            <span className="text-gray-400 font-normal">(opcional)</span>
+            <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(opcional)</span>
           </label>
 
           {imageUrl && (
-            <div className="relative w-full h-48 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 mb-3">
+            <div className="relative w-full h-48 rounded-[var(--lt-radius-sm)] overflow-hidden border-[2px] border-[var(--lt-ink)] mb-3">
               <div className="z-10 absolute top-2 right-2">
                 <button
                   type="button"
                   onClick={() => setImageUrl(null)}
-                  className="bg-red-600 hover:bg-red-500 text-white p-1.5 rounded-full transition-colors shadow-lg"
+                  className="p-1.5 rounded-full transition-colors border-[2px] border-[var(--lt-ink)]"
+                  style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)' }}
                 >
                   <Trash className="w-4 h-4" />
                 </button>
               </div>
-              <Image
-                fill
-                className="object-cover"
-                alt="Imagen del evento"
-                src={imageUrl}
-              />
+              <Image fill className="object-cover" alt="Imagen del evento" src={imageUrl} />
             </div>
           )}
 
@@ -295,19 +285,19 @@ export default function EventForm({
                 sources: ['local', 'url', 'camera'],
                 styles: {
                   palette: {
-                    window: '#0F172A',
-                    sourceBg: '#1E293B',
-                    windowBorder: '#334155',
-                    tabIcon: '#EF4444',
-                    inactiveTabIcon: '#94A3B8',
-                    menuIcons: '#64748B',
-                    link: '#EF4444',
-                    action: '#EF4444',
-                    inProgress: '#F59E0B',
-                    complete: '#22C55E',
-                    error: '#EF4444',
-                    textDark: '#0F172A',
-                    textLight: '#F8FAFC',
+                    window: '#fff3d8',
+                    sourceBg: '#fffaee',
+                    windowBorder: '#22150f',
+                    tabIcon: '#b34020',
+                    inactiveTabIcon: '#7a4f3b',
+                    menuIcons: '#7a4f3b',
+                    link: '#b34020',
+                    action: '#b34020',
+                    inProgress: '#f0a932',
+                    complete: '#336940',
+                    error: '#b33868',
+                    textDark: '#22150f',
+                    textLight: '#fffaee',
                   },
                 },
               }}
@@ -317,7 +307,8 @@ export default function EventForm({
                   type="button"
                   disabled={loading}
                   onClick={() => open()}
-                  className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 transition-all w-full justify-center"
+                  className="flex items-center gap-2 px-4 py-3 rounded-[var(--lt-radius-sm)] border-[2px] border-dashed border-[var(--lt-ink)] transition-all w-full justify-center"
+                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
                 >
                   <ImagePlus className="w-5 h-5" />
                   Subir imagen del evento
@@ -326,58 +317,57 @@ export default function EventForm({
             </CldUploadWidget>
           )}
 
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
             Máximo 2MB. Formatos: JPG, PNG, WEBP.
           </p>
         </div>
 
-        {/* Error */}
         {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {error}
-          </div>
+          <LtPanel tone="bg" shadow="sm" className="px-4 py-3 flex items-center gap-2 text-sm border-[var(--lt-accent)]">
+            <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--lt-accent)' }} />
+            <span style={{ color: 'var(--lt-accent)' }}>{error}</span>
+          </LtPanel>
         )}
 
-        {/* Términos */}
-        <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="space-y-3 pt-4 border-t-[2px] border-[var(--lt-ink)]">
           <label className="flex items-center space-x-3 cursor-pointer group">
             <input
               type="checkbox"
               checked={agreedToTerms}
               onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-red-600 focus:ring-red-500 dark:bg-gray-900"
+              className="w-4 h-4 rounded border-[var(--lt-ink)] accent-[var(--lt-terracota)]"
             />
-            <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+            <span
+              className="text-sm transition-colors"
+              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+            >
               Confirmo que la información publicada es verídica y acepto los
               términos de la plataforma.
             </span>
           </label>
         </div>
 
-        {/* Botones */}
         <div className={`flex gap-4 mt-6 ${isEdit ? 'flex-row' : ''}`}>
           {isEdit && (
-            <Link
-              href="/perfil/eventos"
-              className="flex-1 px-6 py-3.5 text-center text-gray-700 dark:text-gray-300 font-semibold rounded-xl border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              Cancelar
+            <Link href="/perfil/eventos" className="flex-1">
+              <LtButton variant="outline" tone="paper" size="lg" className="w-full">
+                Cancelar
+              </LtButton>
             </Link>
           )}
-          <button
+          <LtButton
             type="submit"
+            variant="sticker"
+            tone="terracota"
+            size="lg"
+            rotate={-1}
             disabled={loading}
-            className={`${isEdit ? 'flex-1' : 'w-full'} px-6 py-3.5 bg-gradient-to-r from-yellow-500 to-red-500 hover:from-yellow-600 hover:to-red-600 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800`}
+            loading={loading}
+            loadingText={isEdit ? 'Guardando cambios...' : 'Publicando...'}
+            className={isEdit ? 'flex-1' : 'w-full'}
           >
-            {loading
-              ? isEdit
-                ? 'Guardando cambios...'
-                : 'Publicando...'
-              : isEdit
-                ? 'Guardar cambios'
-                : 'Publicar evento'}
-          </button>
+            {isEdit ? 'Guardar cambios' : 'Publicar evento'}
+          </LtButton>
         </div>
       </form>
     </div>

@@ -52,16 +52,19 @@ export default async function AdminUsersPage({
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1
+            className="text-2xl font-bold text-[var(--lt-ink)]"
+            style={{ fontFamily: 'var(--lt-font-serif)' }}
+          >
             Gestión de Usuarios
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
             Administra roles, permisos y accesos a la plataforma.
           </p>
         </div>
-        <div className="text-right text-xs text-gray-500">
+        <div className="text-right text-xs text-[var(--lt-ink-soft)]">
           Total:{' '}
-          <span className="font-bold text-gray-900 dark:text-white">
+          <span className="font-bold text-[var(--lt-ink)]">
             {totalUsers}
           </span>{' '}
           usuarios

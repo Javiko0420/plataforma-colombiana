@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Flag, AlertTriangle, X } from 'lucide-react'
 import { reportEvent } from '@/app/(main)/eventos/actions'
+import { LtButton, LtPanel } from '@/components/lt'
 
 const REPORT_REASONS = [
   { value: 'SPAM', label: 'Spam o publicidad engañosa' },
@@ -59,8 +60,8 @@ export default function ReportEventButton({
 
   if (submitted) {
     return (
-      <div className="flex items-center justify-center gap-2 text-sm text-gray-400 dark:text-gray-500 py-2">
-        <Flag className="w-4 h-4" />
+      <div className="flex items-center justify-center gap-2 text-sm py-2" style={{ color: 'var(--lt-ink-soft)' }}>
+        <Flag className="w-4 h-4" aria-hidden="true" />
         <span>Ya reportaste este evento</span>
       </div>
     )
@@ -70,9 +71,10 @@ export default function ReportEventButton({
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center justify-center gap-2 w-full text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 py-2 rounded-xl transition-colors"
+        className="flex items-center justify-center gap-2 w-full text-sm py-2 rounded-[var(--lt-radius-sm)] transition-colors hover:opacity-80"
+        style={{ color: 'var(--lt-ink-soft)' }}
       >
-        <Flag className="w-4 h-4" />
+        <Flag className="w-4 h-4" aria-hidden="true" />
         Reportar evento
       </button>
 
@@ -81,26 +83,35 @@ export default function ReportEventButton({
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowModal(false)}
+            aria-hidden="true"
           />
 
-          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full max-w-md p-6 space-y-5">
+          <LtPanel className="relative w-full max-w-md p-6 space-y-5" shadow="lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <div
+                  className="w-10 h-10 rounded-[var(--lt-radius-sm)] border-[2px] border-[var(--lt-ink)] flex items-center justify-center"
+                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-terracota)' }}
+                >
+                  <AlertTriangle className="w-5 h-5" aria-hidden="true" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  <h3
+                    className="text-lg font-bold"
+                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+                  >
                     Reportar evento
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
                     Tu reporte será revisado por moderación
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                className="transition-colors hover:opacity-80"
+                style={{ color: 'var(--lt-ink-soft)' }}
+                aria-label="Cerrar"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -108,13 +119,11 @@ export default function ReportEventButton({
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Motivo del reporte
-                </label>
+                <label className="lt-label">Motivo del reporte</label>
                 <select
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                  className="lt-input"
                 >
                   <option value="">Selecciona un motivo...</option>
                   {REPORT_REASONS.map((r) => (
@@ -126,44 +135,57 @@ export default function ReportEventButton({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label className="lt-label">
                   Detalles adicionales{' '}
-                  <span className="text-gray-400 font-normal">(opcional)</span>
+                  <span style={{ color: 'var(--lt-ink-soft)', fontWeight: 'normal' }}>(opcional)</span>
                 </label>
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   rows={3}
                   maxLength={500}
-                  className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-600 rounded-xl p-3 text-gray-900 dark:text-white text-sm placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+                  className="lt-input resize-none"
                   placeholder="Explica brevemente por qué reportas este evento..."
                 />
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-700 dark:text-red-400 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+              <div
+                className="border-2 border-[var(--lt-terracota)] px-4 py-2.5 rounded-[var(--lt-radius-sm)] text-sm flex items-center gap-2"
+                style={{ background: 'var(--lt-bg)', color: 'var(--lt-terracota)' }}
+              >
+                <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
                 {error}
               </div>
             )}
 
             <div className="flex gap-3 pt-2">
-              <button
+              <LtButton
+                type="button"
+                variant="outline"
+                tone="paper"
+                size="sm"
+                className="flex-1"
                 onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancelar
-              </button>
-              <button
+              </LtButton>
+              <LtButton
+                type="button"
+                variant="sticker"
+                tone="terracota"
+                size="sm"
+                className="flex-1"
                 onClick={handleSubmit}
                 disabled={loading || !reason}
-                className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                loading={loading}
+                loadingText="Enviando..."
               >
-                {loading ? 'Enviando...' : 'Enviar reporte'}
-              </button>
+                Enviar reporte
+              </LtButton>
             </div>
-          </div>
+          </LtPanel>
         </div>
       )}
     </>
