@@ -521,6 +521,49 @@ export function getDefaultSeason(): number {
   return getSeasonForLeague(39) // Premier League as European reference
 }
 
+export type LeagueDashboardRow = {
+  league: { alias: string; id: number; name: string }
+  table: SimpleStanding[]
+  dayFx: SimpleFixture[]
+}
+
+/** Load standings + today's fixtures for many leagues using parallel API waves (Vercel-safe). */
+export async function loadLeaguesDashboard(
+  leagues: Array<{ alias: string; id: number; name: string }>,
+  opts: { date?: string; team?: number } = {}
+): Promise<LeagueDashboardRow[]> {
+  if (leagues.length === 0) return []
+
+  // Wave 1 — resolve current season per league (cached 24h each)
+  const seasons = await Promise.all(leagues.map((lg) => resolveSeasonForLeague(lg.id)))
+  const enriched = leagues.map((lg, i) => ({ ...lg, season: seasons[i]! }))
+
+  // Wave 2 — all standings in parallel (avoids UCL/UEL timing out at end of sequential batches)
+  const tables = await Promise.all(
+    enriched.map(({ id, season, name }) =>
+      fetchStandings(id, season).catch((err) => {
+        console.warn(`[sports] standings failed league=${id} (${name}) season=${season}:`, err)
+        return [] as SimpleStanding[]
+      })
+    )
+  )
+
+  // Wave 3 — all day fixtures in parallel
+  const dayFixtures = await Promise.all(
+    enriched.map(({ id, season }) =>
+      fetchFixtures({ league: id, season, date: opts.date, team: opts.team }).catch(
+        () => [] as SimpleFixture[]
+      )
+    )
+  )
+
+  return enriched.map((lg, i) => ({
+    league: { alias: lg.alias, id: lg.id, name: lg.name },
+    table: tables[i]!,
+    dayFx: dayFixtures[i]!,
+  }))
+}
+
 export async function fetchSportsSummary(input?: {
   leagues: Array<{ id: number; name: string }>
   nationalTeamIds?: number[]

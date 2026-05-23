@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { fetchFixtures, fetchStandings, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams } from '@/lib/football'
+import { fetchFixtures, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams, loadLeaguesDashboard } from '@/lib/football'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
 import { translateText, type SupportedLang } from '@/lib/translation'
@@ -10,6 +10,10 @@ import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline'
 import { Squiggle } from '@/components/lt/Squiggle'
 import { LtBadge } from '@/components/lt/Badge'
 import { getActivePlatformLeagues } from '@/lib/leagues'
+
+// Sports page fans out many API-Football calls; allow enough time on Vercel.
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
 
 async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: string) => string; date: string; leagueId?: number; liveOnly?: boolean; locale: 'es' | 'en' }) {
   // For live mode we ask the provider directly; otherwise we fetch by date
@@ -109,32 +113,10 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
 
   const activeLeagues = getActivePlatformLeagues((k) => t(k))
 
-  const data = []
-  for (let i = 0; i < activeLeagues.length; i += 2) {
-    const batch = activeLeagues.slice(i, i + 2)
-    const batchResults = await Promise.all(
-      batch.map(async (lg) => {
-        const idOk = Number.isFinite(lg.id) && lg.id > 0
-        const season = await resolveSeasonForLeague(lg.id)
-        try {
-          const [table, dayFx] = await Promise.all([
-            idOk ? fetchStandings(lg.id, season).catch(() => []) : Promise.resolve([]),
-            idOk
-              ? fetchFixtures({ league: lg.id, season, date: dateParam, team: teamParam }).catch(() => [])
-              : Promise.resolve([]),
-          ])
-          return { league: lg, table, dayFx }
-        } catch (error) {
-          console.error(`Error loading league ${lg.name}:`, error)
-          return { league: lg, table: [], dayFx: [] }
-        }
-      })
-    )
-    data.push(...batchResults)
-    if (i + 2 < activeLeagues.length) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-  }
+  const data = await loadLeaguesDashboard(activeLeagues, {
+    date: dateParam,
+    team: teamParam,
+  })
 
   const [teamNext, teamLast] = teamParam
     ? await Promise.all([
