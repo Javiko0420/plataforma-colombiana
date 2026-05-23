@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowRight, Users, TrendingUp, MapPin,
   Radio, Cloud, Trophy, Briefcase, CalendarDays, Search,
@@ -17,11 +18,11 @@ import { StickerBadge }       from '@/components/lt/StickerBadge'
 /* ─────────────────────────────────────────
    Datos estáticos
 ───────────────────────────────────────── */
-const STATS = [
-  { n: '1,200+', labelKey: 'home.stats.entrepreneurs.label', tone: 'terracota', italic: false },
-  { n: '5,000+', labelKey: 'home.stats.products.label',      tone: 'sun-core',  italic: true  },
-  { n: '32',     labelKey: 'home.stats.cities.label',        tone: 'verde',     italic: false },
-  { n: '98%',    labelKey: 'home.stats.satisfaction.label',  tone: 'accent',    italic: true  },
+const REGISTERED_BUSINESSES = [
+  { name: 'MR. CHARLES',   src: '/logos/negocios/mr-charles.png'   },
+  { name: 'PERREO',        src: '/logos/negocios/perreo.png'        },
+  { name: 'YAKKA LABOUR',  src: '/logos/negocios/yakka-labour.png'  },
+  { name: 'STILOS JENNY',  src: '/logos/negocios/stilos-jenny.png'  },
 ]
 
 const FEATURE_TONES = ['terracota', 'verde', 'sun', 'accent', 'sun-core', 'verde']
@@ -259,46 +260,47 @@ export default function Home() {
             </HandDrawnBox>
           </div>
 
-          {/* ── 4 pills de stats inline ── */}
-          <div
-            className="flex justify-center items-center flex-wrap gap-3.5 mt-10"
-            aria-label="Estadísticas de la comunidad"
-          >
-            {STATS.map((s, i) => {
-              const label = t(s.labelKey)
-              return (
-                <div
-                  key={s.labelKey}
-                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border-[1.8px] border-[var(--lt-ink)]"
-                  style={{
-                    background: 'var(--lt-paper)',
-                    boxShadow: '3px 3px 0 var(--lt-ink)',
-                    transform: `rotate(${i % 2 ? 1 : -1}deg)`,
-                    filter: 'url(#lt-wobble-soft)',
-                  }}
-                  data-lt-rotate="true"
-                  data-lt-wobble="true"
-                  aria-label={`${s.n} ${label}`}
-                >
-                  <span
-                    className="text-[22px] font-extrabold leading-none"
-                    style={{
-                      fontFamily: 'var(--lt-font-serif)',
-                      color: `var(--lt-${s.tone})`,
-                      fontStyle: s.italic ? 'italic' : 'normal',
-                    }}
+          {/* ── Franja de negocios registrados ── */}
+          <div className="mt-12" aria-labelledby="registered-businesses-title">
+            <div className="inline-flex items-center gap-3 mb-8 w-full justify-center">
+              <Squiggle color="var(--lt-terracota)" width={50} height={10} amplitude={3} aria-hidden="true" />
+              <h2
+                id="registered-businesses-title"
+                className="text-[12px] sm:text-[13px] font-bold uppercase tracking-[0.22em]"
+                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-terracota)' }}
+              >
+                {t('home.businesses.title')}
+              </h2>
+              <Squiggle color="var(--lt-terracota)" width={50} height={10} amplitude={3} aria-hidden="true" />
+            </div>
+
+            <ul
+              className="flex flex-wrap justify-center gap-8 sm:gap-12 md:gap-16 list-none m-0 p-0"
+              aria-label={t('home.businesses.ariaLabel')}
+            >
+              {REGISTERED_BUSINESSES.map((biz) => (
+                <li key={biz.name} className="flex flex-col items-center gap-3">
+                  <div
+                    className="relative w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] rounded-full border-[2.5px] border-[var(--lt-ink)] overflow-hidden shrink-0"
+                    style={{ boxShadow: '4px 4px 0 var(--lt-ink)' }}
                   >
-                    {s.n}
-                  </span>
+                    <Image
+                      src={biz.src}
+                      alt={biz.name}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  </div>
                   <span
-                    className="text-xs uppercase tracking-[0.08em] font-semibold"
-                    style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
+                    className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.12em] text-center"
+                    style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-terracota)' }}
                   >
-                    {label}
+                    {biz.name}
                   </span>
-                </div>
-              )
-            })}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
