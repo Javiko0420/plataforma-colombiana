@@ -9,6 +9,7 @@ import { LeafSprig } from '@/components/lt/LeafSprig'
 import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline'
 import { Squiggle } from '@/components/lt/Squiggle'
 import { LtBadge } from '@/components/lt/Badge'
+import { getActivePlatformLeagues } from '@/lib/leagues'
 
 async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: string) => string; date: string; leagueId?: number; liveOnly?: boolean; locale: 'es' | 'en' }) {
   // For live mode we ask the provider directly; otherwise we fetch by date
@@ -106,35 +107,7 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
     teamParam = (exact || first)?.id
   }
 
-  const leagueDefs = [
-    // Latinoamérica (prioridad)
-    { alias: 'colombia',     env: 'LEAGUE_COLOMBIA_ID',     key: 'sports.league.co' },
-    { alias: 'argentina',    env: 'LEAGUE_ARGENTINA_ID',    key: 'sports.league.ar' },
-    { alias: 'brazil',       env: 'LEAGUE_BRAZIL_ID',       key: 'sports.league.br' },
-    { alias: 'mexico',       env: 'LEAGUE_MEXICO_ID',       key: 'sports.league.mx' },
-    { alias: 'chile',        env: 'LEAGUE_CHILE_ID',        key: 'sports.league.cl' },
-    { alias: 'uruguay',      env: 'LEAGUE_URUGUAY_ID',      key: 'sports.league.uy' },
-    { alias: 'peru',         env: 'LEAGUE_PERU_ID',         key: 'sports.league.pe' },
-    { alias: 'ecuador',      env: 'LEAGUE_ECUADOR_ID',      key: 'sports.league.ec' },
-    { alias: 'paraguay',     env: 'LEAGUE_PARAGUAY_ID',     key: 'sports.league.py' },
-    { alias: 'libertadores', env: 'LEAGUE_LIBERTADORES_ID', key: 'sports.league.libertadores' },
-    { alias: 'sudamericana', env: 'LEAGUE_SUDAMERICANA_ID', key: 'sports.league.sudamericana' },
-    // Europa
-    { alias: 'spain',    env: 'LEAGUE_SPAIN_ID',    key: 'sports.league.es' },
-    { alias: 'england',  env: 'LEAGUE_ENGLAND_ID',  key: 'sports.league.en' },
-    { alias: 'italy',    env: 'LEAGUE_ITALY_ID',    key: 'sports.league.it' },
-    { alias: 'germany',  env: 'LEAGUE_GERMANY_ID',  key: 'sports.league.de' },
-    { alias: 'france',   env: 'LEAGUE_FRANCE_ID',   key: 'sports.league.fr' },
-    { alias: 'ucl',      env: 'LEAGUE_CHAMPIONS_ID', key: 'sports.league.ucl' },
-    { alias: 'europa',   env: 'LEAGUE_EUROPA_ID',   key: 'sports.league.uel' },
-  ] as const
-
-  const leagueAll = leagueDefs.map(def => ({
-    alias: def.alias,
-    id: Number(process.env[def.env as keyof NodeJS.ProcessEnv] || 0),
-    name: t(def.key),
-  }))
-  const activeLeagues = leagueAll.filter(l => Number.isFinite(l.id) && l.id > 0)
+  const activeLeagues = getActivePlatformLeagues((k) => t(k))
 
   const data = []
   for (let i = 0; i < activeLeagues.length; i += 2) {

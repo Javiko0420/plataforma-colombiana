@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { fetchFixtures, fetchStandings, getSeasonForLeague, resolveSeasonForLeague, fetchStandingsByName } from '@/lib/football'
-import { LEAGUE_NAMES } from '@/lib/leagues'
+import { LEAGUE_NAMES, resolveLeagueByAlias } from '@/lib/leagues'
 
 export const runtime = 'nodejs'
 
@@ -21,45 +21,9 @@ const querySchema = z.object({
   live: z.enum(['all', '1', '0']).optional(),
 })
 
-// Map our public aliases to env-var-backed API-Football league IDs.
-// Latin America first, then Europe (matches user-facing priority).
-const ALIAS_TO_ENV: Record<string, { env: string; name: string }> = {
-  // Latinoamérica
-  colombia: { env: 'LEAGUE_COLOMBIA_ID', name: 'Liga BetPlay' },
-  argentina: { env: 'LEAGUE_ARGENTINA_ID', name: 'Liga Profesional Argentina' },
-  brazil: { env: 'LEAGUE_BRAZIL_ID', name: 'Brasileirão Série A' },
-  mexico: { env: 'LEAGUE_MEXICO_ID', name: 'Liga MX' },
-  chile: { env: 'LEAGUE_CHILE_ID', name: 'Primera División (Chile)' },
-  uruguay: { env: 'LEAGUE_URUGUAY_ID', name: 'Primera División (Uruguay)' },
-  peru: { env: 'LEAGUE_PERU_ID', name: 'Liga 1 (Perú)' },
-  ecuador: { env: 'LEAGUE_ECUADOR_ID', name: 'LigaPro' },
-  paraguay: { env: 'LEAGUE_PARAGUAY_ID', name: 'Primera División (Paraguay)' },
-  bolivia: { env: 'LEAGUE_BOLIVIA_ID', name: 'Primera División (Bolivia)' },
-  venezuela: { env: 'LEAGUE_VENEZUELA_ID', name: 'Primera División (Venezuela)' },
-  libertadores: { env: 'LEAGUE_LIBERTADORES_ID', name: 'CONMEBOL Libertadores' },
-  sudamericana: { env: 'LEAGUE_SUDAMERICANA_ID', name: 'CONMEBOL Sudamericana' },
-  // Europa
-  spain: { env: 'LEAGUE_SPAIN_ID', name: 'LaLiga' },
-  england: { env: 'LEAGUE_ENGLAND_ID', name: 'Premier League' },
-  italy: { env: 'LEAGUE_ITALY_ID', name: 'Serie A' },
-  germany: { env: 'LEAGUE_GERMANY_ID', name: 'Bundesliga' },
-  france: { env: 'LEAGUE_FRANCE_ID', name: 'Ligue 1' },
-  portugal: { env: 'LEAGUE_PORTUGAL_ID', name: 'Primeira Liga' },
-  netherlands: { env: 'LEAGUE_NETHERLANDS_ID', name: 'Eredivisie' },
-  ucl: { env: 'LEAGUE_CHAMPIONS_ID', name: 'UEFA Champions League' },
-  champions: { env: 'LEAGUE_CHAMPIONS_ID', name: 'UEFA Champions League' },
-  uel: { env: 'LEAGUE_EUROPA_ID', name: 'UEFA Europa League' },
-  europa: { env: 'LEAGUE_EUROPA_ID', name: 'UEFA Europa League' },
-  conference: { env: 'LEAGUE_CONFERENCE_ID', name: 'UEFA Europa Conference League' },
-}
-
 function resolveLeagueId(input: string): { id: number; name: string } | null {
   if (/^\d+$/.test(input)) return { id: Number(input), name: 'League' }
-  const conf = ALIAS_TO_ENV[input.toLowerCase()]
-  if (!conf) return null
-  const id = Number(process.env[conf.env as keyof NodeJS.ProcessEnv])
-  if (!Number.isFinite(id) || id <= 0) return null
-  return { id, name: conf.name }
+  return resolveLeagueByAlias(input)
 }
 
 export async function GET(request: NextRequest) {
