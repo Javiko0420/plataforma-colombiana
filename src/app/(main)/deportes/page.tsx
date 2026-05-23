@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { fetchFixtures, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams, loadLeaguesDashboard } from '@/lib/football'
+import { fetchFixtures, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams, loadLeaguesDashboard, inferTeamPrimaryLeague } from '@/lib/football'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
 import { translateText, type SupportedLang } from '@/lib/translation'
@@ -9,7 +9,7 @@ import { LeafSprig } from '@/components/lt/LeafSprig'
 import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline'
 import { Squiggle } from '@/components/lt/Squiggle'
 import { LtBadge } from '@/components/lt/Badge'
-import { getActivePlatformLeagues } from '@/lib/leagues'
+import { getDefaultStandingsLeagues, getPlatformLeagueById, mergeStandingsLeagues } from '@/lib/leagues'
 
 // Sports page fans out many API-Football calls; allow enough time on Vercel.
 export const maxDuration = 60
@@ -111,9 +111,26 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
     teamParam = (exact || first)?.id
   }
 
-  const activeLeagues = getActivePlatformLeagues((k) => t(k))
+  const defaultStandingsLeagues = getDefaultStandingsLeagues((k) => t(k))
 
-  const data = await loadLeaguesDashboard(activeLeagues, {
+  const extraStandingsLeagues: Array<{ alias: string; id: number; name: string }> = []
+  if (teamParam) {
+    const inferred = await inferTeamPrimaryLeague(teamParam)
+    if (inferred && !defaultStandingsLeagues.some((lg) => lg.id === inferred.id)) {
+      const known = getPlatformLeagueById(inferred.id, (k) => t(k))
+      extraStandingsLeagues.push(
+        known ?? {
+          alias: `league-${inferred.id}`,
+          id: inferred.id,
+          name: inferred.name,
+        }
+      )
+    }
+  }
+
+  const standingsLeagues = mergeStandingsLeagues(defaultStandingsLeagues, extraStandingsLeagues)
+
+  const data = await loadLeaguesDashboard(standingsLeagues, {
     date: dateParam,
     team: teamParam,
   })

@@ -130,6 +130,30 @@ export const PLATFORM_LEAGUE_DEFS: readonly PlatformLeagueDef[] = [
   { alias: 'europa', envKey: 'LEAGUE_EUROPA_ID', defaultId: LEAGUES.EUROPA_LEAGUE, i18nKey: 'sports.league.uel', label: 'UEFA Europa League' },
 ] as const
 
+/** Default standings on /deportes (keeps API usage within Vercel + rate limits). */
+export const DEFAULT_STANDINGS_ALIASES: readonly string[] = [
+  'colombia',
+  'argentina',
+  'libertadores',
+  'spain',
+  'england',
+  'italy',
+  'germany',
+  'france',
+  'ucl',
+] as const
+
+/** Cup / continental IDs — skipped when inferring a team's domestic league. */
+export const CONTINENTAL_CUP_LEAGUE_IDS = new Set<number>([
+  LEAGUES.COPA_LIBERTADORES,
+  LEAGUES.COPA_SUDAMERICANA,
+  LEAGUES.COPA_AMERICA,
+  LEAGUES.CHAMPIONS_LEAGUE,
+  LEAGUES.EUROPA_LEAGUE,
+  LEAGUES.CONFERENCE_LEAGUE,
+  LEAGUES.UEFA_SUPERCUP,
+])
+
 /** Read league ID from env, falling back to baked-in API-Football default (for Vercel/prod). */
 export function resolveLeagueIdFromEnv(envKey: string, defaultId: number): number {
   const fromEnv = Number(process.env[envKey as keyof NodeJS.ProcessEnv])
@@ -154,8 +178,50 @@ export function getActivePlatformLeagues(
   }))
 }
 
+export function getDefaultStandingsLeagues(
+  nameFor: (i18nKey: string) => string
+): Array<{ alias: string; id: number; name: string }> {
+  const aliasSet = new Set(DEFAULT_STANDINGS_ALIASES)
+  return PLATFORM_LEAGUE_DEFS.filter((def) => aliasSet.has(def.alias)).map((def) => ({
+    alias: def.alias,
+    id: resolveLeagueIdFromEnv(def.envKey, def.defaultId),
+    name: nameFor(def.i18nKey),
+  }))
+}
+
+export function getPlatformLeagueById(
+  leagueId: number,
+  nameFor: (i18nKey: string) => string
+): { alias: string; id: number; name: string } | null {
+  const def = PLATFORM_LEAGUE_DEFS.find(
+    (d) => resolveLeagueIdFromEnv(d.envKey, d.defaultId) === leagueId
+  )
+  if (!def) return null
+  return {
+    alias: def.alias,
+    id: leagueId,
+    name: nameFor(def.i18nKey),
+  }
+}
+
+/** Default standings + extra leagues (e.g. from team search), deduped by id. */
+export function mergeStandingsLeagues(
+  base: Array<{ alias: string; id: number; name: string }>,
+  extra: Array<{ alias: string; id: number; name: string }>
+): Array<{ alias: string; id: number; name: string }> {
+  const seen = new Set<number>()
+  const out: Array<{ alias: string; id: number; name: string }> = []
+  for (const lg of [...base, ...extra]) {
+    if (seen.has(lg.id)) continue
+    seen.add(lg.id)
+    out.push(lg)
+  }
+  return out
+}
+
 export function getPlatformLeaguesForSummary(): Array<{ id: number; name: string }> {
-  return PLATFORM_LEAGUE_DEFS.map((def) => ({
+  const aliasSet = new Set(DEFAULT_STANDINGS_ALIASES)
+  return PLATFORM_LEAGUE_DEFS.filter((def) => aliasSet.has(def.alias)).map((def) => ({
     id: resolveLeagueIdFromEnv(def.envKey, def.defaultId),
     name: def.label,
   }))

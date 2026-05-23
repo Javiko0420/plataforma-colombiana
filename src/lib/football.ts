@@ -2,7 +2,7 @@
 // Active primary provider for fixtures, standings, teams.
 // Docs: https://www.api-football.com/documentation-v3
 
-import { CALENDAR_YEAR_LEAGUE_IDS } from '@/lib/leagues'
+import { CALENDAR_YEAR_LEAGUE_IDS, CONTINENTAL_CUP_LEAGUE_IDS } from '@/lib/leagues'
 
 export type SimpleFixture = {
   id: number
@@ -294,6 +294,30 @@ export async function fetchTeamLastMatches(teamId: number, count = 10): Promise<
   return fetchFixtures({ team: teamId, last: count })
 }
 
+/** Infer domestic league from recent/next fixtures (excludes UCL, Libertadores, etc.). */
+export async function inferTeamPrimaryLeague(
+  teamId: number
+): Promise<{ id: number; name: string } | null> {
+  const [last, next] = await Promise.all([
+    fetchTeamLastMatches(teamId, 8).catch(() => [] as SimpleFixture[]),
+    fetchTeamNextMatches(teamId, 4).catch(() => [] as SimpleFixture[]),
+  ])
+  const matches = [...last, ...next]
+  if (matches.length === 0) return null
+
+  const counts = new Map<number, { count: number; name: string }>()
+  for (const fx of matches) {
+    const id = fx.league.id
+    if (!id || id <= 0 || CONTINENTAL_CUP_LEAGUE_IDS.has(id)) continue
+    const prev = counts.get(id)
+    counts.set(id, { count: (prev?.count ?? 0) + 1, name: fx.league.name || prev?.name || '' })
+  }
+  if (counts.size === 0) return null
+
+  const best = [...counts.entries()].sort((a, b) => b[1].count - a[1].count)[0]
+  return { id: best[0], name: best[1].name }
+}
+
 // -------------------- Standings --------------------
 
 type ApiStandingRow = {
@@ -527,33 +551,38 @@ export type LeagueDashboardRow = {
   dayFx: SimpleFixture[]
 }
 
-/** Load standings + today's fixtures for many leagues using parallel API waves (Vercel-safe). */
+const DASHBOARD_CONCURRENCY = 4
+
+async function runPool<T, R>(items: T[], fn: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  for (let i = 0; i < items.length; i += DASHBOARD_CONCURRENCY) {
+    const slice = items.slice(i, i + DASHBOARD_CONCURRENCY)
+    const chunk = await Promise.all(slice.map((item, j) => fn(item, i + j)))
+    for (let j = 0; j < chunk.length; j++) results[i + j] = chunk[j]!
+  }
+  return results
+}
+
+/** Load standings + today's fixtures for selected leagues (rate-limit friendly). */
 export async function loadLeaguesDashboard(
   leagues: Array<{ alias: string; id: number; name: string }>,
   opts: { date?: string; team?: number } = {}
 ): Promise<LeagueDashboardRow[]> {
   if (leagues.length === 0) return []
 
-  // Wave 1 — resolve current season per league (cached 24h each)
-  const seasons = await Promise.all(leagues.map((lg) => resolveSeasonForLeague(lg.id)))
+  const seasons = await runPool(leagues, (lg) => resolveSeasonForLeague(lg.id))
   const enriched = leagues.map((lg, i) => ({ ...lg, season: seasons[i]! }))
 
-  // Wave 2 — all standings in parallel (avoids UCL/UEL timing out at end of sequential batches)
-  const tables = await Promise.all(
-    enriched.map(({ id, season, name }) =>
-      fetchStandings(id, season).catch((err) => {
-        console.warn(`[sports] standings failed league=${id} (${name}) season=${season}:`, err)
-        return [] as SimpleStanding[]
-      })
-    )
+  const tables = await runPool(enriched, ({ id, season, name }) =>
+    fetchStandings(id, season).catch((err) => {
+      console.warn(`[sports] standings failed league=${id} (${name}) season=${season}:`, err)
+      return [] as SimpleStanding[]
+    })
   )
 
-  // Wave 3 — all day fixtures in parallel
-  const dayFixtures = await Promise.all(
-    enriched.map(({ id, season }) =>
-      fetchFixtures({ league: id, season, date: opts.date, team: opts.team }).catch(
-        () => [] as SimpleFixture[]
-      )
+  const dayFixtures = await runPool(enriched, ({ id, season }) =>
+    fetchFixtures({ league: id, season, date: opts.date, team: opts.team }).catch(
+      () => [] as SimpleFixture[]
     )
   )
 
