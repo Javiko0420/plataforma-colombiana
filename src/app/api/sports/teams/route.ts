@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { searchTeams } from '@/lib/sports'
+import { searchTeams } from '@/lib/football'
 
 export const runtime = 'nodejs'
 

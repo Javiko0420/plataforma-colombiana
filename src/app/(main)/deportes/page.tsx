@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { fetchFixtures, fetchStandings, getDefaultSeason, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams } from '@/lib/sports'
+import { fetchFixtures, fetchStandings, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams } from '@/lib/football'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
 import { translateText, type SupportedLang } from '@/lib/translation'
@@ -11,9 +11,17 @@ import { Squiggle } from '@/components/lt/Squiggle'
 import { LtBadge } from '@/components/lt/Badge'
 
 async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: string) => string; date: string; leagueId?: number; liveOnly?: boolean; locale: 'es' | 'en' }) {
-  const params: { date: string; league?: number } = { date }
+  // For live mode we ask the provider directly; otherwise we fetch by date
+  // (league + date requires `season` per API-Football specs).
+  const params: { date?: string; league?: number; season?: number; live?: 'all' } = {}
+  if (liveOnly) {
+    params.live = 'all'
+  } else {
+    params.date = date
+  }
   if (typeof leagueId === 'number' && Number.isFinite(leagueId) && leagueId > 0) {
     params.league = leagueId
+    params.season = await resolveSeasonForLeague(leagueId)
   }
   const fixtures = await fetchFixtures(params)
   const filtered = liveOnly
@@ -86,7 +94,6 @@ async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: st
 export default async function SportsPage({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
   const locale = await getServerLocale()
   const t = (k: string) => translate(k, { locale })
-  const season = getDefaultSeason()
   const sp = (await searchParams) || {}
   const dateParam = typeof sp.date === 'string' ? sp.date : new Date().toISOString().slice(0, 10)
   const liveParam = typeof sp.live === 'string' && (sp.live === 'all' || sp.live === '1' || sp.live === '0') ? (sp.live as 'all' | '1' | '0') : null
@@ -100,12 +107,24 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
   }
 
   const leagueDefs = [
-    { alias: 'colombia', env: 'LEAGUE_COLOMBIA_ID', key: 'sports.league.co' },
+    // Latinoamérica (prioridad)
+    { alias: 'colombia',     env: 'LEAGUE_COLOMBIA_ID',     key: 'sports.league.co' },
+    { alias: 'argentina',    env: 'LEAGUE_ARGENTINA_ID',    key: 'sports.league.ar' },
+    { alias: 'brazil',       env: 'LEAGUE_BRAZIL_ID',       key: 'sports.league.br' },
+    { alias: 'mexico',       env: 'LEAGUE_MEXICO_ID',       key: 'sports.league.mx' },
+    { alias: 'chile',        env: 'LEAGUE_CHILE_ID',        key: 'sports.league.cl' },
+    { alias: 'uruguay',      env: 'LEAGUE_URUGUAY_ID',      key: 'sports.league.uy' },
+    { alias: 'peru',         env: 'LEAGUE_PERU_ID',         key: 'sports.league.pe' },
+    { alias: 'ecuador',      env: 'LEAGUE_ECUADOR_ID',      key: 'sports.league.ec' },
+    { alias: 'paraguay',     env: 'LEAGUE_PARAGUAY_ID',     key: 'sports.league.py' },
+    { alias: 'libertadores', env: 'LEAGUE_LIBERTADORES_ID', key: 'sports.league.libertadores' },
+    { alias: 'sudamericana', env: 'LEAGUE_SUDAMERICANA_ID', key: 'sports.league.sudamericana' },
+    // Europa
     { alias: 'spain',    env: 'LEAGUE_SPAIN_ID',    key: 'sports.league.es' },
     { alias: 'england',  env: 'LEAGUE_ENGLAND_ID',  key: 'sports.league.en' },
     { alias: 'italy',    env: 'LEAGUE_ITALY_ID',    key: 'sports.league.it' },
-    { alias: 'france',   env: 'LEAGUE_FRANCE_ID',   key: 'sports.league.fr' },
     { alias: 'germany',  env: 'LEAGUE_GERMANY_ID',  key: 'sports.league.de' },
+    { alias: 'france',   env: 'LEAGUE_FRANCE_ID',   key: 'sports.league.fr' },
     { alias: 'ucl',      env: 'LEAGUE_CHAMPIONS_ID', key: 'sports.league.ucl' },
     { alias: 'europa',   env: 'LEAGUE_EUROPA_ID',   key: 'sports.league.uel' },
   ] as const
@@ -123,10 +142,13 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
     const batchResults = await Promise.all(
       batch.map(async (lg) => {
         const idOk = Number.isFinite(lg.id) && lg.id > 0
+        const season = await resolveSeasonForLeague(lg.id)
         try {
           const [table, dayFx] = await Promise.all([
             idOk ? fetchStandings(lg.id, season).catch(() => []) : Promise.resolve([]),
-            idOk ? fetchFixtures({ league: lg.id, date: dateParam, team: teamParam }).catch(() => []) : Promise.resolve([]),
+            idOk
+              ? fetchFixtures({ league: lg.id, season, date: dateParam, team: teamParam }).catch(() => [])
+              : Promise.resolve([]),
           ])
           return { league: lg, table, dayFx }
         } catch (error) {

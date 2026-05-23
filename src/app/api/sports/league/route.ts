@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { fetchFixtures, fetchStandings, getDefaultSeason, fetchStandingsByName } from '@/lib/sports'
-import { TSDB_LEAGUE_NAMES } from '@/lib/leagues'
+import { fetchFixtures, fetchStandings, getSeasonForLeague, resolveSeasonForLeague, fetchStandingsByName } from '@/lib/football'
+import { LEAGUE_NAMES } from '@/lib/leagues'
 
 export const runtime = 'nodejs'
 
@@ -10,34 +10,52 @@ const MAX_REQS = Number(process.env.RATE_LIMIT_MAX || 100)
 const bucket = new Map<string, { count: number; ts: number }>()
 
 const querySchema = z.object({
-  league: z.string().min(1), // may be alias like 'colombia' or numeric id
+  league: z.string().min(1), // alias (e.g. 'colombia') or numeric API-Football ID
   season: z.string().regex(/^\d{4}$/).optional(),
   timezone: z.string().optional(),
   include: z
     .string()
     .transform((v) => (v ? v.split(',').map((s) => s.trim().toLowerCase()) : []))
     .optional(), // e.g. 'results,standings'
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), // for results filter
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   live: z.enum(['all', '1', '0']).optional(),
 })
 
-function resolveLeagueId(input: string): { id: number; name: string } | null {
-  // Accept numeric ID directly
-  if (/^\d+$/.test(input)) return { id: Number(input), name: 'League' }
+// Map our public aliases to env-var-backed API-Football league IDs.
+// Latin America first, then Europe (matches user-facing priority).
+const ALIAS_TO_ENV: Record<string, { env: string; name: string }> = {
+  // Latinoamérica
+  colombia: { env: 'LEAGUE_COLOMBIA_ID', name: 'Liga BetPlay' },
+  argentina: { env: 'LEAGUE_ARGENTINA_ID', name: 'Liga Profesional Argentina' },
+  brazil: { env: 'LEAGUE_BRAZIL_ID', name: 'Brasileirão Série A' },
+  mexico: { env: 'LEAGUE_MEXICO_ID', name: 'Liga MX' },
+  chile: { env: 'LEAGUE_CHILE_ID', name: 'Primera División (Chile)' },
+  uruguay: { env: 'LEAGUE_URUGUAY_ID', name: 'Primera División (Uruguay)' },
+  peru: { env: 'LEAGUE_PERU_ID', name: 'Liga 1 (Perú)' },
+  ecuador: { env: 'LEAGUE_ECUADOR_ID', name: 'LigaPro' },
+  paraguay: { env: 'LEAGUE_PARAGUAY_ID', name: 'Primera División (Paraguay)' },
+  bolivia: { env: 'LEAGUE_BOLIVIA_ID', name: 'Primera División (Bolivia)' },
+  venezuela: { env: 'LEAGUE_VENEZUELA_ID', name: 'Primera División (Venezuela)' },
+  libertadores: { env: 'LEAGUE_LIBERTADORES_ID', name: 'CONMEBOL Libertadores' },
+  sudamericana: { env: 'LEAGUE_SUDAMERICANA_ID', name: 'CONMEBOL Sudamericana' },
+  // Europa
+  spain: { env: 'LEAGUE_SPAIN_ID', name: 'LaLiga' },
+  england: { env: 'LEAGUE_ENGLAND_ID', name: 'Premier League' },
+  italy: { env: 'LEAGUE_ITALY_ID', name: 'Serie A' },
+  germany: { env: 'LEAGUE_GERMANY_ID', name: 'Bundesliga' },
+  france: { env: 'LEAGUE_FRANCE_ID', name: 'Ligue 1' },
+  portugal: { env: 'LEAGUE_PORTUGAL_ID', name: 'Primeira Liga' },
+  netherlands: { env: 'LEAGUE_NETHERLANDS_ID', name: 'Eredivisie' },
+  ucl: { env: 'LEAGUE_CHAMPIONS_ID', name: 'UEFA Champions League' },
+  champions: { env: 'LEAGUE_CHAMPIONS_ID', name: 'UEFA Champions League' },
+  uel: { env: 'LEAGUE_EUROPA_ID', name: 'UEFA Europa League' },
+  europa: { env: 'LEAGUE_EUROPA_ID', name: 'UEFA Europa League' },
+  conference: { env: 'LEAGUE_CONFERENCE_ID', name: 'UEFA Europa Conference League' },
+}
 
-  // Aliases -> env IDs
-  const alias = input.toLowerCase()
-  const mapping: Record<string, { env: string; name: string }> = {
-    colombia: { env: 'LEAGUE_COLOMBIA_ID', name: 'Liga Colombiana' },
-    spain: { env: 'LEAGUE_SPAIN_ID', name: 'La Liga' },
-    england: { env: 'LEAGUE_ENGLAND_ID', name: 'Premier League' },
-    germany: { env: 'LEAGUE_GERMANY_ID', name: 'Bundesliga' },
-    ucl: { env: 'LEAGUE_CHAMPIONS_ID', name: 'Champions League' },
-    champions: { env: 'LEAGUE_CHAMPIONS_ID', name: 'Champions League' },
-    uel: { env: 'LEAGUE_EUROPA_ID', name: 'Europa League' },
-    europa: { env: 'LEAGUE_EUROPA_ID', name: 'Europa League' },
-  }
-  const conf = mapping[alias]
+function resolveLeagueId(input: string): { id: number; name: string } | null {
+  if (/^\d+$/.test(input)) return { id: Number(input), name: 'League' }
+  const conf = ALIAS_TO_ENV[input.toLowerCase()]
   if (!conf) return null
   const id = Number(process.env[conf.env as keyof NodeJS.ProcessEnv])
   if (!Number.isFinite(id) || id <= 0) return null
@@ -45,7 +63,6 @@ function resolveLeagueId(input: string): { id: number; name: string } | null {
 }
 
 export async function GET(request: NextRequest) {
-  // Basic rate limit
   const key = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
   const now = Date.now()
   const rec = bucket.get(key)
@@ -67,23 +84,27 @@ export async function GET(request: NextRequest) {
 
   const resolved = resolveLeagueId(q.league)
   const alias = q.league.toLowerCase()
-  const leagueName = TSDB_LEAGUE_NAMES[alias]
+  // Fallback to canonical league name search if no env-backed alias resolves.
+  const leagueName = LEAGUE_NAMES[alias]
   if (!resolved && !leagueName && !/^\d+$/.test(q.league)) {
     return NextResponse.json({ success: false, error: 'Unknown league' }, { status: 404 })
   }
 
-  const season = q.season ? String(q.season) : getDefaultSeason()
-  // const timezone = q.timezone || process.env.SPORTS_DEFAULT_TIMEZONE || 'America/Bogota'
+  const season = q.season ? Number(q.season) : resolved ? await resolveSeasonForLeague(resolved.id) : getSeasonForLeague(0)
   const include = new Set((q.include ?? ['results', 'standings']).map((s) => s.toLowerCase()))
   const date = q.date || new Date().toISOString().slice(0, 10)
 
   try {
     const [results, standings] = await Promise.all([
       include.has('results')
-        ? (resolved ? fetchFixtures({ league: resolved.id, date }) : fetchFixtures({ league: leagueName || q.league, date })).catch(() => [])
+        ? (resolved
+            ? fetchFixtures({ league: resolved.id, season, date }).catch(() => [])
+            : Promise.resolve([]))
         : Promise.resolve([]),
       include.has('standings')
-        ? (resolved ? fetchStandings(resolved.id, season) : fetchStandingsByName(leagueName || q.league, season)).catch(() => [])
+        ? (resolved
+            ? fetchStandings(resolved.id, season).catch(() => [])
+            : fetchStandingsByName(leagueName as string, season).catch(() => []))
         : Promise.resolve([]),
     ])
     const leagueInfo = resolved || { id: 0, name: leagueName || q.league }
@@ -92,5 +113,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'League fetch failed' }, { status: 502 })
   }
 }
-
-
