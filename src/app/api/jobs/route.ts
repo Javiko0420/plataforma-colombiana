@@ -1,11 +1,18 @@
 /**
  * Jobs API
- * GET /api/jobs - List active job offers with optional filters
+ * GET  /api/jobs - List active job offers with optional filters
+ * POST /api/jobs - Create a new job offer (web session or mobile JWT)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
+import { getAuthUserId } from '@/lib/get-auth-user'
+
+const VALID_CATEGORIES = ['Tecnología', 'Hostelería', 'Construcción', 'Ventas', 'Marketing']
+const VALID_LOCATIONS  = ['Brisbane', 'Sydney', 'Melbourne', 'Gold Coast', 'Remoto']
+const VALID_JOB_TYPES  = ['Full-time', 'Part-time', 'Freelance', 'Contract']
+const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
 
 export const dynamic = 'force-dynamic'
 
@@ -92,6 +99,125 @@ export async function GET(request: NextRequest) {
     logger.error('Error in GET /api/jobs', { error })
     return NextResponse.json(
       { success: false, error: 'Error loading jobs.' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * POST /api/jobs
+ *
+ * Creates a new job offer. Supports both web (NextAuth cookie) and mobile
+ * (Authorization: Bearer <jwt>) clients via getAuthUserId().
+ *
+ * Body (JSON):
+ *   title, category, description, location, jobType,
+ *   hourlyRate (number > 0, AUD/hora),
+ *   email?, phone?, externalLink? (no URL shorteners)
+ *   — al menos un método de contacto requerido.
+ *
+ * Response 201: { success: true, data: JobOffer }
+ * Response 400: { success: false, error: string }
+ * Response 401: { success: false, error: "Authentication required" }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const userId = await getAuthUserId(request)
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { title, category, description, location, jobType, hourlyRate, email, phone, externalLink } = body
+
+    // Validar campos requeridos
+    if (!title || !category || !description || !location || !jobType) {
+      return NextResponse.json(
+        { success: false, error: 'Los campos title, category, description, location y jobType son obligatorios.' },
+        { status: 400 }
+      )
+    }
+
+    // Validar categoría
+    if (!VALID_CATEGORIES.includes(category)) {
+      return NextResponse.json(
+        { success: false, error: `Categoría inválida. Opciones válidas: ${VALID_CATEGORIES.join(', ')}.` },
+        { status: 400 }
+      )
+    }
+
+    // Validar ubicación
+    if (!VALID_LOCATIONS.includes(location)) {
+      return NextResponse.json(
+        { success: false, error: `Ubicación inválida. Opciones válidas: ${VALID_LOCATIONS.join(', ')}.` },
+        { status: 400 }
+      )
+    }
+
+    // Validar tipo de empleo
+    if (!VALID_JOB_TYPES.includes(jobType)) {
+      return NextResponse.json(
+        { success: false, error: `Tipo de empleo inválido. Opciones válidas: ${VALID_JOB_TYPES.join(', ')}.` },
+        { status: 400 }
+      )
+    }
+
+    // Validar salario por hora (obligatorio por requisito legal)
+    if (!hourlyRate || typeof hourlyRate !== 'number' || hourlyRate <= 0) {
+      return NextResponse.json(
+        { success: false, error: 'El salario por hora es obligatorio y debe ser mayor a 0 (requisito legal).' },
+        { status: 400 }
+      )
+    }
+
+    // Validar al menos un método de contacto
+    if (!email && !phone && !externalLink) {
+      return NextResponse.json(
+        { success: false, error: 'Se requiere al menos un método de contacto válido (email, teléfono o enlace).' },
+        { status: 400 }
+      )
+    }
+
+    // Validar acortadores de URL en externalLink
+    if (externalLink && URL_SHORTENER_REGEX.test(externalLink)) {
+      return NextResponse.json(
+        { success: false, error: 'Por seguridad de la comunidad, no se permiten acortadores de URL en los enlaces externos.' },
+        { status: 400 }
+      )
+    }
+
+    // Calcular fechas: expiresAt = createdAt + 15 días
+    const createdAt = new Date()
+    const expiresAt = new Date(createdAt.getTime() + 15 * 24 * 60 * 60 * 1000)
+
+    const job = await prisma.jobOffer.create({
+      data: {
+        title,
+        category,
+        description,
+        location,
+        jobType,
+        hourlyRate,
+        email:        email        ?? null,
+        phone:        phone        ?? null,
+        externalLink: externalLink ?? null,
+        createdAt,
+        expiresAt,
+        user: { connect: { id: userId } },
+      },
+    })
+
+    return NextResponse.json(
+      { success: true, data: job },
+      { status: 201 }
+    )
+  } catch (error) {
+    logger.error('Error in POST /api/jobs', { error })
+    return NextResponse.json(
+      { success: false, error: 'No se pudo crear la oferta de empleo.' },
       { status: 500 }
     )
   }

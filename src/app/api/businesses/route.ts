@@ -5,8 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthUserId } from '@/lib/get-auth-user'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 import { businessSchema } from '@/lib/validations/business'
@@ -110,11 +109,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(req);
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -161,7 +160,7 @@ export async function POST(req: Request) {
         facebook: validatedData.facebook || null,
         whatsapp: validatedData.whatsapp || null,
         images: validatedData.images || [],
-        ownerId: session.user.id,
+        ownerId: userId,
         isActive: true, // Activo por defecto en el MVP
       },
     });

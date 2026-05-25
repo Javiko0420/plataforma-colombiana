@@ -2,22 +2,25 @@
  * Change Password API
  * POST /api/users/me/change-password
  * Allows authenticated users (credential-based) to change their password.
+ *
+ * Supports both:
+ * - NextAuth sessions (web — cookie-based)
+ * - Mobile JWT (Authorization: Bearer header)
  */
 
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthUserId } from '@/lib/get-auth-user';
 import { prisma } from '@/lib/prisma';
 import { PasswordSecurity } from '@/lib/password-security';
 import { logger } from '@/lib/logger';
 import { changePasswordSchema } from '@/lib/validations';
 import { z } from 'zod';
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const userId = await getAuthUserId(req);
 
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
         { status: 401 }
@@ -28,7 +31,7 @@ export async function POST(req: Request) {
     const validatedData = changePasswordSchema.parse(body);
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { id: true, password: true, email: true },
     });
 
