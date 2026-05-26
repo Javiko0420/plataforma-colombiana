@@ -480,6 +480,7 @@ model Event {
   ticketLink  String?
   ticketPrice Float?   // Precio en AUD; null = gratuito
   isHidden    Boolean  @default(false) // Auto-oculto al superar umbral de reportes
+  ranking     Int      @default(0)     // Home slot 1-10 for paid placement; 0 = organic pool
 
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -492,6 +493,7 @@ model Event {
   @@index([userId])
   @@index([category])
   @@index([isHidden])
+  @@index([ranking])
 }
 
 /// Favorite radio stations saved by an authenticated user.
