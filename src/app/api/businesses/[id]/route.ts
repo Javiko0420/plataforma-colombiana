@@ -1,29 +1,24 @@
 // src/app/api/businesses/[id]/route.ts
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthUserId } from "@/lib/get-auth-user";
 import { prisma } from "@/lib/prisma";
 import { businessSchema } from "@/lib/validations/business";
 import { z } from "zod";
 import { Category } from "@prisma/client";
 
-// Definición correcta de tipos para Next.js 15
 export async function PUT(
-  req: Request,
+  req: NextRequest,
   props: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 1. OBTENER ID (CRÍTICO: Debemos hacer await a params)
     const params = await props.params;
     const businessId = params.id;
 
-    // 2. Validar sesión
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const authUserId = await getAuthUserId(req);
+    if (!authUserId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // 3. Verificar que el negocio existe y pertenece al usuario
     const existingBusiness = await prisma.business.findUnique({
       where: { id: businessId },
       select: { ownerId: true },
@@ -33,17 +28,13 @@ export async function PUT(
       return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 });
     }
 
-    if (existingBusiness.ownerId !== session.user.id) {
+    if (existingBusiness.ownerId !== authUserId) {
       return NextResponse.json({ error: "No tienes permiso para editar este negocio" }, { status: 403 });
     }
 
-    // 4. Leer y validar los datos que envía el formulario
     const body = await req.json();
-    
-    // Validamos con Zod (igual que al crear)
     const validatedData = businessSchema.parse(body);
 
-    // 5. ACTUALIZAR EN BASE DE DATOS
     const updatedBusiness = await prisma.business.update({
       where: { id: businessId },
       data: {
@@ -51,18 +42,18 @@ export async function PUT(
         // No actualizamos el slug para no romper el SEO/URLs existentes
         description: validatedData.description,
         category: validatedData.category as Category,
-        
+
         email: validatedData.email,
         phone: validatedData.phone,
         website: validatedData.website || null,
-        
+
         city: validatedData.city,
         address: validatedData.address || null,
-        
+
         instagram: validatedData.instagram || null,
         whatsapp: validatedData.whatsapp || null,
-        
-        images: validatedData.images || [], // Actualizamos las fotos
+
+        images: validatedData.images || [],
       },
     });
 
@@ -70,28 +61,27 @@ export async function PUT(
 
   } catch (error) {
     console.error("Error al actualizar negocio:", error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 });
     }
-    
+
     return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  req: Request,
-  props: { params: Promise<{ id: string }> } // Tipado para Next.js 15
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
 ) {
   try {
     const params = await props.params;
-    const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    const authUserId = await getAuthUserId(req);
+    if (!authUserId) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // 1. Verificar que el negocio existe y pertenece al usuario
     const existingBusiness = await prisma.business.findUnique({
       where: { id: params.id },
       select: { ownerId: true },
@@ -101,13 +91,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Negocio no encontrado" }, { status: 404 });
     }
 
-    if (existingBusiness.ownerId !== session.user.id) {
+    if (existingBusiness.ownerId !== authUserId) {
       return NextResponse.json({ error: "Prohibido: No eres el dueño" }, { status: 403 });
     }
 
-    // 2. Eliminar el negocio
-    // Prisma se encarga de borrar las reseñas asociadas si configuramos "onDelete: Cascade" en el schema
-    // Si no, solo borramos el negocio.
     await prisma.business.delete({
       where: { id: params.id },
     });
