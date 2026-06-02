@@ -1,9 +1,10 @@
 /**
  * Forum Content Purge Cron Job
- * Runs weekly to permanently delete (hard delete) forum content
- * that was soft-deleted more than 30 days ago.
+ * Runs weekly to permanently delete archived forums and all their content
+ * (posts and comments) once the forum's endDate is older than 7 days.
  *
- * Retention policy: 30 days for legal/audit compliance, then permanent removal.
+ * Retention policy: 7 days after forum end before permanent removal.
+ * Eligibility is based on forum.endDate, not soft-delete flags.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,11 +14,11 @@ import { logger } from '@/lib/logger';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const RETENTION_DAYS = 30;
+const RETENTION_DAYS = 7;
 
 /**
  * POST /api/cron/purge-forum-content
- * Hard delete soft-deleted forum content older than retention period
+ * Hard delete archived forums and their content when endDate exceeds retention period
  */
 export async function POST(request: NextRequest) {
   try {
@@ -39,32 +40,54 @@ export async function POST(request: NextRequest) {
       retentionDays: RETENTION_DAYS,
     });
 
-    // Calculate cutoff date (30 days ago)
+    // Calculate cutoff date (7 days ago)
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - RETENTION_DAYS);
 
-    // 1. Hard delete comments that were soft-deleted beyond retention period
-    //    (must delete comments before posts due to foreign key constraints)
-    const purgedComments = await prisma.forumComment.deleteMany({
+    // 1. Find archived forums whose endDate is older than the retention period
+    const eligibleForums = await prisma.forum.findMany({
       where: {
-        isDeleted: true,
-        deletedAt: { lt: cutoffDate },
+        isArchived: true,
+        endDate: { lt: cutoffDate },
       },
+      select: { id: true, slug: true, endDate: true },
     });
 
-    // 2. Hard delete posts that were soft-deleted beyond retention period
-    //    (remaining comments cascade via onDelete: Cascade)
+    if (eligibleForums.length === 0) {
+      logger.info('No forums eligible for purge', {
+        cutoffDate: cutoffDate.toISOString(),
+        retentionDays: RETENTION_DAYS,
+      });
+      return NextResponse.json({
+        success: true,
+        message: 'No forums eligible for purge',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const forumIds = eligibleForums.map((f) => f.id);
+
+    // 2. Hard delete comments (foreign key: comment → post → forum)
+    const purgedComments = await prisma.forumComment.deleteMany({
+      where: { post: { forumId: { in: forumIds } } },
+    });
+
+    // 3. Hard delete posts
     const purgedPosts = await prisma.forumPost.deleteMany({
-      where: {
-        isDeleted: true,
-        deletedAt: { lt: cutoffDate },
-      },
+      where: { forumId: { in: forumIds } },
+    });
+
+    // 4. Hard delete the archived forums themselves
+    const purgedForums = await prisma.forum.deleteMany({
+      where: { id: { in: forumIds } },
     });
 
     logger.info('Forum content purge completed', {
+      forumsPurged: purgedForums.count,
       postsPurged: purgedPosts.count,
       commentsPurged: purgedComments.count,
       cutoffDate: cutoffDate.toISOString(),
+      retentionDays: RETENTION_DAYS,
     });
 
     return NextResponse.json({
@@ -72,6 +95,7 @@ export async function POST(request: NextRequest) {
       data: {
         retentionDays: RETENTION_DAYS,
         cutoffDate: cutoffDate.toISOString(),
+        forumsPurged: purgedForums.count,
         postsPurged: purgedPosts.count,
         commentsPurged: purgedComments.count,
       },

@@ -1,7 +1,8 @@
 /**
  * Forum Renewal Cron Job
  * Runs daily at 23:59 Australia/Brisbane time (13:59 UTC)
- * Deletes forum content, archives old forums, and creates new ones for the next day
+ * Archives active forums and creates new ones for the next day.
+ * Content lifecycle (soft-delete after X days) is handled by purge-forum-content cron.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -58,43 +59,7 @@ export async function POST(request: NextRequest) {
       select: { id: true, slug: true, name: true, description: true, topic: true },
     });
 
-    const forumIds = forumsToArchive.map((f) => f.id);
-
-    // 2. Soft delete all content from expiring forums (retained 30 days for legal/audit, then hard deleted)
-    if (forumIds.length > 0) {
-      const softDeleteTimestamp = new Date();
-
-      const softDeletedPosts = await prisma.forumPost.updateMany({
-        where: {
-          forumId: { in: forumIds },
-          isDeleted: false,
-        },
-        data: {
-          isDeleted: true,
-          deletedAt: softDeleteTimestamp,
-        },
-      });
-
-      const softDeletedComments = await prisma.forumComment.updateMany({
-        where: {
-          post: { forumId: { in: forumIds } },
-          isDeleted: false,
-        },
-        data: {
-          isDeleted: true,
-          deletedAt: softDeleteTimestamp,
-        },
-      });
-
-      logger.info('Soft-deleted forum content', {
-        forums: forumIds.length,
-        postsSoftDeleted: softDeletedPosts.count,
-        commentsSoftDeleted: softDeletedComments.count,
-        retentionDays: 30,
-      });
-    }
-
-    // 3. Archive old active forums
+    // 2. Archive old active forums
     const archivedResult = await prisma.forum.updateMany({
       where: {
         isActive: true,
@@ -107,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     logger.info('Archived old forums', { count: archivedResult.count });
 
-    // 4. Create new forums for tomorrow, carrying over custom names/descriptions
+    // 3. Create new forums for tomorrow, carrying over custom names/descriptions
     const previousDaily1 = forumsToArchive.find((f) => f.topic === ForumTopic.DAILY_1);
     const previousDaily2 = forumsToArchive.find((f) => f.topic === ForumTopic.DAILY_2);
 
@@ -150,9 +115,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        contentDeleted: forumIds.length > 0,
-        forumsCleanedUp: forumIds.length,
-        archived: archivedResult.count,
+        forumsArchived: archivedResult.count,
         created: [
           {
             id: forum1.id,
