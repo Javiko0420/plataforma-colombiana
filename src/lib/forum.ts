@@ -40,6 +40,7 @@ export interface ForumWithPosts {
   startDate: Date;
   endDate: Date;
   isActive: boolean;
+  isArchived?: boolean;
   postsCount: number;
 }
 
@@ -67,14 +68,8 @@ export interface PostWithAuthor {
  */
 export async function getActiveForums(): Promise<ForumWithPosts[]> {
   try {
-    const now = new Date();
-    
     const forums = await prisma.forum.findMany({
-      where: {
-        isActive: true,
-        startDate: { lte: now },
-        endDate: { gte: now },
-      },
+      where: { isActive: true },
       include: {
         _count: {
           select: { posts: true },
@@ -97,6 +92,45 @@ export async function getActiveForums(): Promise<ForumWithPosts[]> {
   } catch (error) {
     logger.error('Error fetching active forums', { error });
     // Re-throw the original error instead of a generic one for debugging
+    throw error;
+  }
+}
+
+/**
+ * Get recently archived forums within the retention window
+ */
+export async function getArchivedForums(limitDays = 7): Promise<ForumWithPosts[]> {
+  try {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - limitDays);
+
+    const forums = await prisma.forum.findMany({
+      where: {
+        isArchived: true,
+        endDate: { gte: cutoffDate },
+      },
+      include: {
+        _count: {
+          select: { posts: true },
+        },
+      },
+      orderBy: { endDate: 'desc' },
+    });
+
+    return forums.map((forum) => ({
+      id: forum.id,
+      name: forum.name,
+      description: forum.description,
+      slug: forum.slug,
+      topic: forum.topic,
+      startDate: forum.startDate,
+      endDate: forum.endDate,
+      isActive: forum.isActive,
+      isArchived: forum.isArchived,
+      postsCount: forum._count.posts,
+    }));
+  } catch (error) {
+    logger.error('Error fetching archived forums', { error });
     throw error;
   }
 }
