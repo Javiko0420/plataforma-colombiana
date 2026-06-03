@@ -148,10 +148,9 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role
         token.lastLogin = Date.now()
-
-        // Derive profile completion status from the database.
-        // This covers both credential users (always complete) and
-        // Google users (may need to complete DOB + legal acceptance).
+        if (account?.provider) {
+          token.provider = account.provider
+        }
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: { dateOfBirth: true, contractAcceptedAt: true }
@@ -199,8 +198,17 @@ export const authOptions: NextAuthOptions = {
           return false
         }
       }
-      // Apple verifies emails by default — always allow
+      // Apple verifies emails by default. For new users (no DOB or legal acceptance),
+      // redirect immediately to profile completion while the JWT cookie is already set.
       if (account?.provider === 'apple') {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { dateOfBirth: true, contractAcceptedAt: true },
+        })
+        const hasCompleted = !!(dbUser?.dateOfBirth && dbUser?.contractAcceptedAt)
+        if (!hasCompleted) {
+          return '/perfil/completar?callbackUrl=/'
+        }
         return true
       }
       return true

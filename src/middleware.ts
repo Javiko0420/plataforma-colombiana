@@ -10,6 +10,11 @@ export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
   const response = NextResponse.next()
 
+  // Auth routes pass through without any processing to prevent redirect loops
+  if (path.startsWith('/auth/') || path.startsWith('/api/auth/')) {
+    return NextResponse.next()
+  }
+
   // ── 1. Protección del Panel de Administración (/admin) ─────────────────
   if (path.startsWith('/admin')) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
