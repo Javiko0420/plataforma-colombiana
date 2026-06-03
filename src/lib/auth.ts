@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions = {
     AppleProvider({
       clientId: process.env.APPLE_SERVICE_ID ?? '',
       clientSecret: buildAppleClientSecret(),
+      checks: ['nonce'],
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -133,6 +134,26 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
+  cookies: {
+    pkceCodeVerifier: {
+      name: 'next-auth.pkce.code_verifier',
+      options: {
+        httpOnly: true,
+        sameSite: 'none' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+    state: {
+      name: 'next-auth.state',
+      options: {
+        httpOnly: true,
+        sameSite: 'none' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+  },
   session: {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 hours
