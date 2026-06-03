@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Calendar } from 'lucide-react'
 import { AccessibleInput } from '@/components/ui/accessible-input'
 import LegalContractModal from '@/components/ui/legal-contract-modal'
@@ -17,7 +17,6 @@ import { LtPageShell, LtPanel, LtButton } from '@/components/lt'
  */
 export default function CompleteProfileForm() {
   const { data: session, status, update } = useSession()
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   const callbackUrl = searchParams.get('callbackUrl') || '/perfil'
@@ -32,9 +31,10 @@ export default function CompleteProfileForm() {
 
   useEffect(() => {
     if (session?.user?.hasCompletedProfile) {
-      router.replace(callbackUrl)
+      // Navegación dura: garantiza que el middleware lea la cookie JWT actualizada
+      window.location.href = callbackUrl || '/'
     }
-  }, [session?.user?.hasCompletedProfile, router, callbackUrl])
+  }, [session?.user?.hasCompletedProfile, callbackUrl])
 
   if (status === 'loading') {
     return (
@@ -105,7 +105,8 @@ export default function CompleteProfileForm() {
       await update()
 
       setShowContractModal(false)
-      // La navegación la maneja el useEffect cuando hasCompletedProfile pasa a true
+      // Navegación dura: garantiza que el middleware lea la cookie JWT actualizada
+      window.location.href = callbackUrl || '/'
     } catch (err) {
       console.error('Profile completion error:', err)
       setError('Error del servidor. Intenta de nuevo.')
