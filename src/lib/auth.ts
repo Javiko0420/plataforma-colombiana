@@ -28,7 +28,18 @@ export const authOptions: NextAuthOptions = {
     AppleProvider({
       clientId: process.env.APPLE_SERVICE_ID ?? '',
       clientSecret: buildAppleClientSecret(),
-      checks: ['none'],
+      authorization: {
+        params: {
+          scope: 'name email',
+          response_mode: 'form_post',
+          response_type: 'code',
+        },
+      },
+      idToken: true,
+      checks: ['pkce'],
+      client: {
+        token_endpoint_auth_method: 'client_secret_post',
+      },
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -160,6 +171,34 @@ export const authOptions: NextAuthOptions = {
         sameSite: 'none' as const,
         path: '/',
         secure: true,
+      },
+    },
+    callbackUrl: {
+      name: 'next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'none' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+    csrfToken: {
+      name: 'next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'none' as const,
+        path: '/',
+        secure: true,
+      },
+    },
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'none' as const,
+        path: '/',
+        secure: true,
+        maxAge: 30 * 24 * 60 * 60,
       },
     },
   },
