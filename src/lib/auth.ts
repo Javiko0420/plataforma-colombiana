@@ -167,6 +167,11 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, trigger }) {
       // Initial sign-in: populate token with user data
       if (user) {
+        console.log('[AUTH jwt user]', {
+          userId: user?.id,
+          provider: account?.provider,
+          trigger,
+        })
         token.role = user.role
         token.lastLogin = Date.now()
         if (account?.provider) {
@@ -204,6 +209,10 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
+      console.log('[AUTH session]', {
+        sessionUserId: session?.user?.id,
+        tokenSub: token?.sub,
+      })
       if (token && session.user) {
         session.user.id = token.sub!
         session.user.role = token.role
@@ -212,6 +221,12 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async signIn({ user, account, profile }) {
+      console.log('[AUTH signIn]', {
+        provider: account?.provider,
+        userId: user?.id,
+        userEmail: user?.email,
+        accountProviderAccountId: account?.providerAccountId,
+      })
       // For Google: only allow if email is verified by Google
       if (account?.provider === 'google') {
         const googleProfile = profile as { email_verified?: boolean }
@@ -222,10 +237,15 @@ export const authOptions: NextAuthOptions = {
       // Apple verifies emails by default. For new users (no DOB or legal acceptance),
       // redirect immediately to profile completion while the JWT cookie is already set.
       if (account?.provider === 'apple') {
+        console.log('[AUTH apple user lookup]', {
+          userId: user?.id,
+          email: user?.email,
+        })
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
           select: { dateOfBirth: true, contractAcceptedAt: true },
         })
+        console.log('[AUTH apple dbUser]', { dbUser })
         const hasCompleted = !!(dbUser?.dateOfBirth && dbUser?.contractAcceptedAt)
         if (!hasCompleted) {
           return '/perfil/completar?callbackUrl=/'
