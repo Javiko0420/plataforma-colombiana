@@ -311,20 +311,34 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    error: '/auth/error',
+    error: '/auth/signin',
   },
   events: {
-    async signIn({ user, account, profile }) {
-      // Log successful sign in (both credentials and Google)
+    async signIn(message) {
+      console.log('[EVENT signIn]', JSON.stringify({
+        user: message.user?.email,
+        account: message.account?.provider,
+        isNewUser: message.isNewUser,
+      }))
       SecurityLogger.logAuthEvent({
         type: 'login',
-        userId: user.id,
-        email: user.email!,
+        userId: message.user.id,
+        email: message.user.email!,
         success: true
       })
     },
+    async createUser(message) {
+      console.log('[EVENT createUser]', JSON.stringify({
+        user: message.user?.email,
+        id: message.user?.id,
+      }))
+    },
+    async linkAccount(message) {
+      console.log('[EVENT linkAccount]', JSON.stringify({
+        provider: message.account?.provider,
+      }))
+    },
     async signOut({ session, token }) {
-      // Log sign out
       if (token?.sub) {
         SecurityLogger.logAuthEvent({
           type: 'logout',
@@ -334,5 +348,5 @@ export const authOptions: NextAuthOptions = {
       }
     }
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
 }
