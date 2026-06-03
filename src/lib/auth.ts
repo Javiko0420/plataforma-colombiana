@@ -173,34 +173,6 @@ export const authOptions: NextAuthOptions = {
         secure: true,
       },
     },
-    callbackUrl: {
-      name: 'next-auth.callback-url',
-      options: {
-        httpOnly: true,
-        sameSite: 'none' as const,
-        path: '/',
-        secure: true,
-      },
-    },
-    csrfToken: {
-      name: 'next-auth.csrf-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'none' as const,
-        path: '/',
-        secure: true,
-      },
-    },
-    sessionToken: {
-      name: 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'none' as const,
-        path: '/',
-        secure: true,
-        maxAge: 30 * 24 * 60 * 60,
-      },
-    },
   },
   session: {
     strategy: 'jwt',
