@@ -176,6 +176,12 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, trigger }) {
       // Initial sign-in: populate token with user data
       if (user) {
+        console.log('[JWT USER]', JSON.stringify({
+          userId: user?.id,
+          provider: account?.provider,
+          trigger,
+          hasCompletedProfile: token.hasCompletedProfile,
+        }))
         token.role = user.role
         token.lastLogin = Date.now()
         if (account?.provider) {
@@ -221,27 +227,41 @@ export const authOptions: NextAuthOptions = {
       return session
     },
     async signIn({ user, account, profile }) {
-      // For Google: only allow if email is verified by Google
-      if (account?.provider === 'google') {
-        const googleProfile = profile as { email_verified?: boolean }
-        if (!googleProfile?.email_verified) {
-          return false
+      console.log('[SIGNIN START]', JSON.stringify({
+        provider: account?.provider,
+        userId: user?.id,
+        userEmail: user?.email,
+        userName: user?.name,
+        accountProviderAccountId: account?.providerAccountId,
+        accountType: account?.type,
+      }))
+      try {
+        // For Google: only allow if email is verified by Google
+        if (account?.provider === 'google') {
+          const googleProfile = profile as { email_verified?: boolean }
+          if (!googleProfile?.email_verified) {
+            return false
+          }
         }
-      }
-      // Apple verifies emails by default. For new users (no DOB or legal acceptance),
-      // redirect immediately to profile completion while the JWT cookie is already set.
-      if (account?.provider === 'apple') {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { dateOfBirth: true, contractAcceptedAt: true },
-        })
-        const hasCompleted = !!(dbUser?.dateOfBirth && dbUser?.contractAcceptedAt)
-        if (!hasCompleted) {
-          return '/perfil/completar?callbackUrl=/'
+        // Apple verifies emails by default. For new users (no DOB or legal acceptance),
+        // redirect immediately to profile completion while the JWT cookie is already set.
+        if (account?.provider === 'apple') {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { dateOfBirth: true, contractAcceptedAt: true },
+          })
+          const hasCompleted = !!(dbUser?.dateOfBirth && dbUser?.contractAcceptedAt)
+          if (!hasCompleted) {
+            return '/perfil/completar?callbackUrl=/'
+          }
+          return true
         }
+        console.log('[SIGNIN END] returning true')
         return true
+      } catch (error) {
+        console.error('[SIGNIN ERROR]', error)
+        return false
       }
-      return true
     },
     async redirect({ url, baseUrl }) {
       // Ensure redirects are safe
