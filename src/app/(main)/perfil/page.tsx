@@ -20,100 +20,103 @@ export default async function ProfilePage() {
     redirect('/auth/signin?callbackUrl=/perfil')
   }
 
-  // Fetch user data WITH businesses
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      nickname: true,
-      role: true,
-      reputation: true,
-      image: true,
-      createdAt: true,
-      lastLoginAt: true,
-      // Relación nueva: Negocios
-      businesses: {
-        where: { isActive: true },
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          category: true,
-          city: true,
-          isVerified: true,
-          images: true,  // 👈 Agregado para mostrar miniatura
-          createdAt: true,
-        }
-      },
-      _count: {
-        select: {
-          forumPosts: true,
-          forumComments: true,
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        nickname: true,
+        role: true,
+        reputation: true,
+        image: true,
+        createdAt: true,
+        lastLoginAt: true,
+        businesses: {
+          where: { isActive: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            category: true,
+            city: true,
+            isVerified: true,
+            images: true,
+            createdAt: true,
+          }
+        },
+        _count: {
+          select: {
+            forumPosts: true,
+            forumComments: true,
+          },
         },
       },
-    },
-  })
+    })
 
-  if (!user) {
-    redirect('/auth/signin')
+    if (!user) {
+      redirect('/auth/signin')
+    }
+
+    const recentPosts = await prisma.forumPost.findMany({
+      where: { authorId: user.id, isDeleted: false },
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, content: true, createdAt: true, likesCount: true,
+        forum: { select: { name: true, slug: true } },
+      },
+    })
+
+    const recentComments = await prisma.forumComment.findMany({
+      where: { authorId: user.id, isDeleted: false },
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true, content: true, createdAt: true, likesCount: true,
+        post: { select: { id: true, forum: { select: { name: true, slug: true } } } },
+      },
+    })
+
+    const totalLikes = recentPosts.reduce((s, p) => s + p.likesCount, 0) +
+                       recentComments.reduce((s, c) => s + c.likesCount, 0)
+
+    const [userJobsResult, hasAcceptedTerms, hasAcceptedEventTerms] = await Promise.all([
+      getUserJobOffers(),
+      hasAcceptedJobPostingTerms(),
+      hasAcceptedEventPostingTerms(),
+    ])
+    const userJobs = userJobsResult.data || []
+
+    const userEvents = await prisma.event.findMany({
+      where: { userId: session.user.id },
+      orderBy: { eventDate: 'desc' },
+    })
+
+    return (
+      <ProfileClient
+        user={{
+          ...user,
+          businesses: user.businesses || [],
+          postsCount: user._count.forumPosts,
+          commentsCount: user._count.forumComments,
+          totalLikes,
+        }}
+        recentPosts={recentPosts}
+        recentComments={recentComments}
+        userJobs={userJobs}
+        userEvents={userEvents}
+        hasAcceptedJobPostingTerms={hasAcceptedTerms}
+        hasAcceptedEventPostingTerms={hasAcceptedEventTerms}
+      />
+    )
+  } catch (error) {
+    console.error('[PERFIL PAGE ERROR]', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    })
+    throw error
   }
-
-  // Fetch recent activity (sin cambios aquí)
-  const recentPosts = await prisma.forumPost.findMany({
-    where: { authorId: user.id, isDeleted: false },
-    take: 5,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true, content: true, createdAt: true, likesCount: true,
-      forum: { select: { name: true, slug: true } },
-    },
-  })
-
-  const recentComments = await prisma.forumComment.findMany({
-    where: { authorId: user.id, isDeleted: false },
-    take: 5,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true, content: true, createdAt: true, likesCount: true,
-      post: { select: { id: true, forum: { select: { name: true, slug: true } } } },
-    },
-  })
-
-  const totalLikes = recentPosts.reduce((s, p) => s + p.likesCount, 0) + 
-                     recentComments.reduce((s, c) => s + c.likesCount, 0)
-
-  // Obtener los empleos publicados por el usuario
-  const [userJobsResult, hasAcceptedTerms, hasAcceptedEventTerms] = await Promise.all([
-    getUserJobOffers(),
-    hasAcceptedJobPostingTerms(),
-    hasAcceptedEventPostingTerms(),
-  ])
-  const userJobs = userJobsResult.data || []
-
-  // Obtener los eventos publicados por el usuario
-  const userEvents = await prisma.event.findMany({
-    where: { userId: session.user.id },
-    orderBy: { eventDate: 'desc' },
-  })
-
-  return (
-    <ProfileClient
-      user={{
-        ...user,
-        // @ts-ignore - Prisma types a veces son estrictos con nulls, esto es seguro
-        businesses: user.businesses || [],
-        postsCount: user._count.forumPosts,
-        commentsCount: user._count.forumComments,
-        totalLikes,
-      }}
-      recentPosts={recentPosts}
-      recentComments={recentComments}
-      userJobs={userJobs}
-      userEvents={userEvents}
-      hasAcceptedJobPostingTerms={hasAcceptedTerms}
-      hasAcceptedEventPostingTerms={hasAcceptedEventTerms}
-    />
-  )
 }
