@@ -2,15 +2,33 @@ import { NextAuthOptions } from 'next-auth'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
+import AppleProvider from 'next-auth/providers/apple'
+import jwt from 'jsonwebtoken'
 import { prisma } from './prisma'
 import { PasswordSecurity } from './password-security'
 import { SecurityUtils } from './security'
 import { SecurityLogger } from './logger'
 import { userLoginSchema } from './validations'
 
+function buildAppleClientSecret(): string {
+  const privateKey = (process.env.APPLE_PRIVATE_KEY ?? '').replace(/\\n/g, '\n')
+  return jwt.sign({}, privateKey, {
+    algorithm: 'ES256',
+    expiresIn: '180d',
+    audience: 'https://appleid.apple.com',
+    issuer: process.env.APPLE_TEAM_ID ?? '',
+    subject: process.env.APPLE_SERVICE_ID ?? '',
+    keyid: process.env.APPLE_KEY_ID ?? '',
+  })
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    AppleProvider({
+      clientId: process.env.APPLE_SERVICE_ID ?? '',
+      clientSecret: buildAppleClientSecret(),
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -180,6 +198,10 @@ export const authOptions: NextAuthOptions = {
         if (!googleProfile?.email_verified) {
           return false
         }
+      }
+      // Apple verifies emails by default — always allow
+      if (account?.provider === 'apple') {
+        return true
       }
       return true
     },

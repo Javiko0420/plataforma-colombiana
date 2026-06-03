@@ -7,6 +7,7 @@ import { useTranslations } from '@/components/providers/language-provider'
 import { AccessibleInput } from './accessible-input'
 import { Eye, EyeOff, UserPlus, CheckCircle, Calendar } from 'lucide-react'
 import { GoogleSignInButton } from './google-sign-in-button'
+import { AppleSignInButton } from './apple-sign-in-button'
 import LegalContractModal from './legal-contract-modal'
 import { LEGAL_VERSIONS, calculateAge } from '@/lib/legal'
 import { LtPanel, LtButton } from '@/components/lt'
@@ -224,6 +225,11 @@ export default function RegisterForm({ callbackUrl, className = '' }: RegisterFo
           </p>
         </div>
 
+        <AppleSignInButton
+          callbackUrl={callbackUrl}
+          label="Registrarse con Apple"
+        />
+        <div className="mt-3" />
         <GoogleSignInButton
           callbackUrl={callbackUrl}
           label="Registrarse con Google"

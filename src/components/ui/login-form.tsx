@@ -8,6 +8,7 @@ import { useTranslations } from '@/components/providers/language-provider'
 import { AccessibleInput } from './accessible-input'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { GoogleSignInButton } from './google-sign-in-button'
+import { AppleSignInButton } from './apple-sign-in-button'
 import { LtPanel, LtButton } from '@/components/lt'
 
 interface LoginFormProps {
@@ -78,6 +79,8 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
           </p>
         </div>
 
+        <AppleSignInButton callbackUrl={callbackUrl} />
+        <div className="mt-3" />
         <GoogleSignInButton callbackUrl={callbackUrl} />
 
         <div className="relative my-6">
