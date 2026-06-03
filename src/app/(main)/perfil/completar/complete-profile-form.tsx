@@ -22,6 +22,7 @@ export default function CompleteProfileForm() {
 
   const callbackUrl = searchParams.get('callbackUrl') || '/perfil'
 
+  const [name, setName] = useState(session?.user?.name || '')
   const [dateOfBirth, setDateOfBirth] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [fieldError, setFieldError] = useState<string | null>(null)
@@ -31,7 +32,7 @@ export default function CompleteProfileForm() {
 
   useEffect(() => {
     if (session?.user?.hasCompletedProfile) {
-      router.push(callbackUrl)
+      router.replace(callbackUrl)
     }
   }, [session?.user?.hasCompletedProfile, router, callbackUrl])
 
@@ -46,13 +47,24 @@ export default function CompleteProfileForm() {
   }
 
   if (session?.user?.hasCompletedProfile) {
-    return null
+    return (
+      <LtPageShell maxWidth="md" className="flex items-center justify-center">
+        <div className="animate-pulse" style={{ color: 'var(--lt-ink-soft)' }}>
+          Redirigiendo...
+        </div>
+      </LtPageShell>
+    )
   }
 
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setFieldError(null)
+
+    if (!name.trim()) {
+      setFieldError('El nombre completo es requerido')
+      return
+    }
 
     const dobError = validateDateOfBirth(dateOfBirth)
     if (dobError) {
@@ -73,6 +85,7 @@ export default function CompleteProfileForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: name.trim(),
           dateOfBirth,
           contractAcceptedAt: new Date().toISOString(),
           contractVersion: LEGAL_VERSIONS.contract,
@@ -92,8 +105,7 @@ export default function CompleteProfileForm() {
       await update()
 
       setShowContractModal(false)
-      router.push(callbackUrl)
-      router.refresh()
+      // La navegación la maneja el useEffect cuando hasCompletedProfile pasa a true
     } catch (err) {
       console.error('Profile completion error:', err)
       setError('Error del servidor. Intenta de nuevo.')
@@ -147,6 +159,29 @@ export default function CompleteProfileForm() {
         )}
 
         <form onSubmit={handleInitialSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="name" className="lt-label">
+              Nombre Completo *
+            </label>
+            <AccessibleInput
+              id="name"
+              name="name"
+              type="text"
+              label="Nombre Completo"
+              showLabel={false}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value)
+                if (fieldError) setFieldError(null)
+              }}
+              required
+              autoComplete="name"
+              disabled={isLoading}
+              className="lt-input"
+              placeholder="Tu nombre completo"
+            />
+          </div>
+
           <div>
             <label htmlFor="dateOfBirth" className="lt-label">
               Fecha de Nacimiento

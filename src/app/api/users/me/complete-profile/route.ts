@@ -15,6 +15,7 @@ import { z } from 'zod'
 import { calculateAge, MIN_AGE, MAX_AGE } from '@/lib/legal'
 
 const completeProfileSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido').trim(),
   dateOfBirth: z.string().refine((dateString) => {
     const date = new Date(dateString)
     if (isNaN(date.getTime())) return false
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
       await tx.user.update({
         where: { id: session.user.id },
         data: {
+          name: validatedData.name,
           dateOfBirth: new Date(validatedData.dateOfBirth),
           contractAcceptedAt: new Date(validatedData.contractAcceptedAt),
           contractVersion: validatedData.contractVersion,
