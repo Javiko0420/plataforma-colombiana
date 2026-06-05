@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       })
     })
 
-    logger.info('User profile completed (Google OAuth onboarding)', {
+    logger.info('User profile completed (OAuth onboarding)', {
       userId: session.user.id,
       email: session.user.email,
     })

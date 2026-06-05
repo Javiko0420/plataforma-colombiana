@@ -187,12 +187,6 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, trigger }) {
       // Initial sign-in: populate token with user data
       if (user) {
-        console.log('[JWT USER]', JSON.stringify({
-          userId: user?.id,
-          provider: account?.provider,
-          trigger,
-          hasCompletedProfile: token.hasCompletedProfile,
-        }))
         token.role = user.role
         token.lastLogin = Date.now()
         if (account?.provider) {
@@ -239,12 +233,6 @@ export const authOptions: NextAuthOptions = {
     },
     async signIn({ user, account, profile }) {
       try {
-        console.log('[SIGNIN START]', JSON.stringify({
-          provider: account?.provider,
-          userId: user?.id,
-          userEmail: user?.email,
-        }))
-
         if (account?.provider === 'google') {
           const googleProfile = profile as { email_verified?: boolean }
           if (!googleProfile?.email_verified) {
@@ -254,7 +242,6 @@ export const authOptions: NextAuthOptions = {
 
         return true
       } catch (error) {
-        console.error('[SIGNIN ERROR]', error)
         return false
       }
     },
@@ -270,31 +257,7 @@ export const authOptions: NextAuthOptions = {
     error: '/auth/signin',
   },
   events: {
-    async signIn(message) {
-      console.log('[EVENT signIn]', JSON.stringify({
-        user: message.user?.email,
-        account: message.account?.provider,
-        isNewUser: message.isNewUser,
-      }))
-      SecurityLogger.logAuthEvent({
-        type: 'login',
-        userId: message.user.id,
-        email: message.user.email!,
-        success: true
-      })
-    },
-    async createUser(message) {
-      console.log('[EVENT createUser]', JSON.stringify({
-        user: message.user?.email,
-        id: message.user?.id,
-      }))
-    },
-    async linkAccount(message) {
-      console.log('[EVENT linkAccount]', JSON.stringify({
-        provider: message.account?.provider,
-      }))
-    },
-    async signOut({ session, token }) {
+    async signOut({ token }) {
       if (token?.sub) {
         SecurityLogger.logAuthEvent({
           type: 'logout',
@@ -304,5 +267,4 @@ export const authOptions: NextAuthOptions = {
       }
     }
   },
-  debug: true,
 }
