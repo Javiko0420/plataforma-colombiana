@@ -1,17 +1,24 @@
 "use client"
 
 import Link from 'next/link'
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react'
+import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react'
 import { useTranslations } from '@/components/providers/language-provider'
 import { SunMotif } from '@/components/lt/SunMotif'
 import { Squiggle } from '@/components/lt/Squiggle'
 
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z" />
+    </svg>
+  )
+}
+
 const SOCIAL_LINKS = [
-  { icon: Facebook,  href: '#', label: 'Facebook',  rotate: -2 },
-  { icon: Instagram, href: '#', label: 'Instagram', rotate: 1.5 },
-  { icon: Twitter,   href: '#', label: 'Twitter / X', rotate: -1 },
-  { icon: Youtube,   href: '#', label: 'YouTube',   rotate: 2 },
-  { icon: Mail,      href: 'mailto:privacy@latinterritory.com', label: 'Correo', rotate: -1.5 },
+  { icon: Facebook,  href: 'https://www.facebook.com/profile.php?id=61590612274534', label: 'Facebook',  rotate: -2,   custom: false },
+  { icon: Instagram, href: 'https://www.instagram.com/latinterritory/',              label: 'Instagram', rotate: 1.5,  custom: false },
+  { icon: TikTokIcon, href: 'https://www.tiktok.com/@latin.territory',               label: 'TikTok',   rotate: -1,   custom: true  },
+  { icon: Mail,      href: 'mailto:privacy@latinterritory.com',                      label: 'Correo',   rotate: -1.5, custom: false },
 ]
 
 function FooterColumnTitle({ children }: { children: React.ReactNode }) {

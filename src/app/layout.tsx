@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/components/providers/language-provider";
 import { AudioProvider } from "@/components/providers/audio-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { AppDownloadBanner } from "@/components/AppDownloadBanner";
 import { getServerLocale } from '@/lib/i18n-server'
 
 const inter = Inter({
@@ -37,6 +38,8 @@ export default async function RootLayout({
   return (
     <html lang={lang} suppressHydrationWarning>
       <head>
+        {/* Apple Smart Banner — native iOS prompt */}
+        <meta name="apple-itunes-app" content="app-id=6775073125" />
         {/* Google Fonts — dirección visual "Sol" */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -89,6 +92,7 @@ export default async function RootLayout({
               <AudioProvider>
                 {children}
               </AudioProvider>
+              <AppDownloadBanner />
             </LanguageProvider>
           </ThemeProvider>
         </SessionProvider>
