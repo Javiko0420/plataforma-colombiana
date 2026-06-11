@@ -12,7 +12,8 @@
     "db:generate": "npx prisma generate",
     "db:studio": "npx prisma studio",
     "db:reset": "npx prisma migrate reset",
-    "forums:init": "npx tsx scripts/init-forums.ts"
+    "forums:init": "npx tsx scripts/init-forums.ts",
+    "db:normalize-categories": "npx tsx --env-file=.env.local scripts/normalize-categories.ts"
   },
   "dependencies": {
     "@formspree/react": "^3.0.0",

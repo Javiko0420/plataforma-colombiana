@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from '@/lib/prisma'
+import { BUSINESS_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 import {
   MapPin, Globe, Phone, Mail, MessageCircle,
   CheckCircle2, ArrowLeft, ImageIcon, Edit, Star,
@@ -88,7 +89,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
             className="text-5xl md:text-8xl font-black uppercase tracking-tighter select-none truncate max-w-4xl px-4 opacity-[0.07]"
             style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
           >
-            {business.category}
+            {categoryLabel(BUSINESS_CATEGORIES, business.category)}
           </span>
         </div>
 
@@ -130,7 +131,7 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
                 <div>
                   <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <LtBadge tone="terracota" rotate={-1}>{business.category}</LtBadge>
+                    <LtBadge tone="terracota" rotate={-1}>{categoryLabel(BUSINESS_CATEGORIES, business.category)}</LtBadge>
                     {business.isVerified && (
                       <LtBadge tone="verde" rotate={1}>
                         <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Verificado

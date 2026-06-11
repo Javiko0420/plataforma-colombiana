@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { businessCategoryValues } from "@/lib/constants/categories";
 
 export const businessSchema = z.object({
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres").max(50),
   description: z.string().min(10, "Cuéntanos un poco más sobre tu negocio (mínimo 10 caracteres)").max(500),
-  category: z.string().min(1, "Selecciona una categoría"),
+  // Validamos contra la fuente de verdad única de categorías (clave estable).
+  category: z.enum(businessCategoryValues as [string, ...string[]], { error: "Selecciona una categoría" }),
   
   email: z.string().email("Ingresa un correo válido"),
   phone: z

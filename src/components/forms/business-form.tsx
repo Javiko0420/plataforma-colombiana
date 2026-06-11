@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { businessSchema, BusinessFormValues } from "@/lib/validations/business";
+import { BUSINESS_CATEGORIES } from "@/lib/constants/categories";
 import { useRouter } from "next/navigation";
 import { Building2, MapPin } from "lucide-react";
 import ImageUpload from "@/components/ui/image-upload";
@@ -28,7 +29,6 @@ export default function BusinessForm({ initialData }: BusinessFormProps) {
     defaultValues: initialData || {
       name: "",
       description: "",
-      category: "",
       city: "Sydney",
       website: "",
       instagram: "",
@@ -117,13 +117,9 @@ export default function BusinessForm({ initialData }: BusinessFormProps) {
               <label htmlFor="category" className="lt-label">Categoría</label>
               <select id="category" {...form.register("category")} className="lt-input">
                 <option value="">Selecciona una...</option>
-                <option value="Gastronomía">Gastronomía</option>
-                <option value="Servicios">Servicios</option>
-                <option value="Salud">Salud</option>
-                <option value="Construcción">Construcción</option>
-                <option value="Educación">Educación</option>
-                <option value="Tecnología">Tecnología</option>
-                <option value="Otros">Otros</option>
+                {BUSINESS_CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
               </select>
               {form.formState.errors.category && (
                 <p className="text-xs" style={{ color: 'var(--lt-accent)' }}>{form.formState.errors.category.message}</p>

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from '@/components/providers/language-provider'
+import { BUSINESS_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 import { 
   Briefcase,
   Building2, 
@@ -427,7 +428,7 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
                             </h3>
                           </Link>
                           <p className="text-sm font-medium mt-1" style={{ color: 'var(--lt-terracota)' }}>
-                            {business.category}
+                            {categoryLabel(BUSINESS_CATEGORIES, business.category)}
                           </p>
                           <div className="flex items-center gap-1.5 text-xs mt-2" style={{ color: 'var(--lt-ink-soft)' }}>
                             <MapPin className="h-3 w-3" aria-hidden="true" />

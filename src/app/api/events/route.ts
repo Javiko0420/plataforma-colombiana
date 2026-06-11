@@ -8,8 +8,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 import { getAuthUserId } from '@/lib/get-auth-user'
+import { EVENT_CATEGORIES, eventCategoryValues, isValidCategory } from '@/lib/constants/categories'
 
-const VALID_CATEGORIES = ['Concierto', 'Teatro', 'Comedia', 'Fiesta', 'Deportes', 'Cultural', 'Networking', 'Otro']
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
 
 export const dynamic = 'force-dynamic'
@@ -130,9 +130,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar categoría
-    if (!VALID_CATEGORIES.includes(category)) {
+    if (!isValidCategory(EVENT_CATEGORIES, category)) {
       return NextResponse.json(
-        { success: false, error: `Categoría inválida. Opciones válidas: ${VALID_CATEGORIES.join(', ')}.` },
+        { success: false, error: `Categoría inválida. Opciones válidas: ${eventCategoryValues.join(', ')}.` },
         { status: 400 }
       )
     }

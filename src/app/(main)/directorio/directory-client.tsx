@@ -10,6 +10,7 @@ import { LtButton } from '@/components/lt/Button'
 import { HandDrawnBox } from '@/components/lt/HandDrawnBox'
 import { SunMotif } from '@/components/lt/SunMotif'
 import { cn } from '@/lib/utils'
+import { BUSINESS_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 
 interface Business {
   id: string
@@ -31,11 +32,6 @@ interface Business {
 interface DirectoryClientProps {
   initialBusinesses: Business[]
 }
-
-const categories = [
-  'Gastronomía', 'Servicios', 'Salud', 'Construcción',
-  'Educación', 'Tecnología', 'Artesanías', 'Otros'
-]
 
 const cities = [
   'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Canberra'
@@ -96,7 +92,7 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
               style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las categorías</option>
-              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              {BUSINESS_CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
             </select>
 
             <label htmlFor="dir-city" className="sr-only">Ciudad</label>
@@ -139,7 +135,7 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
               style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las categorías</option>
-              {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              {BUSINESS_CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
             </select>
             <label htmlFor="dir-city-m" className="sr-only">Ciudad</label>
             <select
@@ -161,8 +157,8 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
             <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>Filtrando por:</span>
             {selectedCategory && (
               <LtBadge tone="terracota" rotate={-1}>
-                {selectedCategory}
-                <button onClick={() => setSelectedCategory('')} aria-label={`Quitar filtro ${selectedCategory}`} className="ml-1">
+                {categoryLabel(BUSINESS_CATEGORIES, selectedCategory)}
+                <button onClick={() => setSelectedCategory('')} aria-label={`Quitar filtro ${categoryLabel(BUSINESS_CATEGORIES, selectedCategory)}`} className="ml-1">
                   <X className="h-3 w-3" />
                 </button>
               </LtBadge>
@@ -236,7 +232,7 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
 
                 {/* Badge categoría */}
                 <div className="absolute bottom-3 left-3 z-10">
-                  <LtBadge tone="paper" rotate={1}>{business.category}</LtBadge>
+                  <LtBadge tone="paper" rotate={1}>{categoryLabel(BUSINESS_CATEGORIES, business.category)}</LtBadge>
                 </div>
               </div>
 

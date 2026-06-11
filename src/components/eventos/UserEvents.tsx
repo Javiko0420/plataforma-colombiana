@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 import {
   CalendarDays,
   Trash2,
@@ -100,7 +101,7 @@ export default function UserEvents({
 
             <p className="text-sm mb-4 line-clamp-2 flex-grow" style={{ color: 'var(--lt-ink-soft)' }}>
               <MapPin className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />
-              {evt.location} · {evt.category}
+              {evt.location} · {categoryLabel(EVENT_CATEGORIES, evt.category)}
             </p>
 
             <div className="pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 mt-auto flex justify-end gap-2">

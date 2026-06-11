@@ -2,6 +2,7 @@ import { JobOffer } from '@prisma/client';
 import Link from 'next/link';
 import { Clock, DollarSign, MapPin, Briefcase } from 'lucide-react';
 import { LtBadge } from '@/components/lt/Badge';
+import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories';
 
 const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1];
 
@@ -46,7 +47,7 @@ export default function JobCard({ job, index = 0 }: { job: JobOffer; index?: num
         <div className="p-5 flex flex-col flex-1 gap-3">
           {/* Badges de metadatos */}
           <div className="flex flex-wrap gap-1.5">
-            <LtBadge tone="terracota" rotate={-1}>{job.category}</LtBadge>
+            <LtBadge tone="terracota" rotate={-1}>{categoryLabel(JOB_CATEGORIES, job.category)}</LtBadge>
             <LtBadge tone="neutral" rotate={0.8}>{job.jobType}</LtBadge>
             <LtBadge tone="neutral" rotate={-0.5}>
               <MapPin className="w-3 h-3" aria-hidden="true" />

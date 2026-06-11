@@ -6,6 +6,7 @@ import { Briefcase, Trash2, PlusCircle, Edit } from 'lucide-react';
 import { deleteUserJobOffer } from '@/app/actions/jobActions';
 import { JobOffer } from '@prisma/client';
 import { LtEmptyState, LtPanel, LtButton, LtBadge } from '@/components/lt';
+import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories';
 
 export default function UserJobOffers({
   initialJobs,
@@ -82,7 +83,7 @@ export default function UserJobOffers({
             </div>
             
             <p className="text-sm mb-4 line-clamp-2 flex-grow" style={{ color: 'var(--lt-ink-soft)' }}>
-              {job.category} • {job.location}
+              {categoryLabel(JOB_CATEGORIES, job.category)} • {job.location}
             </p>
 
             <div className="pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 mt-auto flex justify-end gap-2">

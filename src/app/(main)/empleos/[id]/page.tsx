@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories';
 import { Briefcase, MapPin, Clock, Calendar, DollarSign, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import JobDetailActions from '@/components/jobs/JobDetailActions';
@@ -102,7 +103,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               <div className="flex flex-wrap gap-2 mb-8">
                 <LtBadge tone="terracota" rotate={-1}>
                   <Briefcase className="w-3 h-3" aria-hidden="true" />
-                  {job.category}
+                  {categoryLabel(JOB_CATEGORIES, job.category)}
                 </LtBadge>
                 <LtBadge tone="neutral" rotate={0.8}>
                   <MapPin className="w-3 h-3" aria-hidden="true" />

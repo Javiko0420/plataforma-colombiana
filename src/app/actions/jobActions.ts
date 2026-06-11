@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { JOB_CATEGORIES, isValidCategory } from "@/lib/constants/categories";
 
 const URL_SHORTENER_REGEX = /^(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i;
 
@@ -45,7 +46,12 @@ export async function createJobOffer(data: JobOfferInput) {
     return { error: "Por seguridad de la comunidad, no se permiten acortadores de URL en los enlaces externos." };
   }
 
-  // 4. Calcular fechas de expiración (15 días exactos)
+  // 5. Validación de categoría contra la fuente de verdad
+  if (!isValidCategory(JOB_CATEGORIES, data.category)) {
+    return { error: "Categoría inválida." };
+  }
+
+  // 6. Calcular fechas de expiración (15 días exactos)
   const createdAt = new Date();
   const expiresAt = new Date(createdAt.getTime() + 15 * 24 * 60 * 60 * 1000);
 
@@ -198,6 +204,11 @@ export async function updateUserJobOffer(jobId: string, data: JobOfferInput) {
   // Validación de acortadores de URL
   if (data.externalLink && URL_SHORTENER_REGEX.test(data.externalLink)) {
     return { error: "Por seguridad de la comunidad, no se permiten acortadores de URL en los enlaces externos." };
+  }
+
+  // Validación de categoría contra la fuente de verdad
+  if (!isValidCategory(JOB_CATEGORIES, data.category)) {
+    return { error: "Categoría inválida." };
   }
 
   const userRole = (session.user as { role?: string }).role ?? 'USER';

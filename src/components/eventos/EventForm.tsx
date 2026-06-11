@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { AlertCircle, ImagePlus, Trash } from 'lucide-react'
 import { createEvent, updateEvent } from '@/app/(main)/eventos/actions'
 import { LtButton, LtPanel } from '@/components/lt'
+import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
 
@@ -158,15 +159,9 @@ export default function EventForm({
               className="lt-input appearance-none cursor-pointer"
             >
               <option value="" disabled>Selecciona una categoría</option>
-              <option value="Concierto">Concierto</option>
-              <option value="Teatro">Teatro</option>
-              <option value="Comedia">Comedia</option>
-              <option value="Fiesta">Fiesta</option>
-              <option value="Festival">Festival</option>
-              <option value="Deportes">Deportes</option>
-              <option value="Cultural">Cultural</option>
-              <option value="Networking">Networking</option>
-              <option value="Otro">Otro</option>
+              {EVENT_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
             </select>
           </div>
         </div>

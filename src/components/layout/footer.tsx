@@ -173,12 +173,12 @@ export function Footer() {
             <FooterColumnTitle>{t('footer.categories')}</FooterColumnTitle>
             <ul className="space-y-2">
               {[
-                { href: '/directorio?categoria=Gastronomía', label: t('footer.category.gastronomy') },
-                { href: '/directorio?categoria=Tecnología',  label: t('footer.category.technology') },
-                { href: '/directorio?categoria=Artesanías',  label: t('footer.category.handicrafts') },
-                { href: '/directorio',                       label: t('footer.category.fashion') },
-                { href: '/directorio?categoria=Servicios',   label: 'Servicios Profesionales' },
-                { href: '/directorio?categoria=Educación',   label: 'Educación' },
+                { href: '/directorio?categoria=GASTRONOMIA', label: t('footer.category.gastronomy') },
+                { href: '/directorio?categoria=TECNOLOGIA',  label: t('footer.category.technology') },
+                { href: '/directorio?categoria=ARTESANIAS',  label: t('footer.category.handicrafts') },
+                { href: '/directorio?categoria=MODA',        label: t('footer.category.fashion') },
+                { href: '/directorio?categoria=SERVICIOS',   label: 'Servicios Profesionales' },
+                { href: '/directorio?categoria=EDUCACION',   label: 'Educación' },
               ].map(({ href, label }) => (
                 <li key={href + label}>
                   <Link

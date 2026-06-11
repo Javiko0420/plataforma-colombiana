@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { LtPanel, LtBadge, LtButton } from '@/components/lt'
+import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 
 type AdminEvent = {
   id: string
@@ -94,7 +95,7 @@ export default function EventsAdminTable({
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs text-[var(--lt-ink-soft)]">
-                        {evt.category}
+                        {categoryLabel(EVENT_CATEGORIES, evt.category)}
                       </span>
                       <span className="text-xs text-[var(--lt-ink-soft)] opacity-50">·</span>
                       <span className="text-xs text-[var(--lt-ink-soft)]">

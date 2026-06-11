@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { EVENT_CATEGORIES, isValidCategory } from '@/lib/constants/categories'
 
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
 
@@ -68,6 +69,10 @@ export async function createEvent(data: {
     return { success: false, error: 'La descripción no puede contener enlaces acortados (bit.ly, tinyurl, t.co, etc.).' }
   }
 
+  if (!isValidCategory(EVENT_CATEGORIES, data.category)) {
+    return { success: false, error: 'Categoría inválida.' }
+  }
+
   try {
     const event = await prisma.event.create({
       data: {
@@ -110,6 +115,10 @@ export async function updateEvent(
 
   if (data.description && URL_SHORTENER_REGEX.test(data.description)) {
     return { success: false, error: 'La descripción no puede contener enlaces acortados (bit.ly, tinyurl, t.co, etc.).' }
+  }
+
+  if (data.category !== undefined && !isValidCategory(EVENT_CATEGORIES, data.category)) {
+    return { success: false, error: 'Categoría inválida.' }
   }
 
   try {

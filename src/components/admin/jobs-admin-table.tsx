@@ -5,6 +5,7 @@ import {
   adminDeleteJobOffer,
   clearJobReports,
 } from '@/app/(main)/admin/empleos/actions'
+import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 import {
   Trash2,
   ShieldCheck,
@@ -102,7 +103,7 @@ export default function JobsAdminTable({ jobs }: { jobs: AdminJobOffer[] }) {
                     </Link>
                   </div>
                   <div className="text-xs text-[var(--lt-ink-soft)]">
-                    {job.category}
+                    {categoryLabel(JOB_CATEGORIES, job.category)}
                   </div>
                 </td>
 

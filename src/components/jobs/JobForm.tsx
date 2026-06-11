@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createJobOffer, updateUserJobOffer, JobOfferInput } from '@/app/actions/jobActions';
+import { JOB_CATEGORIES } from '@/lib/constants/categories';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { LtButton, LtPanel } from '@/components/lt';
@@ -98,11 +99,9 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
             <label htmlFor="category" className="lt-label">Categoría</label>
             <select id="category" name="category" required defaultValue={initialData?.category || ''} className="lt-input appearance-none cursor-pointer">
               <option value="" disabled>Selecciona una categoría</option>
-              <option value="Tecnología">Tecnología</option>
-              <option value="Hostelería">Hostelería</option>
-              <option value="Construcción">Construcción</option>
-              <option value="Ventas">Ventas</option>
-              <option value="Marketing">Marketing</option>
+              {JOB_CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
             </select>
           </div>
         </div>

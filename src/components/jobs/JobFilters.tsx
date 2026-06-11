@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTransition, useState, useEffect, useCallback } from 'react';
 import { Search, MapPin, Briefcase } from 'lucide-react';
+import { JOB_CATEGORIES } from '@/lib/constants/categories';
 
 export default function JobFilters() {
   const router = useRouter();
@@ -81,11 +82,9 @@ export default function JobFilters() {
           style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
         >
           <option value="">Todas las áreas</option>
-          <option value="Tecnología">Tecnología</option>
-          <option value="Hostelería">Hostelería</option>
-          <option value="Construcción">Construcción</option>
-          <option value="Ventas">Ventas</option>
-          <option value="Marketing">Marketing</option>
+          {JOB_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
         </select>
       </div>
 

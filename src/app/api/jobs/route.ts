@@ -8,8 +8,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 import { getAuthUserId } from '@/lib/get-auth-user'
+import { JOB_CATEGORIES, jobCategoryValues, isValidCategory } from '@/lib/constants/categories'
 
-const VALID_CATEGORIES = ['Tecnología', 'Hostelería', 'Construcción', 'Ventas', 'Marketing']
 const VALID_LOCATIONS  = ['Brisbane', 'Sydney', 'Melbourne', 'Gold Coast', 'Remoto']
 const VALID_JOB_TYPES  = ['Full-time', 'Part-time', 'Freelance', 'Contract']
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
@@ -142,9 +142,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar categoría
-    if (!VALID_CATEGORIES.includes(category)) {
+    if (!isValidCategory(JOB_CATEGORIES, category)) {
       return NextResponse.json(
-        { success: false, error: `Categoría inválida. Opciones válidas: ${VALID_CATEGORIES.join(', ')}.` },
+        { success: false, error: `Categoría inválida. Opciones válidas: ${jobCategoryValues.join(', ')}.` },
         { status: 400 }
       )
     }

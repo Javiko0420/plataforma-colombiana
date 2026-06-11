@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useTransition, useState, useEffect, useCallback } from 'react'
 import { Search, Tag } from 'lucide-react'
+import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 
 export default function EventFilters() {
   const router = useRouter()
@@ -83,15 +84,9 @@ export default function EventFilters() {
           style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
         >
           <option value="">Todas las categorías</option>
-          <option value="Concierto">Concierto</option>
-          <option value="Teatro">Teatro</option>
-          <option value="Comedia">Comedia</option>
-          <option value="Fiesta">Fiesta</option>
-          <option value="Festival">Festival</option>
-          <option value="Deportes">Deportes</option>
-          <option value="Cultural">Cultural</option>
-          <option value="Networking">Networking</option>
-          <option value="Otro">Otro</option>
+          {EVENT_CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
         </select>
       </div>
     </div>

@@ -5,6 +5,7 @@ import {
   approveReportedEvent,
   rejectReportedEvent,
 } from '@/app/(main)/admin/eventos/actions'
+import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 import {
   ShieldCheck,
   Trash2,
@@ -123,7 +124,7 @@ export default function ReportedEventsTable({
                     </Link>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--lt-ink-soft)]">
-                    <span>{evt.category}</span>
+                    <span>{categoryLabel(EVENT_CATEGORIES, evt.category)}</span>
                     <span>·</span>
                     <span>{evt.location}</span>
                     <span>·</span>

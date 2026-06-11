@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -189,7 +190,7 @@ export default async function EventDetailPage({
                 </LtBadge>
                 <LtBadge tone="sun" rotate={-0.5}>
                   <Tag className="w-3 h-3" aria-hidden="true" />
-                  {event.category}
+                  {categoryLabel(EVENT_CATEGORIES, event.category)}
                 </LtBadge>
                 <LtBadge tone="neutral" rotate={1}>
                   <UserCircle className="w-3 h-3" aria-hidden="true" />
@@ -281,7 +282,7 @@ export default async function EventDetailPage({
                 <div className="space-y-3">
                   {[
                     { icon: MapPin,       label: event.location,           color: 'var(--lt-terracota)' },
-                    { icon: Tag,          label: event.category,           color: 'var(--lt-sun-core)'  },
+                    { icon: Tag,          label: categoryLabel(EVENT_CATEGORIES, event.category),           color: 'var(--lt-sun-core)'  },
                     { icon: CalendarDays, label: `Publicado el ${postedDate}`, color: 'var(--lt-ink-soft)' },
                   ].map(({ icon: Icon, label, color }) => (
                     <div key={label} className="flex items-center gap-3 text-sm" style={{ color: 'var(--lt-ink-soft)' }}>

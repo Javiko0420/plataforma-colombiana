@@ -5,6 +5,7 @@ import { es } from 'date-fns/locale'
 import { CalendarDays, MapPin } from 'lucide-react'
 import type { Event } from '@prisma/client'
 import { LtBadge } from '@/components/lt/Badge'
+import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 
 const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1]
 
@@ -16,9 +17,9 @@ interface EventCardProps {
 export default function EventCard({ event, index = 0 }: EventCardProps) {
   const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length]
 
-  const dateTone = ['Concierto', 'Festival', 'Fiesta'].includes(event.category)
+  const dateTone = ['CONCIERTO', 'FESTIVAL', 'FIESTA'].includes(event.category)
     ? 'terracota'
-    : event.category === 'Deportes'
+    : event.category === 'DEPORTES'
     ? 'verde'
     : 'sun'
 
@@ -50,7 +51,7 @@ export default function EventCard({ event, index = 0 }: EventCardProps) {
             <CalendarDays className="w-3 h-3" aria-hidden="true" />
             {format(new Date(event.eventDate), "d MMM · HH:mm", { locale: es })}
           </LtBadge>
-          <LtBadge tone="neutral" rotate={1}>{event.category}</LtBadge>
+          <LtBadge tone="neutral" rotate={1}>{categoryLabel(EVENT_CATEGORIES, event.category)}</LtBadge>
           {event.ticketPrice && event.ticketPrice > 0 ? (
             <LtBadge tone="sun" rotate={-0.5}>${event.ticketPrice.toFixed(2)} AUD</LtBadge>
           ) : (
