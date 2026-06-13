@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
+      // API-Football team/league logos (used by worldcup module)
+      {
+        protocol: 'https',
+        hostname: 'media.api-sports.io',
+      },
+      {
+        protocol: 'https',
+        hostname: 'media-3.api-sports.io',
+      },
     ],
   },
   // Ignorar errores de ESLint durante el build (bug conocido con flat config + react plugin)

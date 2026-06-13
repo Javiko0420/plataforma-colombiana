@@ -386,5 +386,18 @@
   ,"banner.cta": "Download the App"
   ,"banner.qr_label": "Scan to download"
   ,"banner.coming_soon": "Coming soon on Google Play"
+  ,"sports.worldcup.title": "FIFA World Cup 2026"
+  ,"sports.worldcup.subtitle": "The biggest World Cup in history. 48 teams. 3 host nations."
+  ,"sports.worldcup.fixtures": "Schedule"
+  ,"sports.worldcup.standings": "Groups"
+  ,"sports.worldcup.teams": "Teams"
+  ,"sports.worldcup.win": "W"
+  ,"sports.worldcup.draw": "D"
+  ,"sports.worldcup.lose": "L"
+  ,"sports.worldcup.empty.fixtures": "No fixtures scheduled."
+  ,"sports.worldcup.empty.standings": "Group standings will be available once the tournament begins."
+  ,"sports.worldcup.empty.teams": "Teams will be confirmed after the draw."
+  ,"sports.worldcup.back": "← Sports"
+  ,"sports.worldcup.callout": "World Cup 2026 — Follow the tournament live"
 }
 
