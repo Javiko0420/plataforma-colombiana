@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { fetchFixtures, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams, loadLeaguesDashboard, inferTeamPrimaryLeague } from '@/lib/football'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
@@ -165,6 +166,13 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
           <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
             {t('sports.subtitle')}
           </p>
+          <div className="mt-4">
+            <Link href="/deportes/mundial-2026" className="inline-block">
+              <LtBadge tone="sun" rotate={-1}>
+                ⚽ {t('sports.worldcup.callout')}
+              </LtBadge>
+            </Link>
+          </div>
           <SportsFilters defaultTeamId={teamParam} defaultLiveChecked={liveParam ? liveParam === 'all' : true} />
         </div>
       </div>
