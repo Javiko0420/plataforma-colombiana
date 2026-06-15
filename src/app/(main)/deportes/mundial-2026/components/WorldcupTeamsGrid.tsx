@@ -12,7 +12,15 @@ export default async function WorldcupTeamsGrid({ locale }: { locale: 'es' | 'en
     teams = data.teams
   } catch {
     return (
-      <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+      <p
+        className="text-sm py-1 pl-3 border-l-2"
+        style={{
+          color: 'var(--lt-ink-soft)',
+          fontFamily: 'var(--lt-font-sans)',
+          borderColor: 'var(--lt-ink-soft)',
+          opacity: 0.65,
+        }}
+      >
         {t('sports.worldcup.empty.teams')}
       </p>
     )
@@ -20,29 +28,40 @@ export default async function WorldcupTeamsGrid({ locale }: { locale: 'es' | 'en
 
   if (teams.length === 0) {
     return (
-      <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+      <p
+        className="text-sm py-1 pl-3 border-l-2"
+        style={{
+          color: 'var(--lt-ink-soft)',
+          fontFamily: 'var(--lt-font-sans)',
+          borderColor: 'var(--lt-ink-soft)',
+          opacity: 0.65,
+        }}
+      >
         {t('sports.worldcup.empty.teams')}
       </p>
     )
   }
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
       {teams.map((team) => (
         <div
           key={team.id}
-          className="flex flex-col items-center gap-2 p-3 rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)] text-center"
-          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+          className="flex flex-col items-center gap-2.5 p-3 rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)] text-center transition-all duration-200 hover:-translate-y-1 hover:scale-105 cursor-default"
+          style={{
+            background: 'var(--lt-paper)',
+            boxShadow: 'var(--lt-shadow-sticker)',
+          }}
         >
           <Image
             src={team.logo}
-            alt={team.name}
-            width={40}
-            height={40}
+            alt={`Bandera de ${team.name}`}
+            width={56}
+            height={56}
             className="object-contain"
           />
           <span
-            className="text-xs font-medium leading-tight"
+            className="text-xs font-medium leading-snug"
             style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
           >
             {team.name}

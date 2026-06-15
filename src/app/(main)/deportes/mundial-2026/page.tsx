@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
 import { getWorldcupLive } from '@/lib/sports/worldcup/service'
@@ -25,80 +25,89 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
   )
 }
 
+function SectionTitle({ id, title, badge }: { id: string; title: string; badge?: ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mb-5">
+      <div
+        aria-hidden="true"
+        className="w-1 h-7 rounded-full flex-none"
+        style={{ background: 'var(--lt-verde)' }}
+      />
+      <h2
+        id={id}
+        className="text-xl md:text-2xl font-bold"
+        style={{
+          fontFamily: 'var(--lt-font-serif)',
+          color: 'var(--lt-ink)',
+          letterSpacing: '-0.01em',
+        }}
+      >
+        {title}
+      </h2>
+      {badge}
+    </div>
+  )
+}
+
 export default async function WorldcupPage() {
   const locale = await getServerLocale()
   const t = (k: string) => translate(k, { locale })
 
-  // Fetch initial live data to hydrate the client component immediately.
-  // On failure we fall back gracefully — the client will poll on its own.
   const initialLiveData = await getWorldcupLive().catch(() => ({
     fixtures: [],
     hasLive: false,
     cachedAt: new Date().toISOString(),
   }))
 
+  const liveBadge = initialLiveData.hasLive ? (
+    <span
+      className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-[var(--lt-radius-sm)]"
+      style={{
+        background: 'var(--lt-terracota)',
+        color: 'var(--lt-paper)',
+        boxShadow: '1px 1px 0 var(--lt-ink)',
+        fontFamily: 'var(--lt-font-sans)',
+      }}
+    >
+      <span className="animate-pulse leading-none">●</span>
+      EN VIVO
+    </span>
+  ) : undefined
+
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--lt-bg)', minHeight: '100dvh' }}>
       <WorldcupHero locale={locale} />
 
-      <main className="max-w-5xl mx-auto px-4 py-10 space-y-12">
+      <main className="max-w-5xl mx-auto px-4 py-10 space-y-14">
 
-        {/* Live — Client Component with auto-polling */}
         <section aria-labelledby="wc-live-title">
-          <h2
-            id="wc-live-title"
-            className="text-2xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('sports.live')}
-          </h2>
+          <SectionTitle id="wc-live-title" title={t('sports.live')} badge={liveBadge} />
           <WorldcupLiveSection initialData={initialLiveData} />
         </section>
 
-        {/* Calendar — async Server Component, independent Suspense boundary */}
         <section aria-labelledby="wc-fixtures-title">
-          <h2
-            id="wc-fixtures-title"
-            className="text-2xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('sports.worldcup.fixtures')}
-          </h2>
+          <SectionTitle id="wc-fixtures-title" title={t('sports.worldcup.fixtures')} />
           <Suspense fallback={<SectionSkeleton rows={4} />}>
             <WorldcupFixturesSection locale={locale} />
           </Suspense>
         </section>
 
-        {/* Group standings */}
         <section aria-labelledby="wc-standings-title">
-          <h2
-            id="wc-standings-title"
-            className="text-2xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('sports.worldcup.standings')}
-          </h2>
+          <SectionTitle id="wc-standings-title" title={t('sports.worldcup.standings')} />
           <Suspense fallback={<SectionSkeleton rows={3} />}>
             <WorldcupGroupStandingsGrid locale={locale} />
           </Suspense>
         </section>
 
-        {/* Teams */}
         <section aria-labelledby="wc-teams-title">
-          <h2
-            id="wc-teams-title"
-            className="text-2xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('sports.worldcup.teams')}
-          </h2>
+          <SectionTitle id="wc-teams-title" title={t('sports.worldcup.teams')} />
           <Suspense
             fallback={
               <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={i}
-                    className="h-20 rounded-[var(--lt-radius-md)] animate-pulse"
+                    className="h-24 rounded-[var(--lt-radius-md)] animate-pulse"
                     style={{ background: 'var(--lt-paper)', opacity: 0.6 }}
                   />
                 ))}
