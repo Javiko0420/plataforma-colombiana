@@ -28,7 +28,7 @@ const FOOT_COLS = [
     links: [
       { label: 'Registrarse',      href: '/auth/signup' },
       { label: 'Publicar negocio', href: '/registrar-negocio' },
-      { label: 'Publicar empleo',  href: '/empleos' },
+      { label: 'Publicar empleo',  href: '/empleos/publicar' },
       { label: 'Ayuda',            href: '/soporte' },
     ],
   },

@@ -7,15 +7,16 @@ import { useSession, signOut } from 'next-auth/react'
 import { Sun, Moon, Menu, X, User, UserCircle, Settings, Shield, LogOut, PlusCircle } from 'lucide-react'
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslations } from '@/components/providers/language-provider'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
 
 const NAV_LINKS = [
-  { label: 'Negocios', href: '/directorio' },
-  { label: 'Empleos',  href: '/empleos' },
-  { label: 'Eventos',  href: '/eventos' },
-  { label: 'Emisoras', href: '/emisoras' },
-  { label: 'Foros',    href: '/foros' },
+  { labelKey: 'nav.businesses', href: '/directorio' },
+  { labelKey: 'nav.jobs',       href: '/empleos' },
+  { labelKey: 'nav.events',     href: '/eventos' },
+  { labelKey: 'nav.radios',     href: '/emisoras' },
+  { labelKey: 'nav.forums',     href: '/foros' },
 ]
 
 function useHideOnScroll(threshold = 80, delta = 6) {
@@ -149,9 +150,9 @@ export function SiteHeader() {
           className="lt-desk-links"
           style={{ gap: 4, marginLeft: 8 }}
         >
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ labelKey, href }) => (
             <Link
-              key={label}
+              key={href}
               href={href}
               style={{
                 padding: '6px 14px',
@@ -173,7 +174,7 @@ export function SiteHeader() {
                 el.style.background = 'transparent'
               }}
             >
-              {label}
+              {t(labelKey)}
             </Link>
           ))}
         </nav>
@@ -211,6 +212,9 @@ export function SiteHeader() {
           >
             {mounted ? (resolvedTheme === 'dark' ? <Sun size={16} /> : <Moon size={16} />) : <Moon size={16} />}
           </button>
+
+          {/* Selector de idioma */}
+          <LanguageToggle />
 
           {/* Cuenta / sesión — desktop (oculto ≤880px) */}
           {status !== 'loading' && (session ? (
@@ -351,9 +355,9 @@ export function SiteHeader() {
             background: 'var(--bg)',
           }}
         >
-          {NAV_LINKS.map(({ label, href }) => (
+          {NAV_LINKS.map(({ labelKey, href }) => (
             <Link
-              key={label}
+              key={href}
               href={href}
               onClick={() => setMenuOpen(false)}
               style={{
@@ -366,7 +370,7 @@ export function SiteHeader() {
                 borderBottom: '1px solid var(--border2)',
               }}
             >
-              {label}
+              {t(labelKey)}
             </Link>
           ))}
           <Link
