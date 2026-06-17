@@ -6,7 +6,6 @@ import { Trash2, ExternalLink, CalendarDays, Edit, AlertTriangle } from 'lucide-
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 
 type AdminEvent = {
@@ -24,21 +23,17 @@ type AdminEvent = {
   }
 }
 
-export default function EventsAdminTable({
-  events,
-}: {
-  events: AdminEvent[]
-}) {
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+const chip = (color: string): React.CSSProperties => ({
+  display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 99,
+  background: tint(color), color, fontSize: 11.5, fontWeight: 600,
+})
+
+export default function EventsAdminTable({ events }: { events: AdminEvent[] }) {
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null)
 
   const handleDelete = async (eventId: string, title: string) => {
-    if (
-      !window.confirm(
-        `¿Estás seguro de que deseas ELIMINAR el evento: "${title}"?\nEsta acción lo retirará inmediatamente del muro público.`
-      )
-    )
-      return
-
+    if (!window.confirm(`¿Estás seguro de que deseas ELIMINAR el evento: "${title}"?\nEsta acción lo retirará inmediatamente del muro público.`)) return
     setLoadingActionId(`delete-${eventId}`)
     const res = await adminDeleteEvent(eventId)
     if (!res.success) alert(res.error)
@@ -47,129 +42,79 @@ export default function EventsAdminTable({
 
   if (events.length === 0) {
     return (
-      <LtPanel className="text-center py-12" shadow="sm">
-        <p className="text-[var(--lt-ink-soft)]">
-          No hay eventos registrados en el sistema.
-        </p>
-      </LtPanel>
+      <div className="lh-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+        <p style={{ color: 'var(--lh-fg2)', margin: 0 }}>No hay eventos registrados en el sistema.</p>
+      </div>
     )
   }
 
   const now = new Date()
 
   return (
-    <LtPanel className="overflow-hidden p-0" shadow="md">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-[var(--lt-bg)] text-[var(--lt-ink-soft)] font-medium border-b-[2.2px] border-[var(--lt-ink)]">
+    <div className="lh-card" style={{ overflow: 'hidden', padding: 0 }}>
+      <div style={{ overflowX: 'auto' }}>
+        <table className="lh-table">
+          <thead>
             <tr>
-              <th className="px-6 py-3">Evento</th>
-              <th className="px-6 py-3">Organizador</th>
-              <th className="px-6 py-3">Fecha del Evento</th>
-              <th className="px-6 py-3 text-center">Estado</th>
-              <th className="px-6 py-3 text-right">Acciones</th>
+              <th>Evento</th>
+              <th>Organizador</th>
+              <th>Fecha del evento</th>
+              <th style={{ textAlign: 'center' }}>Estado</th>
+              <th style={{ textAlign: 'right' }}>Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y-[2px] divide-[var(--lt-ink)]/15">
+          <tbody>
             {events.map((evt) => {
               const isPast = new Date(evt.eventDate) < now
-
               return (
-                <tr
-                  key={evt.id}
-                  className="hover:bg-[var(--lt-bg)] transition-colors"
-                >
-                  {/* Evento */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-[var(--lt-ink)] line-clamp-1 max-w-[220px]">
-                        {evt.title}
-                      </span>
-                      <Link
-                        href={`/eventos/${evt.id}`}
-                        target="_blank"
-                        className="text-[var(--lt-accent)] hover:text-[var(--lt-terracota)]"
-                      >
-                        <ExternalLink className="w-4 h-4" />
+                <tr key={evt.id}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="line-clamp-1" style={{ fontWeight: 600, color: 'var(--lh-fg)', maxWidth: 220 }}>{evt.title}</span>
+                      <Link href={`/eventos/${evt.id}`} target="_blank" style={{ color: 'var(--lh-accent)', display: 'inline-flex' }}>
+                        <ExternalLink size={15} />
                       </Link>
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-[var(--lt-ink-soft)]">
-                        {categoryLabel(EVENT_CATEGORIES, evt.category)}
-                      </span>
-                      <span className="text-xs text-[var(--lt-ink-soft)] opacity-50">·</span>
-                      <span className="text-xs text-[var(--lt-ink-soft)]">
-                        {evt.location}
-                      </span>
-                      <span className="text-xs text-[var(--lt-ink-soft)] opacity-50">·</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: 12, color: 'var(--lh-fg3)' }}>
+                      <span>{categoryLabel(EVENT_CATEGORIES, evt.category)}</span>
+                      <span style={{ opacity: 0.5 }}>·</span>
+                      <span>{evt.location}</span>
+                      <span style={{ opacity: 0.5 }}>·</span>
                       {evt.ticketPrice && evt.ticketPrice > 0 ? (
-                        <span className="text-xs font-medium text-[var(--lt-accent)]">
-                          ${evt.ticketPrice.toFixed(2)} AUD
-                        </span>
+                        <span style={{ fontWeight: 600, color: 'var(--lh-warm)' }}>${evt.ticketPrice.toFixed(2)} AUD</span>
                       ) : (
-                        <span className="text-xs font-medium text-[var(--lt-verde)]">
-                          Gratis
-                        </span>
+                        <span style={{ fontWeight: 600, color: 'var(--lh-green)' }}>Gratis</span>
                       )}
                     </div>
                   </td>
-
-                  {/* Organizador */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-[var(--lt-ink)]">
-                      {evt.user.name || 'Sin nombre'}
-                    </div>
-                    <div className="text-xs text-[var(--lt-ink-soft)]">
-                      {evt.user.email}
+                  <td>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-fg)' }}>{evt.user.name || 'Sin nombre'}</div>
+                    <div style={{ fontSize: 12, color: 'var(--lh-fg3)' }}>{evt.user.email}</div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--lh-fg)' }}>
+                      <CalendarDays size={15} style={{ color: 'var(--lh-fg3)' }} />
+                      {format(new Date(evt.eventDate), "d MMM, yyyy · HH:mm", { locale: es })}
                     </div>
                   </td>
-
-                  {/* Fecha */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5 text-[var(--lt-ink)]">
-                      <CalendarDays className="w-4 h-4 text-[var(--lt-ink-soft)]" />
-                      {format(new Date(evt.eventDate), "d MMM, yyyy · HH:mm", {
-                        locale: es,
-                      })}
-                    </div>
-                  </td>
-
-                  {/* Estado */}
-                  <td className="px-6 py-4 text-center">
+                  <td style={{ textAlign: 'center' }}>
                     {evt.isHidden ? (
-                      <LtBadge tone="sun" className="inline-flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3" />
-                        Reportado
-                      </LtBadge>
+                      <span style={chip('var(--lh-warm)')}><AlertTriangle size={12} /> Reportado</span>
                     ) : isPast ? (
-                      <LtBadge tone="neutral">Finalizado</LtBadge>
+                      <span style={{ ...chip('var(--lh-fg3)'), gap: 0 }}>Finalizado</span>
                     ) : (
-                      <LtBadge tone="verde">Activo</LtBadge>
+                      <span style={{ ...chip('var(--lh-green)'), gap: 0 }}>Activo</span>
                     )}
                   </td>
-
-                  {/* Acciones */}
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <Link
-                      href={`/perfil/eventos/editar/${evt.id}`}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 border-[2px] border-[var(--lt-ink)] text-[var(--lt-ink)] bg-[var(--lt-paper)] hover:bg-[var(--lt-bg)] rounded-[var(--lt-radius-sm)] transition-colors text-sm font-medium"
-                      title="Editar evento"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Editar
-                    </Link>
-                    <LtButton
-                      variant="sticker"
-                      tone="terracota"
-                      size="sm"
-                      onClick={() => handleDelete(evt.id, evt.title)}
-                      disabled={loadingActionId !== null}
-                      loading={loadingActionId === `delete-${evt.id}`}
-                      loadingText="Borrando..."
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Eliminar
-                    </LtButton>
+                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <div style={{ display: 'inline-flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <Link href={`/perfil/eventos/editar/${evt.id}`} className="lh-btn lh-btn--sm lh-btn--secondary" title="Editar evento">
+                        <Edit size={15} /> Editar
+                      </Link>
+                      <button type="button" onClick={() => handleDelete(evt.id, evt.title)} disabled={loadingActionId !== null} className="lh-btn lh-btn--sm" style={{ background: 'var(--lh-terra)', color: '#fff', opacity: loadingActionId !== null ? 0.6 : 1 }}>
+                        <Trash2 size={15} /> {loadingActionId === `delete-${evt.id}` ? 'Borrando…' : 'Eliminar'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )
@@ -177,6 +122,6 @@ export default function EventsAdminTable({
           </tbody>
         </table>
       </div>
-    </LtPanel>
+    </div>
   )
 }

@@ -2,28 +2,19 @@
 @import "../styles/design-tokens.css";
 
 /* ============================================================
-   Variables de sistema — mapeadas a tokens Sol
-   Mantiene compatibilidad con componentes que usen
-   bg-background / text-foreground / border-border
+   Puente de compatibilidad shadcn → tokens Geist (--lh-*)
+   Para componentes que usen bg-background / text-foreground.
+   Los tokens --lh-* ya cambian solos en .dark, así que un
+   único :root basta (se adapta al tema automáticamente).
    ============================================================ */
 :root {
-  --background:        var(--lt-bg);
-  --foreground:        var(--lt-ink);
-  --border:            var(--lt-ink);
-  --input:             var(--lt-paper);
-  --ring:              var(--lt-terracota);
-  --accent:            var(--lt-paper);
-  --accent-foreground: var(--lt-ink);
-}
-
-.dark {
-  --background:        var(--lt-bg);
-  --foreground:        var(--lt-ink);
-  --border:            var(--lt-ink);
-  --input:             var(--lt-paper);
-  --ring:              var(--lt-terracota);
-  --accent:            var(--lt-paper);
-  --accent-foreground: var(--lt-ink);
+  --background:        var(--lh-bg);
+  --foreground:        var(--lh-fg);
+  --border:            var(--lh-border);
+  --input:             var(--lh-surface);
+  --ring:              var(--lh-accent);
+  --accent:            var(--lh-surface2);
+  --accent-foreground: var(--lh-fg);
 }
 
 /* ============================================================
@@ -43,9 +34,9 @@ body {
 }
 
 body {
-  background-color: var(--lt-bg);
-  color: var(--lt-ink);
-  font-family: var(--lt-font-sans);
+  background-color: var(--lh-bg);
+  color: var(--lh-fg);
+  font-family: var(--lh-font);
 }
 
 a {
@@ -55,10 +46,10 @@ a {
 
 /* ============================================================
    Focus rings — visibles en light y dark mode
-   Usan el color terracota del token para coherencia con Sol
+   Usan el acento Geist para coherencia con el sistema
    ============================================================ */
 :focus {
-  outline: 2px solid var(--lt-terracota);
+  outline: 2px solid var(--lh-accent);
   outline-offset: 2px;
 }
 
@@ -67,7 +58,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid var(--lt-terracota);
+  outline: 2px solid var(--lh-accent);
   outline-offset: 2px;
 }
 
@@ -117,23 +108,23 @@ a {
 }
 
 /* ============================================================
-   Scrollbar — usa tokens Sol
+   Scrollbar — usa tokens Geist (--lh-*)
    ============================================================ */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--lt-bg);
+  background: var(--lh-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--lt-ink-soft);
-  border-radius: var(--lt-radius-pill);
+  background: var(--lh-fg3);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--lt-ink);
+  background: var(--lh-fg2);
 }
 
 /* ============================================================
@@ -147,7 +138,7 @@ a {
 
 /* ============================================================
    Reduced motion — detiene animaciones del sistema
-   (las reglas de data-lt-wobble/rotate están en design-tokens.css)
+   (utilidades concretas adicionales en design-tokens.css)
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -171,28 +162,4 @@ a {
   .text-accent-foreground { color: var(--accent-foreground); }
   .ring-ring           { --tw-ring-color: var(--ring); }
   .bg-input            { background-color: var(--input); }
-
-  /* Formularios — sistema Sol */
-  .lt-input {
-    width: 100%;
-    background: var(--lt-bg);
-    color: var(--lt-ink);
-    border: 2px solid var(--lt-ink);
-    border-radius: var(--lt-radius-sm);
-    padding: 0.625rem 0.75rem;
-    font-family: var(--lt-font-sans);
-    outline: none;
-    transition: box-shadow 0.15s;
-  }
-  .lt-input:focus {
-    box-shadow: 0 0 0 2px var(--lt-terracota);
-  }
-  .lt-label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    font-family: var(--lt-font-sans);
-    color: var(--lt-ink);
-    margin-bottom: 0.375rem;
-  }
 }

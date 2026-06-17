@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Star, User, Flag } from 'lucide-react'
 import Image from 'next/image'
 import { ReportModal } from '@/components/ui/report-modal'
-import { SunMotif } from '@/components/lt/SunMotif'
 
 interface ReviewProps {
   reviews: {
@@ -24,77 +23,45 @@ export default function ReviewsList({ reviews }: ReviewProps) {
 
   if (reviews.length === 0) {
     return (
-      <div
-        className="flex flex-col items-center justify-center py-12 px-6 text-center rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
-        style={{ background: 'var(--lt-bg)' }}
-      >
-        <div aria-hidden="true" className="mb-4 opacity-25">
-          <SunMotif size={56} />
-        </div>
-        <p
-          className="text-base font-semibold mb-1"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
-          Aún no hay reseñas
-        </p>
-        <p
-          className="text-sm max-w-xs"
-          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-        >
-          ¡Sé el primero en opinar!
-        </p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px 24px', borderRadius: 16, border: '1.5px dashed var(--lh-border)', background: 'var(--lh-surface)' }}>
+        <Star size={32} style={{ color: 'var(--lh-fg3)', opacity: 0.5, marginBottom: 12 }} aria-hidden="true" />
+        <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 4px' }}>Aún no hay reseñas</p>
+        <p style={{ fontSize: 14, color: 'var(--lh-fg3)', margin: 0 }}>¡Sé el primero en opinar!</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {reviews.map((review) => (
-        <div
-          key={review.id}
-          className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] p-5"
-          style={{ background: 'var(--lt-bg)', boxShadow: 'var(--lt-shadow-sticker)' }}
-        >
-          <div className="flex items-start justify-between mb-3 gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div
-                className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border-[1.6px] border-[var(--lt-ink)]"
-                style={{ background: 'var(--lt-paper)' }}
-              >
+        <div key={review.id} className="lh-card" style={{ padding: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12, gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+              <div style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border)' }}>
                 {review.user.image ? (
-                  <Image
-                    src={review.user.image}
-                    alt=""
-                    fill
-                    className="object-cover"
-                  />
+                  <Image src={review.user.image} alt="" fill style={{ objectFit: 'cover' }} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--lt-ink-soft)' }}>
-                    <User className="w-5 h-5" aria-hidden="true" />
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lh-fg3)' }}>
+                    <User size={20} aria-hidden="true" />
                   </div>
                 )}
               </div>
-              <div className="min-w-0">
-                <p
-                  className="font-bold text-sm truncate"
-                  style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                >
+              <div style={{ minWidth: 0 }}>
+                <p className="truncate" style={{ fontWeight: 600, fontSize: 14, color: 'var(--lh-fg)', margin: 0 }}>
                   {review.user.name || 'Usuario Anónimo'}
                 </p>
-                <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                  {new Date(review.createdAt).toLocaleDateString()}
-                </p>
+                <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>{new Date(review.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
 
-            <div className="flex gap-0.5 shrink-0" aria-label={`Calificación: ${review.rating} de 5`}>
+            <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} aria-label={`Calificación: ${review.rating} de 5`}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  className="w-4 h-4"
+                  size={16}
                   style={{
-                    color: star <= review.rating ? 'var(--lt-sun)' : 'var(--lt-ink-soft)',
-                    fill: star <= review.rating ? 'var(--lt-sun)' : 'transparent',
+                    color: star <= review.rating ? 'var(--lh-warm)' : 'var(--lh-fg3)',
+                    fill: star <= review.rating ? 'var(--lh-warm)' : 'transparent',
                     opacity: star <= review.rating ? 1 : 0.35,
                   }}
                   aria-hidden="true"
@@ -103,22 +70,15 @@ export default function ReviewsList({ reviews }: ReviewProps) {
             </div>
           </div>
 
-          <p
-            className="text-sm leading-relaxed"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-          >
-            {review.comment}
-          </p>
+          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--lh-fg2)', margin: 0 }}>{review.comment}</p>
 
-          <div className="mt-3 flex justify-end">
+          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
             <button
               onClick={() => setReportTarget(review.id)}
-              className="text-xs flex items-center gap-1 transition-colors hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] rounded px-1"
-              style={{ color: 'var(--lt-ink-soft)' }}
+              style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, color: 'var(--lh-fg3)', background: 'transparent', border: 0, cursor: 'pointer' }}
               title="Reportar reseña"
             >
-              <Flag className="w-3 h-3" aria-hidden="true" />
-              Reportar
+              <Flag size={12} aria-hidden="true" /> Reportar
             </button>
           </div>
         </div>

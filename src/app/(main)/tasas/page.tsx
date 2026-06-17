@@ -3,10 +3,7 @@
 import * as React from 'react'
 import { useTranslations } from '@/components/providers/language-provider'
 import { POPULAR_CURRENCIES } from '@/lib/exchange-rate'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { LeafSprig } from '@/components/lt/LeafSprig'
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline'
-import { Squiggle } from '@/components/lt/Squiggle'
+import { PageHeader } from '@/components/lh/PageHeader'
 
 type ExchangeRates = {
   baseCurrency: string
@@ -87,43 +84,21 @@ function CurrencyConverter({ rates }: { rates: ExchangeRates }) {
 
   React.useEffect(() => { handleConvert() }, [handleConvert])
 
-  const selectClass = [
-    'w-full px-3 py-2.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)]',
-    'outline-none text-sm transition-all focus:ring-2 focus:ring-[var(--lt-terracota)] cursor-pointer',
-  ].join(' ')
+  const fieldLabel: React.CSSProperties = {
+    display: 'block', fontFamily: 'var(--lh-mono)', fontSize: 11, fontWeight: 500,
+    textTransform: 'uppercase', letterSpacing: '.1em', color: 'var(--lh-fg3)', marginBottom: 7,
+  }
 
   return (
-    <div
-      className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 relative overflow-hidden"
-      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-    >
-      <div aria-hidden="true" className="absolute right-4 top-4 opacity-[0.06]">
-        <SunMotif size={96} />
-      </div>
-
-      <h2
-        className="text-xl font-bold mb-5 relative"
-        style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-      >
+    <div className="lh-card" style={{ padding: 24 }}>
+      <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 20px' }}>
         {t('rates.converter.title', 'Convertidor de Monedas')}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label
-            htmlFor="from-currency"
-            className="block text-xs font-bold uppercase tracking-wide mb-1.5"
-            style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-          >
-            {t('rates.converter.from', 'De')}
-          </label>
-          <select
-            id="from-currency"
-            value={fromCurrency}
-            onChange={e => setFromCurrency(e.target.value)}
-            className={selectClass}
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
-          >
+          <label htmlFor="from-currency" style={fieldLabel}>{t('rates.converter.from', 'De')}</label>
+          <select id="from-currency" value={fromCurrency} onChange={e => setFromCurrency(e.target.value)} className="lh-input">
             {Object.entries(CURRENCY_INFO).map(([code, info]) => (
               <option key={code} value={code}>{code} — {info.name}</option>
             ))}
@@ -134,39 +109,22 @@ function CurrencyConverter({ rates }: { rates: ExchangeRates }) {
             type="number"
             value={amount}
             onChange={e => setAmount(e.target.value)}
-            className={`mt-2 ${selectClass} text-lg font-bold`}
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-serif)' }}
+            className="lh-input"
+            style={{ marginTop: 8, fontSize: 18, fontWeight: 700 }}
             placeholder="0.00"
             min="0"
           />
         </div>
 
         <div>
-          <label
-            htmlFor="to-currency"
-            className="block text-xs font-bold uppercase tracking-wide mb-1.5"
-            style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-          >
-            {t('rates.converter.to', 'A')}
-          </label>
-          <select
-            id="to-currency"
-            value={toCurrency}
-            onChange={e => setToCurrency(e.target.value)}
-            className={selectClass}
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
-          >
+          <label htmlFor="to-currency" style={fieldLabel}>{t('rates.converter.to', 'A')}</label>
+          <select id="to-currency" value={toCurrency} onChange={e => setToCurrency(e.target.value)} className="lh-input">
             {Object.entries(CURRENCY_INFO).map(([code, info]) => (
               <option key={code} value={code}>{code} — {info.name}</option>
             ))}
           </select>
           <div
-            className="mt-2 w-full px-3 py-2.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-lg font-black"
-            style={{
-              background: 'var(--lt-bg)',
-              color: 'var(--lt-terracota)',
-              fontFamily: 'var(--lt-font-serif)',
-            }}
+            style={{ marginTop: 8, width: '100%', padding: '12px 16px', borderRadius: 15, border: '1px solid var(--lh-border)', background: 'var(--lh-surface2)', fontSize: 18, fontWeight: 700, color: 'var(--lh-green)', fontFamily: 'var(--lh-font)' }}
             aria-live="polite"
             aria-label={`Resultado: ${result !== null ? result.toFixed(2) : '0.00'} ${toCurrency}`}
           >
@@ -176,15 +134,11 @@ function CurrencyConverter({ rates }: { rates: ExchangeRates }) {
       </div>
 
       {result !== null && (
-        <div
-          className="mt-4 p-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm"
-          style={{ background: 'var(--lt-bg)', fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-        >
-          <strong style={{ color: 'var(--lt-ink)' }}>
+        <div style={{ marginTop: 16, padding: '12px 16px', borderRadius: 13, border: '1px solid var(--lh-border)', background: 'var(--lh-surface2)', fontSize: 14, color: 'var(--lh-fg2)' }}>
+          <strong style={{ color: 'var(--lh-fg)', fontWeight: 600 }}>
             {parseFloat(amount).toLocaleString()} {fromCurrency}
-          </strong>{' '}
-          ={' '}
-          <strong style={{ color: 'var(--lt-terracota)' }}>
+          </strong>{' '}={' '}
+          <strong style={{ color: 'var(--lh-green)', fontWeight: 600 }}>
             {result.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {toCurrency}
           </strong>
         </div>
@@ -195,50 +149,20 @@ function CurrencyConverter({ rates }: { rates: ExchangeRates }) {
 
 function RateCard({ currency, rate, baseCurrency }: { currency: string; rate: number; baseCurrency: string }) {
   const info = CURRENCY_INFO[currency] || { code: currency, name: currency, symbol: currency }
-  const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1]
-  const idx = Object.keys(CURRENCY_INFO).indexOf(currency)
-  const rotation = CARD_ROTATIONS[Math.abs(idx) % CARD_ROTATIONS.length]
 
   return (
-    <div
-      className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] p-4 transition-all hover:-translate-y-1"
-      style={{
-        background: 'var(--lt-paper)',
-        boxShadow: 'var(--lt-shadow-sticker)',
-        transform: `rotate(${rotation}deg)`,
-      }}
-      data-lt-rotate="true"
-    >
-      <div className="flex items-start justify-between">
+    <div className="lh-card lh-card--interactive" style={{ padding: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <div className="flex items-baseline gap-1.5">
-            <span
-              className="text-2xl font-black"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-terracota)' }}
-            >
-              {info.symbol}
-            </span>
-            <span
-              className="text-sm font-bold"
-              style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
-            >
-              {currency}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{ fontFamily: 'var(--lh-font)', fontSize: 24, fontWeight: 700, color: 'var(--lh-green)' }}>{info.symbol}</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--lh-fg)' }}>{currency}</span>
           </div>
-          <p className="mt-0.5 text-xs" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
-            {info.name}
-          </p>
+          <p style={{ marginTop: 2, fontSize: 12, color: 'var(--lh-fg3)' }}>{info.name}</p>
         </div>
-        <div className="text-right">
-          <p
-            className="text-lg font-black"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {rate.toFixed(4)}
-          </p>
-          <p className="text-xs" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
-            1 {baseCurrency}
-          </p>
+        <div style={{ textAlign: 'right' }}>
+          <p style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 700, letterSpacing: '-.01em', color: 'var(--lh-fg)', margin: 0 }}>{rate.toFixed(4)}</p>
+          <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>1 {baseCurrency}</p>
         </div>
       </div>
     </div>
@@ -265,76 +189,47 @@ export default function ExchangeRatesPage() {
   }, [data, showAllCurrencies])
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
 
-      {/* ── Hero ── */}
-      <div
-        className="relative overflow-hidden border-b-[2px] border-[var(--lt-ink)] py-14 px-4"
-        style={{ background: 'var(--lt-paper)' }}
-      >
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
-          <SunMotif size={280} className="absolute opacity-[0.07]" style={{ top: '-40px', right: '-20px' }} />
-          <LeafSprig size={90} className="absolute opacity-20" style={{ bottom: '8px', left: '12px', transform: 'rotate(-18deg)' }} />
-        </div>
-        <div className="relative max-w-6xl mx-auto">
-          <h1
-            className="text-3xl md:text-4xl font-black mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('rates.title', 'Tasas de Cambio')}
-          </h1>
-          <HandDrawnUnderline width={160} color="var(--lt-sun-core)" thickness={2.5} className="mb-3" aria-hidden="true" />
-          <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-            {t('rates.subtitle', 'Consulta las tasas de cambio del peso colombiano')}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Tasas al instante"
+        title={t('rates.title', 'Tasas de Cambio')}
+        subtitle={t('rates.subtitle', 'Consulta las tasas de cambio del peso colombiano')}
+        accent="var(--lh-green)"
+      />
 
-      <main className="mx-auto max-w-6xl px-4 py-10">
+      <main className="lh-container" style={{ maxWidth: 1100, paddingTop: 40, paddingBottom: 64 }}>
 
         {/* Loading */}
         {loading && (
-          <div
-            className="rounded-[var(--lt-radius-lg)] border-[2px] border-[var(--lt-ink)] p-10 text-center"
-            style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-          >
-            <SunMotif size={56} className="mx-auto mb-3 animate-spin opacity-60" style={{ animationDuration: '1.4s' }} />
-            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
-              {t('rates.loading', 'Cargando tasas…')}
-            </p>
+          <div className="lh-card" style={{ padding: 40, textAlign: 'center' }}>
+            <span className="animate-spin" style={{ display: 'inline-block', width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--lh-border)', borderTopColor: 'var(--lh-green)', marginBottom: 12 }} aria-hidden="true" />
+            <p style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>{t('rates.loading', 'Cargando tasas…')}</p>
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div
-            className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] p-6"
-            style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-            role="alert"
-          >
-            <p className="font-bold mb-1" style={{ fontFamily: 'var(--lt-font-serif)' }}>
+          <div role="alert" style={{ padding: '18px 20px', borderRadius: 16, background: 'color-mix(in oklch, var(--lh-terra) 12%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)' }}>
+            <p style={{ fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 3px' }}>
               {t('rates.error', 'No se pudieron cargar las tasas de cambio')}
             </p>
-            <p className="text-sm opacity-90" style={{ fontFamily: 'var(--lt-font-sans)' }}>{error}</p>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: 0 }}>{error}</p>
           </div>
         )}
 
         {data && (
           <>
             {/* Convertidor */}
-            <section className="mb-10" aria-labelledby="converter-title">
+            <section style={{ marginBottom: 40 }} aria-labelledby="converter-title">
               <h2 id="converter-title" className="sr-only">Convertidor de monedas</h2>
               <CurrencyConverter rates={data} />
             </section>
 
             {/* Tasas */}
             <section aria-labelledby="rates-title">
-              <div className="flex items-center justify-between mb-4">
-                <h2
-                  id="rates-title"
-                  className="text-xl font-bold"
-                  style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, gap: 16 }}>
+                <h2 id="rates-title" style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>
                   {showAllCurrencies
                     ? t('rates.allCurrencies', 'Todas las monedas')
                     : t('rates.popularCurrencies', 'Monedas populares')}
@@ -342,8 +237,7 @@ export default function ExchangeRatesPage() {
                 <button
                   type="button"
                   onClick={() => setShowAllCurrencies(!showAllCurrencies)}
-                  className="text-sm font-semibold transition-colors hover:opacity-80 focus:outline-none focus:underline"
-                  style={{ color: 'var(--lt-terracota)', fontFamily: 'var(--lt-font-sans)' }}
+                  style={{ fontSize: 14, fontWeight: 600, color: 'var(--lh-accent)', background: 'transparent', border: 0, cursor: 'pointer', whiteSpace: 'nowrap' }}
                 >
                   {showAllCurrencies
                     ? t('rates.viewPopular', 'Ver monedas populares')
@@ -351,26 +245,21 @@ export default function ExchangeRatesPage() {
                 </button>
               </div>
 
-              <Squiggle width={160} color="var(--lt-sun-core)" amplitude={3} className="mb-6" aria-hidden="true" />
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {displayedRates.map(([code, rate]) => (
                   <RateCard key={code} currency={code} rate={rate} baseCurrency={data.baseCurrency} />
                 ))}
               </div>
 
               {/* Última actualización */}
-              <div
-                className="mt-8 p-4 rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)]"
-                style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-              >
-                <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-                  <strong style={{ color: 'var(--lt-ink)' }}>
+              <div className="lh-card" style={{ marginTop: 28, padding: 18 }}>
+                <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: 0 }}>
+                  <strong style={{ color: 'var(--lh-fg)', fontWeight: 600 }}>
                     {t('rates.lastUpdate', 'Última actualización')}:
                   </strong>{' '}
                   {new Date(data.lastUpdate).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}
                 </p>
-                <p className="mt-1 text-xs" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+                <p style={{ marginTop: 4, fontSize: 12.5, color: 'var(--lh-fg3)' }}>
                   {t('rates.disclaimer', 'Las tasas son referenciales y pueden variar según el proveedor financiero.')}
                 </p>
               </div>

@@ -5,6 +5,8 @@
   "nav.jobs": "Empleos",
   "nav.events": "Eventos",
   "nav.forums": "Foros",
+  "nav.businesses": "Negocios",
+  "nav.radios": "Emisoras",
   "nav.sports": "Deportes",
   "nav.weather": "Clima",
   "nav.rates": "Tasas",
@@ -379,6 +381,7 @@
   ,"radios.eyebrow": "Escucha en vivo"
   ,"radios.heading.line1": "Emisoras que"
   ,"radios.heading.line2": "te llevan a casa."
+  ,"radios.title": "Emisoras que te llevan a casa"
   ,"radios.stop": "Detener"
   ,"banner.message": "¿Quieres acceder más rápido?"
   ,"banner.cta": "Descarga la App"

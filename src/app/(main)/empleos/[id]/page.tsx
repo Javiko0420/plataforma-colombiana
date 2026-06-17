@@ -5,10 +5,15 @@ import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories';
 import { Briefcase, MapPin, Clock, Calendar, DollarSign, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import JobDetailActions from '@/components/jobs/JobDetailActions';
-import { LtBadge } from '@/components/lt/Badge';
-import { SunMotif } from '@/components/lt/SunMotif';
-import { Squiggle } from '@/components/lt/Squiggle';
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline';
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
+
+const neutralChip: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 5,
+  fontSize: 12.5, fontWeight: 600, color: 'var(--lh-fg2)',
+  background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)',
+  padding: '6px 11px', borderRadius: 99,
+};
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
@@ -59,112 +64,68 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   }).format(new Date(job.createdAt));
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh', paddingBottom: '5rem', paddingTop: '2rem' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', paddingBottom: '5rem', paddingTop: '2rem', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-container" style={{ maxWidth: 1100 }}>
 
         {/* Botón volver */}
-        <Link
-          href="/empleos"
-          className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-          style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-        >
-          <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Empleos
+        <Link href="/empleos" className="lh-btn lh-btn--sm lh-btn--secondary" style={{ marginBottom: 28 }}>
+          <ArrowLeft size={16} aria-hidden="true" /> Empleos
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* ── Columna principal ── */}
-          <div className="lg:col-span-2 space-y-6">
-            <div
-              className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 md:p-8"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-            >
+          <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <div className="lh-card" style={{ padding: 'clamp(22px,4vw,32px)' }}>
               {/* Encabezado */}
-              <div className="flex items-center gap-4 mb-6">
-                <div
-                  className="w-14 h-14 rounded-[var(--lt-radius-sm)] flex items-center justify-center border-[2px] border-[var(--lt-ink)] shrink-0"
-                  style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+                <span
                   aria-hidden="true"
+                  style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint('var(--lh-green)'), color: 'var(--lh-green)' }}
                 >
-                  <Briefcase className="w-7 h-7" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h1
-                    className="text-2xl md:text-3xl font-black leading-tight"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    {job.title}
-                  </h1>
-                </div>
+                  <Briefcase size={26} />
+                </span>
+                <h1 className="lh-h2" style={{ fontSize: 'clamp(24px,3.4vw,34px)', margin: 0 }}>{job.title}</h1>
               </div>
-              <HandDrawnUnderline width={200} color="var(--lt-sun-core)" thickness={2.5} className="mb-6" aria-hidden="true" />
 
-              {/* Badges de metadatos */}
-              <div className="flex flex-wrap gap-2 mb-8">
-                <LtBadge tone="terracota" rotate={-1}>
-                  <Briefcase className="w-3 h-3" aria-hidden="true" />
-                  {categoryLabel(JOB_CATEGORIES, job.category)}
-                </LtBadge>
-                <LtBadge tone="neutral" rotate={0.8}>
-                  <MapPin className="w-3 h-3" aria-hidden="true" />
-                  {job.location}
-                </LtBadge>
-                <LtBadge tone="neutral" rotate={-0.5}>
-                  <Clock className="w-3 h-3" aria-hidden="true" />
-                  {job.jobType}
-                </LtBadge>
-                <LtBadge tone="neutral" rotate={1}>
-                  <Calendar className="w-3 h-3" aria-hidden="true" />
-                  {postedDate}
-                </LtBadge>
+              {/* Metadatos */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 28 }}>
+                <span style={{ ...neutralChip, color: 'var(--lh-green)', background: tint('var(--lh-green)'), border: 'none' }}>
+                  <Briefcase size={12} aria-hidden="true" /> {categoryLabel(JOB_CATEGORIES, job.category)}
+                </span>
+                <span style={neutralChip}><MapPin size={12} aria-hidden="true" /> {job.location}</span>
+                <span style={neutralChip}><Clock size={12} aria-hidden="true" /> {job.jobType}</span>
+                <span style={neutralChip}><Calendar size={12} aria-hidden="true" /> {postedDate}</span>
                 {job.hourlyRate != null && (
-                  <LtBadge tone="sun" rotate={-1.2}>
-                    <DollarSign className="w-3 h-3" aria-hidden="true" />
-                    {job.hourlyRate.toFixed(2)} AUD/hora
-                  </LtBadge>
+                  <span style={{ ...neutralChip, color: 'var(--lh-warm)', background: tint('var(--lh-warm)'), border: 'none' }}>
+                    <DollarSign size={12} aria-hidden="true" /> {job.hourlyRate.toFixed(2)} AUD/hora
+                  </span>
                 )}
               </div>
 
-              <Squiggle width={160} height={10} color="var(--lt-terracota)" amplitude={3} className="mb-6" aria-hidden="true" />
-
               {/* Descripción del puesto */}
-              <div>
-                <h2
-                  className="text-xl font-bold mb-4"
-                  style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                >
-                  Descripción del Puesto
-                </h2>
-                <div
-                  className="leading-relaxed whitespace-pre-wrap"
-                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-                >
-                  {job.description}
-                </div>
+              <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 14px' }}>
+                Descripción del puesto
+              </h2>
+              <div style={{ fontSize: 15, lineHeight: 1.65, color: 'var(--lh-fg2)', whiteSpace: 'pre-wrap' }}>
+                {job.description}
               </div>
             </div>
 
             {/* Mensaje de confianza */}
             <div
-              className="rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)] p-5 text-center relative overflow-hidden"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
               role="note"
+              style={{ borderRadius: 16, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', padding: '18px 20px', textAlign: 'center' }}
             >
-              <div aria-hidden="true" className="absolute right-3 top-1/2 -translate-y-1/2 opacity-[0.07]">
-                <SunMotif size={80} />
-              </div>
-              <p
-                className="text-sm relative"
-                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-              >
-                Al postularte, recuerda mencionar que encontraste esta oferta a través de la comunidad de{' '}
-                <strong style={{ color: 'var(--lt-ink)' }}>Latin Territory</strong>. ¡Mucho éxito en tu proceso!
+              <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
+                Al postularte, menciona que encontraste esta oferta en la comunidad de{' '}
+                <strong style={{ color: 'var(--lh-fg)', fontWeight: 600 }}>Latin Territory</strong>. ¡Mucho éxito en tu proceso!
               </p>
             </div>
           </div>
 
           {/* ── Sidebar de acciones ── */}
-          <div className="lg:col-span-1 relative">
+          <div className="lg:col-span-1">
             <JobDetailActions
               job={{
                 id: job.id,

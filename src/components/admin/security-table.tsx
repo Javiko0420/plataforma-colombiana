@@ -2,8 +2,6 @@
 
 import { format } from 'date-fns'
 import type { JsonValue } from '@prisma/client/runtime/library'
-import { LtPanel, LtBadge } from '@/components/lt'
-import type { BadgeTone } from '@/components/lt'
 
 interface SecurityLog {
   id: string
@@ -20,68 +18,66 @@ interface SecurityTableProps {
   logs: SecurityLog[]
 }
 
+const tint = (v: string) => `color-mix(in oklch, ${v} 16%, transparent)`
+
 export function SecurityTable({ logs }: SecurityTableProps) {
-  const getSeverityTone = (severity: string): BadgeTone => {
+  const severityColor = (severity: string): string => {
     switch (severity.toLowerCase()) {
       case 'high':
       case 'critical':
-        return 'terracota'
+        return 'var(--lh-terra)'
       case 'medium':
-        return 'sun'
+        return 'var(--lh-warm)'
       case 'low':
-        return 'accent'
+        return 'var(--lh-accent)'
       default:
-        return 'neutral'
+        return 'var(--lh-fg3)'
     }
   }
 
   return (
-    <LtPanel className="overflow-hidden p-0" shadow="md">
-      <table className="w-full text-sm text-left">
-        <thead className="bg-[var(--lt-bg)] text-[var(--lt-ink-soft)] font-medium border-b-[2.2px] border-[var(--lt-ink)]">
-          <tr>
-            <th className="px-6 py-3">Severidad</th>
-            <th className="px-6 py-3">Evento</th>
-            <th className="px-6 py-3">IP / Origen</th>
-            <th className="px-6 py-3">Usuario Afectado</th>
-            <th className="px-6 py-3">Fecha Exacta</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y-[2px] divide-[var(--lt-ink)]/15">
-          {logs.map((log) => (
-            <tr
-              key={log.id}
-              className="hover:bg-[var(--lt-bg)]"
-            >
-              <td className="px-6 py-4">
-                <LtBadge tone={getSeverityTone(log.severity)} className="uppercase text-[10px]">
-                  {log.severity}
-                </LtBadge>
-              </td>
-              <td className="px-6 py-4 font-medium text-[var(--lt-ink)]">
-                {log.event}
-              </td>
-              <td className="px-6 py-4 text-[var(--lt-ink-soft)] font-mono text-xs">
-                {log.ip || 'Unknown'}
-              </td>
-              <td className="px-6 py-4 text-[var(--lt-ink-soft)]">
-                {log.userId ? (
-                  <span className="text-[var(--lt-accent)]">
-                    ID: {log.userId.slice(0, 8)}...
-                  </span>
-                ) : (
-                  (log.details && typeof log.details === 'object' && !Array.isArray(log.details) && 'email' in log.details
-                    ? String(log.details.email)
-                    : 'N/A')
-                )}
-              </td>
-              <td className="px-6 py-4 text-[var(--lt-ink-soft)] text-xs">
-                {format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm:ss')}
-              </td>
+    <div className="lh-card" style={{ overflow: 'hidden', padding: 0 }}>
+      <div style={{ overflowX: 'auto' }}>
+        <table className="lh-table">
+          <thead>
+            <tr>
+              <th>Severidad</th>
+              <th>Evento</th>
+              <th>IP / Origen</th>
+              <th>Usuario afectado</th>
+              <th>Fecha exacta</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </LtPanel>
+          </thead>
+          <tbody>
+            {logs.map((log) => {
+              const color = severityColor(log.severity)
+              return (
+                <tr key={log.id}>
+                  <td>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 99, background: tint(color), color, fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>
+                      {log.severity}
+                    </span>
+                  </td>
+                  <td style={{ fontWeight: 500, color: 'var(--lh-fg)' }}>{log.event}</td>
+                  <td style={{ fontFamily: 'var(--lh-mono)', fontSize: 12, color: 'var(--lh-fg3)' }}>{log.ip || 'Unknown'}</td>
+                  <td>
+                    {log.userId ? (
+                      <span style={{ color: 'var(--lh-accent)' }}>ID: {log.userId.slice(0, 8)}…</span>
+                    ) : (
+                      (log.details && typeof log.details === 'object' && !Array.isArray(log.details) && 'email' in log.details
+                        ? String(log.details.email)
+                        : 'N/A')
+                    )}
+                  </td>
+                  <td style={{ fontSize: 12.5, color: 'var(--lh-fg3)' }}>
+                    {format(new Date(log.createdAt), 'dd/MM/yyyy HH:mm:ss')}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }

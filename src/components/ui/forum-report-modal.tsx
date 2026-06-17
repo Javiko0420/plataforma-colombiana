@@ -6,9 +6,9 @@
  */
 
 import React from 'react';
-import { X } from 'lucide-react';
 import { AccessibleModal } from './accessible-modal';
 import { ReportReason } from '@prisma/client';
+import { Button } from '@/components/lh/Button';
 
 interface ForumReportModalProps {
   isOpen: boolean;
@@ -23,7 +23,6 @@ export function ForumReportModal({
   onClose,
   onSubmit,
   t,
-  contentType,
 }: ForumReportModalProps) {
   const [reason, setReason] = React.useState<ReportReason>('SPAM');
   const [details, setDetails] = React.useState('');
@@ -32,7 +31,6 @@ export function ForumReportModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     setIsSubmitting(true);
     setError(null);
 
@@ -58,41 +56,25 @@ export function ForumReportModal({
   ];
 
   return (
-    <AccessibleModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={t('reportTitle')}
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <AccessibleModal isOpen={isOpen} onClose={onClose} title={t('reportTitle')}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div>
-          <label
-            htmlFor="report-reason"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
-            {t('reportReason')}
-          </label>
+          <label htmlFor="report-reason" className="lh-label">{t('reportReason')}</label>
           <select
             id="report-reason"
             value={reason}
             onChange={(e) => setReason(e.target.value as ReportReason)}
             disabled={isSubmitting}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="lh-input"
           >
             {reportReasons.map((r) => (
-              <option key={r.value} value={r.value}>
-                {r.label}
-              </option>
+              <option key={r.value} value={r.value}>{r.label}</option>
             ))}
           </select>
         </div>
 
         <div>
-          <label
-            htmlFor="report-details"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
-            {t('reportDetails')}
-          </label>
+          <label htmlFor="report-details" className="lh-label">{t('reportDetails')}</label>
           <textarea
             id="report-details"
             value={details}
@@ -100,39 +82,35 @@ export function ForumReportModal({
             disabled={isSubmitting}
             maxLength={500}
             rows={4}
-            className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+            className="lh-input"
+            style={{ resize: 'none' }}
             placeholder="Proporciona detalles adicionales..."
           />
-          <p className="text-xs text-foreground/50 mt-1">
+          <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: '7px 0 0' }}>
             {500 - details.length} caracteres restantes
           </p>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-sm text-red-600 dark:text-red-400">
+          <div style={{ padding: '10px 14px', borderRadius: 12, fontSize: 13.5, background: 'color-mix(in oklch, var(--lh-terra) 10%, transparent)', border: '1px solid color-mix(in oklch, var(--lh-terra) 25%, transparent)', color: 'var(--lh-terra)' }}>
             {error}
           </div>
         )}
 
-        <div className="flex items-center gap-3 pt-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: 2 }}>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="lh-btn lh-btn--md"
+            style={{ flex: 1, background: 'var(--lh-terra)', color: '#fff', opacity: isSubmitting ? 0.5 : 1 }}
           >
             {isSubmitting ? t('loading') : t('reportSubmit')}
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2 rounded-lg border border-border hover:bg-background/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <Button type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
             {t('postCancel')}
-          </button>
+          </Button>
         </div>
       </form>
     </AccessibleModal>
   );
 }
-

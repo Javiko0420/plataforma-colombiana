@@ -4,21 +4,25 @@ import { fetchFixtures, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamL
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
 import { translateText, type SupportedLang } from '@/lib/translation'
+import { Trophy, ArrowRight } from 'lucide-react'
 import SportsFilters from './filters'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { LeafSprig } from '@/components/lt/LeafSprig'
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline'
-import { Squiggle } from '@/components/lt/Squiggle'
-import { LtBadge } from '@/components/lt/Badge'
+import { PageHeader } from '@/components/lh/PageHeader'
 import { getDefaultStandingsLeagues, getPlatformLeagueById, mergeStandingsLeagues } from '@/lib/leagues'
 
 // Sports page fans out many API-Football calls; allow enough time on Vercel.
 export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+
+const scoreChip: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  minWidth: 56, padding: '5px 12px', borderRadius: 10,
+  background: 'var(--lh-surface2)', border: '1px solid var(--lh-border)',
+  fontWeight: 700, fontSize: 14, color: 'var(--lh-fg)',
+}
+
 async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: string) => string; date: string; leagueId?: number; liveOnly?: boolean; locale: 'es' | 'en' }) {
-  // For live mode we ask the provider directly; otherwise we fetch by date
-  // (league + date requires `season` per API-Football specs).
   const params: { date?: string; league?: number; season?: number; live?: 'all' } = {}
   if (liveOnly) {
     params.live = 'all'
@@ -58,42 +62,40 @@ async function LiveFixtures({ t, date, leagueId, liveOnly, locale }: { t: (k: st
 
   if (filtered.length === 0) {
     return (
-      <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+      <p style={{ fontSize: 14, color: 'var(--lh-fg2)' }}>
         {t('sports.empty.live')}
       </p>
     )
   }
 
   return (
-    <ul className="space-y-3">
+    <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {filtered.map((fx, idx) => (
-        <li
-          key={fx.id}
-          className="rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] p-3 transition-all hover:-translate-y-0.5"
-          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-        >
-          <div className="text-xs mb-1.5" style={{ color: 'var(--lt-ink-soft)' }}>
+        <li key={fx.id} className="lh-card" style={{ padding: 14 }}>
+          <div style={{ fontSize: 12, marginBottom: 6, color: 'var(--lh-fg3)' }}>
             {translatedLeagueNames[idx] || fx.league.name}
           </div>
-          <div
-            className="flex items-center justify-between text-base font-bold"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            <span>{fx.home.name}</span>
-            <span
-              className="px-3 py-1 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm"
-              style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontSize: 15, fontWeight: 600, color: 'var(--lh-fg)' }}>
+            <span style={{ flex: 1, textAlign: 'right' }}>{fx.home.name}</span>
+            <span style={{ ...scoreChip, background: tint('var(--lh-terra)'), borderColor: 'transparent', color: 'var(--lh-terra)' }}>
               {fx.goals.home ?? '-'} : {fx.goals.away ?? '-'}
             </span>
-            <span>{fx.away.name}</span>
+            <span style={{ flex: 1 }}>{fx.away.name}</span>
           </div>
-          <div className="text-xs mt-1.5" style={{ color: 'var(--lt-ink-soft)' }}>
+          <div style={{ fontSize: 12, marginTop: 6, textAlign: 'center', color: 'var(--lh-terra)', fontWeight: 600 }}>
             {translatedStatuses[idx] || fx.status}{fx.elapsed != null ? ` ${fx.elapsed}'` : ''}
           </div>
         </li>
       ))}
     </ul>
+  )
+}
+
+function SectionTitle({ id, children }: { id: string; children: React.ReactNode }) {
+  return (
+    <h2 id={id} style={{ fontFamily: 'var(--lh-font)', fontSize: 22, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', marginBottom: 18 }}>
+      {children}
+    </h2>
   )
 }
 
@@ -107,7 +109,7 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
   const teamNameParam = typeof sp.teamName === 'string' ? sp.teamName.trim() : ''
   if (!teamParam && teamNameParam.length >= 2) {
     const matches = await searchTeams(teamNameParam)
-    const exact = matches.find((t) => t.name.toLowerCase() === teamNameParam.toLowerCase())
+    const exact = matches.find((tm) => tm.name.toLowerCase() === teamNameParam.toLowerCase())
     const first = matches[0]
     teamParam = (exact || first)?.id
   }
@@ -120,21 +122,14 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
     if (inferred && !defaultStandingsLeagues.some((lg) => lg.id === inferred.id)) {
       const known = getPlatformLeagueById(inferred.id, (k) => t(k))
       extraStandingsLeagues.push(
-        known ?? {
-          alias: `league-${inferred.id}`,
-          id: inferred.id,
-          name: inferred.name,
-        }
+        known ?? { alias: `league-${inferred.id}`, id: inferred.id, name: inferred.name }
       )
     }
   }
 
   const standingsLeagues = mergeStandingsLeagues(defaultStandingsLeagues, extraStandingsLeagues)
 
-  const data = await loadLeaguesDashboard(standingsLeagues, {
-    date: dateParam,
-    team: teamParam,
-  })
+  const data = await loadLeaguesDashboard(standingsLeagues, { date: dateParam, team: teamParam })
 
   const [teamNext, teamLast] = teamParam
     ? await Promise.all([
@@ -144,106 +139,66 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
     : [[], []]
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
 
-      {/* ── Hero ── */}
-      <div
-        className="relative overflow-hidden border-b-[2px] border-[var(--lt-ink)] py-14 px-4"
-        style={{ background: 'var(--lt-paper)' }}
+      <PageHeader
+        eyebrow="Deportes en vivo"
+        title={t('sports.title')}
+        subtitle={t('sports.subtitle')}
+        accent="var(--lh-terra)"
       >
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
-          <SunMotif size={280} className="absolute opacity-[0.07]" style={{ top: '-40px', right: '-20px' }} />
-          <LeafSprig size={90} className="absolute opacity-20" style={{ bottom: '8px', left: '12px', transform: 'rotate(-18deg)' }} />
-        </div>
-        <div className="relative max-w-5xl mx-auto">
-          <h1
-            className="text-3xl md:text-4xl font-black mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
+        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+          <Link
+            href="/deportes/mundial-2026"
+            className="lh-btn lh-btn--sm"
+            style={{ background: tint('var(--lh-warm)'), color: 'var(--lh-warm)' }}
           >
-            {t('sports.title')}
-          </h1>
-          <HandDrawnUnderline width={160} color="var(--lt-sun-core)" thickness={2.5} className="mb-3" aria-hidden="true" />
-          <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-            {t('sports.subtitle')}
-          </p>
-          <div className="mt-4">
-            <Link href="/deportes/mundial-2026" className="inline-block">
-              <LtBadge tone="sun" rotate={-1}>
-                ⚽ {t('sports.worldcup.callout')}
-              </LtBadge>
-            </Link>
+            <Trophy size={15} /> {t('sports.worldcup.callout')} <ArrowRight size={14} />
+          </Link>
+          <div style={{ width: '100%', maxWidth: 720 }}>
+            <SportsFilters defaultTeamId={teamParam} defaultLiveChecked={liveParam ? liveParam === 'all' : true} />
           </div>
-          <SportsFilters defaultTeamId={teamParam} defaultLiveChecked={liveParam ? liveParam === 'all' : true} />
         </div>
-      </div>
+      </PageHeader>
 
-      <main className="max-w-5xl mx-auto px-4 py-10 space-y-12">
+      <main className="lh-container" style={{ maxWidth: 980, paddingTop: 40, paddingBottom: 64, display: 'flex', flexDirection: 'column', gap: 48 }}>
 
         {/* En vivo */}
         <section aria-labelledby="live-title">
-          <h2
-            id="live-title"
-            className="text-2xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('sports.live')}
-          </h2>
-          <Suspense
-            fallback={
-              <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('sports.loading')}</p>
-            }
-          >
-            {(() => { if (typeof window !== 'undefined') window.dispatchEvent(new Event('app:media:request-pause')); return null })()}
-            <LiveFixtures
-              t={t}
-              date={dateParam}
-              liveOnly={liveParam ? liveParam === 'all' : true}
-              locale={locale}
-            />
+          <SectionTitle id="live-title">{t('sports.live')}</SectionTitle>
+          <Suspense fallback={<p style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>{t('sports.loading')}</p>}>
+            <LiveFixtures t={t} date={dateParam} liveOnly={liveParam ? liveParam === 'all' : true} locale={locale} />
           </Suspense>
         </section>
 
         {/* Partidos del equipo filtrado */}
         {teamParam ? (
           <section aria-label="Partidos del equipo seleccionado">
-            <div className="grid gap-8 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               {[
                 { label: t('sports.team.next'), matches: teamNext, showScore: false },
                 { label: t('sports.team.last'), matches: teamLast, showScore: true },
               ].map(({ label, matches, showScore }) => (
                 <div key={label}>
-                  <h3
-                    className="font-bold mb-3 text-lg"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    {label}
-                  </h3>
+                  <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, color: 'var(--lh-fg)', marginBottom: 12 }}>{label}</h3>
                   {matches.length === 0 ? (
-                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('sports.empty.today')}</p>
+                    <p style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>{t('sports.empty.today')}</p>
                   ) : (
-                    <ul className="space-y-3">
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                       {matches.map((fx) => (
-                        <li
-                          key={fx.id}
-                          className="rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] p-3"
-                          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                        >
-                          <div className="text-xs mb-1" style={{ color: 'var(--lt-ink-soft)' }}>{fx.league.name}</div>
-                          <div className="flex items-center justify-between font-bold text-sm" style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}>
-                            <span>{fx.home.name}</span>
-                            <span className="px-2 py-0.5 rounded border border-[var(--lt-ink)] text-xs" style={{ background: 'var(--lt-bg)' }}>
+                        <li key={fx.id} className="lh-card" style={{ padding: 14 }}>
+                          <div style={{ fontSize: 12, marginBottom: 4, color: 'var(--lh-fg3)' }}>{fx.league.name}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, fontWeight: 600, fontSize: 14, color: 'var(--lh-fg)' }}>
+                            <span style={{ flex: 1, textAlign: 'right' }}>{fx.home.name}</span>
+                            <span style={scoreChip}>
                               {showScore ? `${fx.goals?.home ?? '-'} : ${fx.goals?.away ?? '-'}` : 'vs'}
                             </span>
-                            <span>{fx.away.name}</span>
+                            <span style={{ flex: 1 }}>{fx.away.name}</span>
                           </div>
-                          <div className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
+                          <div style={{ fontSize: 12, marginTop: 6, textAlign: 'center', color: 'var(--lh-fg3)' }}>
                             {showScore
                               ? (fx as { status?: string }).status
-                              : new Date((fx as { dateIso: string }).dateIso).toLocaleString(
-                                  locale === 'es' ? 'es-CO' : 'en-US',
-                                  { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }
-                                )
-                            }
+                              : new Date((fx as { dateIso: string }).dateIso).toLocaleString(locale === 'es' ? 'es-CO' : 'en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}
                           </div>
                         </li>
                       ))}
@@ -257,46 +212,28 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
 
         {/* Partidos del día por liga */}
         <section aria-labelledby="fixtures-title">
-          <h2
-            id="fixtures-title"
-            className="text-2xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Partidos del día
-          </h2>
-          <div className="space-y-8">
+          <SectionTitle id="fixtures-title">Partidos del día</SectionTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
             {data.map(({ league, dayFx }) => (
               <div key={league.id}>
-                <div className="flex items-center gap-3 mb-3">
-                  <h3
-                    className="text-lg font-bold"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    {league.name}
-                  </h3>
-                  <LtBadge tone="neutral" rotate={-0.8}>{dayFx.length} partidos</LtBadge>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                  <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>{league.name}</h3>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--lh-fg2)', background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)', padding: '4px 9px', borderRadius: 99 }}>
+                    {dayFx.length} partidos
+                  </span>
                 </div>
                 {dayFx.length === 0 ? (
-                  <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('sports.empty.today')}</p>
+                  <p style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>{t('sports.empty.today')}</p>
                 ) : (
-                  <ul className="space-y-2">
+                  <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {dayFx.map((fx) => (
-                      <li
-                        key={fx.id}
-                        className="rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] p-3 transition-all hover:-translate-y-0.5"
-                        style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                      >
-                        <div className="flex items-center justify-between font-bold text-sm" style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}>
-                          <span className="flex-1 text-right pr-2">{fx.home.name}</span>
-                          <span
-                            className="px-3 py-1 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0 text-sm"
-                            style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
-                          >
-                            {fx.goals.home ?? '-'} : {fx.goals.away ?? '-'}
-                          </span>
-                          <span className="flex-1 pl-2">{fx.away.name}</span>
+                      <li key={fx.id} className="lh-card" style={{ padding: 14 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, fontWeight: 600, fontSize: 14, color: 'var(--lh-fg)' }}>
+                          <span style={{ flex: 1, textAlign: 'right' }}>{fx.home.name}</span>
+                          <span style={scoreChip}>{fx.goals.home ?? '-'} : {fx.goals.away ?? '-'}</span>
+                          <span style={{ flex: 1 }}>{fx.away.name}</span>
                         </div>
-                        <div className="text-xs text-center mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
+                        <div style={{ fontSize: 12, textAlign: 'center', marginTop: 6, color: 'var(--lh-fg3)' }}>
                           {new Date(fx.dateIso).toLocaleTimeString(locale === 'es' ? 'es-CO' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </li>
@@ -310,59 +247,32 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
 
         {/* Tablas de posiciones */}
         <section aria-labelledby="standings-title">
-          <h2
-            id="standings-title"
-            className="text-2xl font-bold mb-6"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Tablas de Posiciones
-          </h2>
-          <div className="flex justify-center mb-6" aria-hidden="true">
-            <Squiggle width={160} color="var(--lt-terracota)" amplitude={4} />
-          </div>
-          <div className="grid gap-8 md:grid-cols-2">
+          <SectionTitle id="standings-title">Tablas de posiciones</SectionTitle>
+          <div className="grid gap-6 md:grid-cols-2">
             {data.map(({ league, table }) => (
-              <div
-                key={league.id}
-                className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] overflow-hidden"
-                style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-              >
-                <div
-                  className="p-3 border-b-[2px] border-[var(--lt-ink)] font-bold text-sm"
-                  style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', fontFamily: 'var(--lt-font-serif)' }}
-                >
+              <div key={league.id} className="lh-card" style={{ overflow: 'hidden', padding: 0 }}>
+                <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--lh-border)', fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 14.5, color: 'var(--lh-fg)' }}>
                   {league.name}
                 </div>
                 {table.length === 0 ? (
-                  <p className="p-4 text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('sports.empty.standings')}</p>
+                  <p style={{ padding: 16, fontSize: 14, color: 'var(--lh-fg3)' }}>{t('sports.empty.standings')}</p>
                 ) : (
-                  <div className="p-3">
-                    <div
-                      className="grid grid-cols-6 text-xs mb-2 font-bold"
-                      style={{ color: 'var(--lt-ink-soft)' }}
-                    >
+                  <div style={{ padding: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '24px 1fr repeat(3, 36px)', fontSize: 11, fontWeight: 600, color: 'var(--lh-fg3)', marginBottom: 8, gap: 4, fontFamily: 'var(--lh-mono)', textTransform: 'uppercase', letterSpacing: '.04em' }}>
                       <div>#</div>
-                      <div className="col-span-2">{t('sports.team')}</div>
-                      <div>{t('sports.played')}</div>
-                      <div>{t('sports.points')}</div>
-                      <div>+/-</div>
+                      <div>{t('sports.team')}</div>
+                      <div style={{ textAlign: 'center' }}>{t('sports.played')}</div>
+                      <div style={{ textAlign: 'center' }}>{t('sports.points')}</div>
+                      <div style={{ textAlign: 'center' }}>+/-</div>
                     </div>
-                    <ul className="space-y-1">
-                      {table.slice(0, 10).map((row, i) => (
-                        <li
-                          key={row.team.id}
-                          className="grid grid-cols-6 text-sm py-1 rounded-sm"
-                          style={{
-                            background: i % 2 === 0 ? 'transparent' : 'var(--lt-bg)',
-                            color: 'var(--lt-ink)',
-                            fontFamily: 'var(--lt-font-sans)',
-                          }}
-                        >
-                          <div className="font-bold" style={{ color: 'var(--lt-ink-soft)' }}>{row.rank}</div>
-                          <div className="col-span-2 truncate font-medium">{row.team.name}</div>
-                          <div>{row.played}</div>
-                          <div className="font-bold">{row.points}</div>
-                          <div style={{ color: row.goalsDiff > 0 ? 'var(--lt-verde)' : row.goalsDiff < 0 ? 'var(--lt-terracota)' : 'var(--lt-ink-soft)' }}>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {table.slice(0, 10).map((row) => (
+                        <li key={row.team.id} style={{ display: 'grid', gridTemplateColumns: '24px 1fr repeat(3, 36px)', fontSize: 13.5, padding: '6px 0', gap: 4, alignItems: 'center', color: 'var(--lh-fg)' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--lh-fg3)' }}>{row.rank}</div>
+                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{row.team.name}</div>
+                          <div style={{ textAlign: 'center', color: 'var(--lh-fg2)' }}>{row.played}</div>
+                          <div style={{ textAlign: 'center', fontWeight: 700 }}>{row.points}</div>
+                          <div style={{ textAlign: 'center', color: row.goalsDiff > 0 ? 'var(--lh-green)' : row.goalsDiff < 0 ? 'var(--lh-terra)' : 'var(--lh-fg3)' }}>
                             {row.goalsDiff > 0 ? '+' : ''}{row.goalsDiff}
                           </div>
                         </li>

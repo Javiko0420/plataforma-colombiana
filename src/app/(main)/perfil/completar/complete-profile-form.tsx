@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { Calendar } from 'lucide-react'
-import { AccessibleInput } from '@/components/ui/accessible-input'
 import LegalContractModal from '@/components/ui/legal-contract-modal'
 import { LEGAL_VERSIONS, validateDateOfBirth } from '@/lib/legal'
-import { LtPageShell, LtPanel, LtButton } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 /**
  * Profile completion form for Google OAuth users.
@@ -31,29 +30,16 @@ export default function CompleteProfileForm() {
 
   useEffect(() => {
     if (session?.user?.hasCompletedProfile) {
-      // Navegación dura: garantiza que el middleware lea la cookie JWT actualizada
       window.location.href = callbackUrl || '/'
     }
   }, [session?.user?.hasCompletedProfile, callbackUrl])
 
   if (status === 'loading') {
-    return (
-      <LtPageShell maxWidth="md" className="flex items-center justify-center">
-        <div className="animate-pulse" style={{ color: 'var(--lt-ink-soft)' }}>
-          Cargando...
-        </div>
-      </LtPageShell>
-    )
+    return <div className="animate-pulse" style={{ textAlign: 'center', color: 'var(--lh-fg3)' }}>Cargando…</div>
   }
 
   if (session?.user?.hasCompletedProfile) {
-    return (
-      <LtPageShell maxWidth="md" className="flex items-center justify-center">
-        <div className="animate-pulse" style={{ color: 'var(--lt-ink-soft)' }}>
-          Redirigiendo...
-        </div>
-      </LtPageShell>
-    )
+    return <div className="animate-pulse" style={{ textAlign: 'center', color: 'var(--lh-fg3)' }}>Redirigiendo…</div>
   }
 
   const handleInitialSubmit = (e: React.FormEvent) => {
@@ -105,7 +91,6 @@ export default function CompleteProfileForm() {
       await update()
 
       setShowContractModal(false)
-      // Navegación dura: garantiza que el middleware lea la cookie JWT actualizada
       window.location.href = callbackUrl || '/'
     } catch (err) {
       console.error('Profile completion error:', err)
@@ -122,116 +107,80 @@ export default function CompleteProfileForm() {
   }
 
   return (
-    <LtPageShell maxWidth="md" className="flex items-center">
-      <LtPanel className="p-8 w-full">
-        <div className="text-center mb-8">
-          <div
-            className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center border-2 border-[var(--lt-ink)]"
-            style={{ background: 'var(--lt-bg)' }}
-          >
-            <Calendar className="h-8 w-8" style={{ color: 'var(--lt-terracota)' }} />
+    <>
+      <div className="lh-card" style={{ padding: 'clamp(24px,5vw,36px)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ margin: '0 auto 16px', width: 60, height: 60, borderRadius: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in oklch, var(--lh-accent) 14%, transparent)' }}>
+            <Calendar size={28} style={{ color: 'var(--lh-accent)' }} />
           </div>
-          <h1
-            className="text-2xl font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Un último paso
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+          <h1 className="lh-h2" style={{ fontSize: 24, margin: '0 0 8px' }}>Un último paso</h1>
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)' }}>
             {callbackUrl === '/registrar-negocio'
               ? 'Para registrar tu negocio, primero necesitamos verificar tu edad y que aceptes nuestros términos legales.'
               : 'Para cumplir con la legislación vigente, necesitamos verificar tu edad y que aceptes nuestros términos legales.'}
           </p>
           {callbackUrl === '/registrar-negocio' && (
-            <p className="mt-2 text-xs font-medium" style={{ color: 'var(--lt-terracota)' }}>
+            <p style={{ marginTop: 8, fontSize: 12.5, fontWeight: 500, color: 'var(--lh-accent)' }}>
               Al finalizar serás llevado directamente al formulario de registro de negocio.
             </p>
           )}
         </div>
 
         {error && (
-          <div
-            className="mb-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500"
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-            role="alert"
-          >
-            <p className="text-sm">{error}</p>
+          <div role="alert" style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 13, background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)' }}>
+            <p style={{ fontSize: 14, color: 'var(--lh-terra)', margin: 0 }}>{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleInitialSubmit} className="space-y-6">
+        <form onSubmit={handleInitialSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div>
-            <label htmlFor="name" className="lt-label">
-              Nombre Completo *
-            </label>
-            <AccessibleInput
+            <label htmlFor="name" className="lh-label">Nombre completo *</label>
+            <input
               id="name"
               name="name"
               type="text"
-              label="Nombre Completo"
-              showLabel={false}
               value={name}
-              onChange={(e) => {
-                setName(e.target.value)
-                if (fieldError) setFieldError(null)
-              }}
+              onChange={(e) => { setName(e.target.value); if (fieldError) setFieldError(null) }}
               required
               autoComplete="name"
               disabled={isLoading}
-              className="lt-input"
+              className="lh-input"
               placeholder="Tu nombre completo"
             />
           </div>
 
           <div>
-            <label htmlFor="dateOfBirth" className="lt-label">
-              Fecha de Nacimiento
-            </label>
-            <div className="relative">
-              <AccessibleInput
+            <label htmlFor="dateOfBirth" className="lh-label">Fecha de nacimiento</label>
+            <div style={{ position: 'relative' }}>
+              <input
                 id="dateOfBirth"
                 name="dateOfBirth"
                 type="date"
-                label="Fecha de Nacimiento"
-                showLabel={false}
                 value={dateOfBirth}
-                onChange={(e) => {
-                  setDateOfBirth(e.target.value)
-                  if (fieldError) setFieldError(null)
-                  if (error) setError(null)
-                }}
+                onChange={(e) => { setDateOfBirth(e.target.value); if (fieldError) setFieldError(null); if (error) setError(null) }}
                 required
                 autoComplete="bday"
                 disabled={isLoading}
-                className="lt-input pr-12"
-                error={fieldError ?? undefined}
+                className={`lh-input${fieldError ? ' lh-input--invalid' : ''}`}
+                style={{ paddingRight: 44 }}
                 max={new Date().toISOString().split('T')[0]}
               />
-              <div
-                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ color: 'var(--lt-ink-soft)' }}
-              >
-                <Calendar className="h-5 w-5" />
+              <div style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--lh-fg3)' }}>
+                <Calendar size={18} />
               </div>
             </div>
-            <p className="mt-1 text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-              Debes tener al menos 16 años (legislación australiana)
-            </p>
+            {fieldError ? (
+              <p style={{ marginTop: 6, fontSize: 12.5, color: 'var(--lh-terra)' }}>{fieldError}</p>
+            ) : (
+              <p style={{ marginTop: 6, fontSize: 12.5, color: 'var(--lh-fg3)' }}>Debes tener al menos 16 años (legislación australiana)</p>
+            )}
           </div>
 
-          <LtButton
-            type="submit"
-            variant="sticker"
-            tone="terracota"
-            size="md"
-            className="w-full"
-            disabled={isLoading}
-            loading={isLoading}
-          >
-            Continuar
-          </LtButton>
+          <Button type="submit" variant="primary" size="md" disabled={isLoading} style={{ width: '100%' }}>
+            {isLoading ? 'Procesando…' : 'Continuar'}
+          </Button>
         </form>
-      </LtPanel>
+      </div>
 
       <LegalContractModal
         isOpen={showContractModal}
@@ -242,6 +191,6 @@ export default function CompleteProfileForm() {
         onAcceptedChange={setContractAccepted}
         submitLabel="Aceptar y Completar Perfil"
       />
-    </LtPageShell>
+    </>
   )
 }

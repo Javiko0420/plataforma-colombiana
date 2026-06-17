@@ -11,13 +11,8 @@ function LiveElapsedBadge({ fx }: { fx: WorldCupFixture }) {
   if (fx.status.elapsed == null) return null
   return (
     <span
-      className="inline-flex items-center gap-1 text-xs font-bold px-1.5 py-0.5 rounded"
-      style={{
-        background: 'var(--lt-terracota)',
-        color: 'var(--lt-paper)',
-        fontFamily: 'var(--lt-font-sans)',
-        fontVariantNumeric: 'tabular-nums',
-      }}
+      className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5"
+      style={{ background: 'var(--lh-terra)', color: '#fff', borderRadius: 99, fontVariantNumeric: 'tabular-nums' }}
     >
       <span className="animate-pulse leading-none" aria-hidden="true">●</span>
       {fx.status.elapsed}&apos;
@@ -27,37 +22,20 @@ function LiveElapsedBadge({ fx }: { fx: WorldCupFixture }) {
 
 function FixtureRow({ fx }: { fx: WorldCupFixture }) {
   return (
-    <li
-      className="rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] p-3 transition-all hover:-translate-y-0.5"
-      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-    >
+    <li className="lh-card" style={{ padding: 14 }}>
       <div className="flex items-center justify-between mb-2">
-        <span
-          className="text-xs"
-          style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-        >
-          {fx.round}
-        </span>
+        <span style={{ fontSize: 12, color: 'var(--lh-fg3)' }}>{fx.round}</span>
         <LiveElapsedBadge fx={fx} />
       </div>
-      <div
-        className="flex items-center justify-between font-bold text-base"
-        style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-      >
-        <span className="flex-1 text-right pr-3 leading-tight">{fx.teams.home.name}</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, fontWeight: 600, fontSize: 15, color: 'var(--lh-fg)' }}>
+        <span style={{ flex: 1, textAlign: 'right', lineHeight: 1.2 }}>{fx.teams.home.name}</span>
         <span
-          className="px-3 py-1 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0 text-sm"
-          style={{
-            background: 'var(--lt-ink)',
-            color: 'var(--lt-paper)',
-            boxShadow: '2px 2px 0 var(--lt-terracota)',
-            fontVariantNumeric: 'tabular-nums',
-            letterSpacing: '0.04em',
-          }}
+          className="shrink-0"
+          style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 56, padding: '5px 12px', borderRadius: 10, background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)', color: 'var(--lh-terra)', fontWeight: 700, fontSize: 14, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em' }}
         >
           {fx.goals.home ?? '–'} : {fx.goals.away ?? '–'}
         </span>
-        <span className="flex-1 pl-3 leading-tight">{fx.teams.away.name}</span>
+        <span style={{ flex: 1, lineHeight: 1.2 }}>{fx.teams.away.name}</span>
       </div>
     </li>
   )
@@ -89,22 +67,14 @@ export default function WorldcupLiveSection({
 
   if (data.fixtures.length === 0) {
     return (
-      <p
-        className="text-sm py-1 pl-3 border-l-2"
-        style={{
-          color: 'var(--lt-ink-soft)',
-          fontFamily: 'var(--lt-font-sans)',
-          borderColor: 'var(--lt-ink-soft)',
-          opacity: 0.65,
-        }}
-      >
+      <p className="text-sm py-1 pl-3" style={{ color: 'var(--lh-fg3)', borderLeft: '2px solid var(--lh-border)' }}>
         {t('sports.empty.live')}
       </p>
     )
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2.5">
       {data.fixtures.map((fx) => (
         <FixtureRow key={fx.id} fx={fx} />
       ))}

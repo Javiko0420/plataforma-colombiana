@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import LoginForm from '@/components/ui/login-form'
-import { LtPageShell } from '@/components/lt'
 
 export const metadata: Metadata = {
   title: 'Iniciar Sesión | Latin Territory',
@@ -23,8 +22,10 @@ export default async function SignInPage({
   }
 
   return (
-    <LtPageShell maxWidth="md" className="flex items-center">
-      <LoginForm callbackUrl={params.callbackUrl} />
-    </LtPageShell>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'var(--lh-font)' }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
+        <LoginForm callbackUrl={params.callbackUrl} />
+      </div>
+    </div>
   )
 }

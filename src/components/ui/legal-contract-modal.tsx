@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { FileText, X, CheckCircle } from 'lucide-react'
-import { LtButton, LtPanel } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 interface LegalContractModalProps {
   isOpen: boolean
@@ -14,6 +14,10 @@ interface LegalContractModalProps {
   /** Label for the confirm button */
   submitLabel?: string
 }
+
+const h5: React.CSSProperties = { fontWeight: 600, marginBottom: 8, color: 'var(--lh-fg)' }
+const link: React.CSSProperties = { color: 'var(--lh-accent)', textDecoration: 'underline' }
+const strong: React.CSSProperties = { color: 'var(--lh-fg)', fontWeight: 600 }
 
 /**
  * Shared Legal Contract Modal.
@@ -34,71 +38,46 @@ export default function LegalContractModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
-      style={{ background: 'rgba(34, 21, 15, 0.75)' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="contract-modal-title"
     >
-      <LtPanel shadow="lg" className="w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        <div className="p-6 border-b-[2px] border-[var(--lt-ink)] flex items-center justify-between">
+      <div
+        className="w-full max-w-2xl flex flex-col overflow-hidden"
+        style={{ maxHeight: '90vh', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', borderRadius: 20, boxShadow: 'var(--lh-shadow-lg)', fontFamily: 'var(--lh-font)' }}
+      >
+        <div className="flex items-center justify-between" style={{ padding: '18px 24px', background: 'linear-gradient(160deg,var(--lh-accent),var(--lh-accent-ink))', color: '#fff' }}>
           <div className="flex items-center gap-3">
-            <div
-              className="p-2 rounded-full border-[2px] border-[var(--lt-ink)]"
-              style={{ background: 'var(--lt-bg)', color: 'var(--lt-terracota)' }}
-            >
-              <FileText className="w-6 h-6" />
-            </div>
+            <span style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,.16)' }}>
+              <FileText size={20} />
+            </span>
             <div>
-              <h3
-                id="contract-modal-title"
-                className="text-lg font-bold"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
+              <h3 id="contract-modal-title" style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, margin: 0 }}>
                 Contrato de Usuario Registrado
               </h3>
-              <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                Debes aceptar para continuar con tu registro.
-              </p>
+              <p style={{ fontSize: 12, opacity: 0.85, margin: '2px 0 0' }}>Debes aceptar para continuar con tu registro.</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="transition-colors p-1 hover:opacity-70"
-            style={{ color: 'var(--lt-ink-soft)' }}
-            aria-label="Cerrar modal"
-          >
-            <X className="w-5 h-5" />
+          <button onClick={onClose} aria-label="Cerrar modal" style={{ color: '#fff', background: 'transparent', border: 0, cursor: 'pointer', padding: 4, borderRadius: 8, display: 'inline-flex' }}>
+            <X size={20} />
           </button>
         </div>
 
         <div
-          className="p-6 overflow-y-auto text-sm space-y-6 leading-relaxed"
-          style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+          className="overflow-y-auto text-sm space-y-6 leading-relaxed"
+          style={{ padding: 24, background: 'var(--lh-bg)', color: 'var(--lh-fg2)' }}
         >
-
-          <div className="text-center border-b-[2px] border-[var(--lt-ink)] pb-6">
-            <h4
-              className="text-xl font-bold mb-2"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
+          <div className="text-center pb-6" style={{ borderBottom: '1px solid var(--lh-border)' }}>
+            <h4 style={{ fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, marginBottom: 8, color: 'var(--lh-fg)' }}>
               CONTRATO DE USUARIO REGISTRADO
             </h4>
-            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
-              (Acuerdo de Registro y Uso)
-            </p>
-            <p
-              className="text-sm font-medium mt-3"
-              style={{ color: 'var(--lt-ink)' }}
-            >
-              Latinterritory.com
-            </p>
-            <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
-              Última actualización: 03 de febrero de 2026
-            </p>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)' }}>(Acuerdo de Registro y Uso)</p>
+            <p style={{ fontSize: 14, fontWeight: 500, marginTop: 12, color: 'var(--lh-fg)' }}>Latinterritory.com</p>
+            <p style={{ fontSize: 12, marginTop: 4, color: 'var(--lh-fg3)' }}>Última actualización: 03 de febrero de 2026</p>
           </div>
 
-          {/* Introduction */}
           <div className="text-justify space-y-3">
             <p>
               Este Contrato de Usuario Registrado (el &quot;Acuerdo&quot;) es un acuerdo legal entre tú (&quot;Usuario&quot;, &quot;tú&quot;) y el operador de latinterritory.com (&quot;la Plataforma&quot;), Javier Felipe Guerrero Zambrano, Brisbane QLD, Australia (&quot;Latinterritory&quot;, &quot;nosotros&quot;).
@@ -108,20 +87,18 @@ export default function LegalContractModal({
             </p>
           </div>
 
-          {/* 1. Binding documents */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>1) Documentos vinculantes</h5>
+            <h5 style={h5}>1) Documentos vinculantes</h5>
             <p className="mb-2">Este Acuerdo se complementa con:</p>
             <ol className="list-decimal pl-6 space-y-1 mb-2">
-              <li><Link href="/terminos" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Términos de Uso de la Plataforma</Link>, y</li>
-              <li><Link href="/privacidad" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Política de Privacidad</Link>.</li>
+              <li><Link href="/terminos" target="_blank" style={link}>Términos de Uso de la Plataforma</Link>, y</li>
+              <li><Link href="/privacidad" target="_blank" style={link}>Política de Privacidad</Link>.</li>
             </ol>
             <p>En caso de conflicto, prevalecerá el documento más específico para la funcionalidad que estés usando.</p>
           </div>
 
-          {/* 2. Eligibility */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>2) Elegibilidad y capacidad</h5>
+            <h5 style={h5}>2) Elegibilidad y capacidad</h5>
             <ul className="space-y-2">
               <li><strong>2.1.</strong> Debes tener 16 años o más para registrarte.</li>
               <li><strong>2.2.</strong> Garantizas que tienes capacidad legal para celebrar este Acuerdo y cumplirlo.</li>
@@ -129,9 +106,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 3. Account registration */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>3) Registro de cuenta y seguridad</h5>
+            <h5 style={h5}>3) Registro de cuenta y seguridad</h5>
             <ul className="space-y-2">
               <li><strong>3.1.</strong> Para registrarte, debes proporcionar un correo electrónico y crear una contraseña.</li>
               <li><strong>3.2.</strong> Eres responsable de mantener tus credenciales seguras y de toda actividad realizada desde tu cuenta.</li>
@@ -140,9 +116,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 4. Profile and identity */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>4) Perfil, identidad y datos visibles</h5>
+            <h5 style={h5}>4) Perfil, identidad y datos visibles</h5>
             <ul className="space-y-2">
               <li><strong>4.1.</strong> La Plataforma podrá mostrar públicamente información asociada a tu actividad, incluyendo reseñas y publicaciones en foros.</li>
               <li><strong>4.2.</strong> Al publicar una reseña, aceptas que se muestre públicamente tu ciudad (por ejemplo, Brisbane, Sydney, etc.) como parte del contexto del contenido.</li>
@@ -151,9 +126,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 5. Conduct rules */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>5) Reglas de conducta y uso permitido</h5>
+            <h5 style={h5}>5) Reglas de conducta y uso permitido</h5>
             <p className="mb-2">Te comprometes a NO:</p>
             <ol className="list-[lower-alpha] pl-6 space-y-1">
               <li>publicar contenido ilegal, fraudulento o engañoso;</li>
@@ -167,9 +141,8 @@ export default function LegalContractModal({
             </ol>
           </div>
 
-          {/* 6. User generated content */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>6) Contenido generado por el usuario (UGC)</h5>
+            <h5 style={h5}>6) Contenido generado por el usuario (UGC)</h5>
             <ul className="space-y-2">
               <li><strong>6.1.</strong> &quot;Contenido&quot; incluye reseñas, publicaciones en foros, textos, imágenes (donde estén permitidas), logos y cualquier material que subas.</li>
               <li><strong>6.2.</strong> Eres el único responsable de tu Contenido y garantizas que:
@@ -184,9 +157,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 7. Reviews */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>7) Reseñas (publicación, visibilidad y moderación posterior)</h5>
+            <h5 style={h5}>7) Reseñas (publicación, visibilidad y moderación posterior)</h5>
             <ul className="space-y-2">
               <li><strong>7.1.</strong> Las reseñas requieren inicio de sesión.</li>
               <li><strong>7.2.</strong> <em>Visibilidad:</em> por diseño, las reseñas publicadas se muestran públicamente y la Plataforma puede mostrar todas las reseñas (positivas, neutrales o negativas), salvo que infrinjan este Acuerdo, los Términos, o la ley.</li>
@@ -205,9 +177,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 8. Forums */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>8) Foros (V1: solo texto) y contenido efímero</h5>
+            <h5 style={h5}>8) Foros (V1: solo texto) y contenido efímero</h5>
             <ul className="space-y-2">
               <li><strong>8.1.</strong> En V1, los foros son solo texto. No está permitido subir imágenes, archivos o adjuntos en foros.</li>
               <li><strong>8.2.</strong> En V1, las publicaciones del foro están diseñadas para borrado automático tras aproximadamente 24 horas.</li>
@@ -217,9 +188,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 9. Business directory */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>9) Directorio de negocios y administración de fichas</h5>
+            <h5 style={h5}>9) Directorio de negocios y administración de fichas</h5>
             <ul className="space-y-2">
               <li><strong>9.1.</strong> Si creas o administras una ficha de negocio, declaras que eres el dueño o representante autorizado y que tienes derecho a publicar datos como nombre comercial, correo, teléfono, dirección, web y material gráfico.</li>
               <li><strong>9.2.</strong> Aceptas que estos datos pueden ser visibles públicamente sin login y ser indexados por motores de búsqueda.</li>
@@ -228,9 +198,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 10. Jobs */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>10) Empleos (V1) y enlaces externos</h5>
+            <h5 style={h5}>10) Empleos (V1) y enlaces externos</h5>
             <ul className="space-y-2">
               <li><strong>10.1.</strong> En V1, la Plataforma muestra anuncios de empleo y dirige a procesos de postulación externos mediante enlaces. No recopilamos CVs ni gestionamos postulaciones internas en V1.</li>
               <li><strong>10.2.</strong> No garantizamos la veracidad, legalidad o disponibilidad de sitios externos. Al salir de la Plataforma aplican términos/privacidad de terceros.</li>
@@ -239,9 +208,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 11. Moderation */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>11) Moderación, automatización e IA</h5>
+            <h5 style={h5}>11) Moderación, automatización e IA</h5>
             <ul className="space-y-2">
               <li><strong>11.1.</strong> Podemos moderar contenido manualmente y/o con herramientas automatizadas (incluida IA) para prevenir abuso, fraude y contenido prohibido.</li>
               <li><strong>11.2.</strong> La moderación automatizada puede equivocarse. Puedes solicitar revisión mediante los canales oficiales de soporte/reporte.</li>
@@ -249,9 +217,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 12. Reports */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>12) Reportes, quejas y &quot;takedown&quot;</h5>
+            <h5 style={h5}>12) Reportes, quejas y &quot;takedown&quot;</h5>
             <ul className="space-y-2">
               <li><strong>12.1.</strong> Puedes reportar contenido o conducta.</li>
               <li><strong>12.2.</strong> Podemos solicitar información adicional para investigar.</li>
@@ -260,9 +227,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 13. Suspension and termination */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>13) Suspensión y terminación</h5>
+            <h5 style={h5}>13) Suspensión y terminación</h5>
             <ul className="space-y-2">
               <li><strong>13.1.</strong> Puedes cerrar tu cuenta conforme a los mecanismos disponibles.</li>
               <li><strong>13.2.</strong> Podemos suspender o terminar tu acceso si:
@@ -276,9 +242,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 14. Security and availability */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>14) Seguridad, disponibilidad y cambios</h5>
+            <h5 style={h5}>14) Seguridad, disponibilidad y cambios</h5>
             <ul className="space-y-2">
               <li><strong>14.1.</strong> La Plataforma se ofrece &quot;tal cual&quot; y &quot;según disponibilidad&quot;.</li>
               <li><strong>14.2.</strong> Podemos cambiar, actualizar o discontinuar funciones en cualquier momento por mantenimiento o mejoras.</li>
@@ -286,9 +251,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 15. Limitation of liability */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>15) Limitación de responsabilidad</h5>
+            <h5 style={h5}>15) Limitación de responsabilidad</h5>
             <ul className="space-y-2">
               <li><strong>15.1.</strong> En la medida permitida por la ley, Latinterritory no será responsable por:
                 <ul className="list-disc pl-6 mt-1 space-y-1">
@@ -302,9 +266,8 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 16. Indemnity */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>16) Indemnidad</h5>
+            <h5 style={h5}>16) Indemnidad</h5>
             <p>
               En la medida permitida por la ley, aceptas defender, indemnizar y mantener indemne a Latinterritory frente a reclamaciones de terceros derivadas de:
             </p>
@@ -316,77 +279,50 @@ export default function LegalContractModal({
             </ul>
           </div>
 
-          {/* 17. Applicable law */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>17) Ley aplicable y jurisdicción</h5>
+            <h5 style={h5}>17) Ley aplicable y jurisdicción</h5>
             <p>
               Este Acuerdo se rige por las leyes de Queensland, Australia, y las partes se someten a la jurisdicción de sus tribunales, salvo que la ley disponga lo contrario.
             </p>
           </div>
 
-          {/* 18. Contact */}
           <div className="text-justify">
-            <h5 className="font-bold mb-2" style={{ color: 'var(--lt-ink)' }}>18) Contacto</h5>
+            <h5 style={h5}>18) Contacto</h5>
             <p>
-              Para privacidad, reportes o solicitudes: <a href="mailto:privacy@latinterritory.com" className="text-[var(--lt-terracota)] hover:underline">privacy@latinterritory.com</a>
+              Para privacidad, reportes o solicitudes: <a href="mailto:privacy@latinterritory.com" style={link}>privacy@latinterritory.com</a>
             </p>
           </div>
 
         </div>
 
-        <div className="p-6 border-t-[2px] border-[var(--lt-ink)]">
-          <label className="flex items-start gap-3 cursor-pointer mb-6 group">
-            <div className="relative flex items-center mt-0.5">
-              <input
-                type="checkbox"
-                checked={accepted}
-                onChange={(e) => onAcceptedChange(e.target.checked)}
-                className="w-5 h-5 border-[2px] border-[var(--lt-ink)] rounded accent-[var(--lt-terracota)] cursor-pointer"
-                aria-describedby="contract-acceptance-description"
-              />
-            </div>
-            <span
-              id="contract-acceptance-description"
-              className="text-sm select-none transition-colors"
-              style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-            >
-              Al crear mi cuenta, declaro que tengo <strong style={{ color: 'var(--lt-ink)' }}>16 años o más</strong> y acepto los{' '}
-              <Link href="/terminos" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Términos de Uso</Link>, la{' '}
-              <Link href="/privacidad" target="_blank" className="text-[var(--lt-terracota)] hover:underline">Política de Privacidad</Link> y el{' '}
-              <strong style={{ color: 'var(--lt-ink)' }}>Contrato de Usuario Registrado</strong>.
+        <div style={{ padding: 24, borderTop: '1px solid var(--lh-border)' }}>
+          <label className="flex items-start gap-3 cursor-pointer" style={{ marginBottom: 22 }}>
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(e) => onAcceptedChange(e.target.checked)}
+              style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: 'var(--lh-accent)', cursor: 'pointer' }}
+              aria-describedby="contract-acceptance-description"
+            />
+            <span id="contract-acceptance-description" style={{ fontSize: 14, userSelect: 'none', color: 'var(--lh-fg2)', lineHeight: 1.5 }}>
+              Al crear mi cuenta, declaro que tengo <strong style={strong}>16 años o más</strong> y acepto los{' '}
+              <Link href="/terminos" target="_blank" style={link}>Términos de Uso</Link>, la{' '}
+              <Link href="/privacidad" target="_blank" style={link}>Política de Privacidad</Link> y el{' '}
+              <strong style={strong}>Contrato de Usuario Registrado</strong>.
             </span>
           </label>
 
           <div className="flex gap-3">
-            <LtButton
-              onClick={onClose}
-              disabled={isLoading}
-              variant="outline"
-              tone="paper"
-              size="md"
-              className="flex-1"
-            >
+            <Button onClick={onClose} disabled={isLoading} variant="secondary" size="md" style={{ flex: 1 }}>
               Cancelar
-            </LtButton>
-
-            <LtButton
-              onClick={onConfirm}
-              disabled={!accepted || isLoading}
-              variant="sticker"
-              tone="terracota"
-              size="md"
-              rotate={-1}
-              loading={isLoading}
-              loadingText="Procesando..."
-              iconLeft={!isLoading ? <CheckCircle className="h-5 w-5" /> : undefined}
-              className="flex-1"
-              aria-label={isLoading ? 'Procesando...' : submitLabel}
-            >
-              {submitLabel}
-            </LtButton>
+            </Button>
+            <Button onClick={onConfirm} disabled={!accepted || isLoading} variant="primary" size="md" style={{ flex: 1 }} aria-label={isLoading ? 'Procesando...' : submitLabel}>
+              {!isLoading && <CheckCircle size={18} />}
+              {isLoading ? 'Procesando…' : submitLabel}
+            </Button>
           </div>
         </div>
-      </LtPanel>
+      </div>
     </div>
   )
 }

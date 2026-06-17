@@ -35,26 +35,16 @@ export default function ImageUpload({
     <div>
       <div className="mb-4 flex flex-wrap gap-4">
         {value.map((url) => (
-          <div
-            key={url}
-            className="relative w-[200px] h-[200px] rounded-[var(--lt-radius-sm)] overflow-hidden border-[2px] border-[var(--lt-ink)]"
-          >
-            <div className="z-10 absolute top-2 right-2">
-              <button
-                type="button"
-                onClick={() => onRemove(url)}
-                className="p-1.5 rounded-full transition-colors border-[2px] border-[var(--lt-ink)]"
-                style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)' }}
-              >
-                <Trash className="w-4 h-4" />
-              </button>
-            </div>
-            <Image
-              fill
-              className="object-cover"
-              alt="Imagen del negocio"
-              src={url}
-            />
+          <div key={url} style={{ position: 'relative', width: 160, height: 160, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--lh-border)' }}>
+            <button
+              type="button"
+              onClick={() => onRemove(url)}
+              aria-label="Quitar imagen"
+              style={{ position: 'absolute', zIndex: 10, top: 8, right: 8, width: 32, height: 32, borderRadius: '50%', border: 0, background: 'rgba(0,0,0,.6)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            >
+              <Trash size={15} />
+            </button>
+            <Image fill style={{ objectFit: 'cover' }} alt="Imagen del negocio" src={url} />
           </div>
         ))}
       </div>
@@ -70,19 +60,19 @@ export default function ImageUpload({
             sources: ['local', 'url', 'camera'],
             styles: {
               palette: {
-                window: '#fff3d8',
-                sourceBg: '#fffaee',
-                windowBorder: '#22150f',
-                tabIcon: '#b34020',
-                inactiveTabIcon: '#7a4f3b',
-                menuIcons: '#7a4f3b',
-                link: '#b34020',
-                action: '#b34020',
-                inProgress: '#f0a932',
-                complete: '#336940',
-                error: '#b33868',
-                textDark: '#22150f',
-                textLight: '#fffaee',
+                window: '#FFFFFF',
+                sourceBg: '#FAF6EF',
+                windowBorder: '#181B21',
+                tabIcon: '#2E5E8C',
+                inactiveTabIcon: '#5C616D',
+                menuIcons: '#5C616D',
+                link: '#2E5E8C',
+                action: '#2E5E8C',
+                inProgress: '#D4A24C',
+                complete: '#5C8A6B',
+                error: '#D8775F',
+                textDark: '#181B21',
+                textLight: '#FFFFFF',
               },
             },
           }}
@@ -92,17 +82,16 @@ export default function ImageUpload({
               type="button"
               disabled={disabled}
               onClick={() => open()}
-              className="flex items-center gap-2 px-4 py-3 rounded-[var(--lt-radius-sm)] border-[2px] border-dashed border-[var(--lt-ink)] transition-all w-full justify-center"
-              style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px 16px', borderRadius: 14, border: '1.5px dashed var(--lh-border)', background: 'var(--lh-surface2)', color: 'var(--lh-fg2)', fontFamily: 'var(--lh-font)', fontSize: 14.5, fontWeight: 500, cursor: 'pointer' }}
             >
-              <ImagePlus className="w-5 h-5" />
-              Subir Imágenes (Máx {5 - value.length})
+              <ImagePlus size={18} />
+              Subir imágenes (máx {5 - value.length})
             </button>
           )}
         </CldUploadWidget>
       )}
 
-      <p className="text-xs mt-2" style={{ color: 'var(--lt-ink-soft)' }}>
+      <p style={{ fontSize: 12.5, marginTop: 8, color: 'var(--lh-fg3)' }}>
         Máximo 5 fotos de 2MB cada una. Formatos: JPG, PNG, WEBP.
       </p>
     </div>

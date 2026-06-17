@@ -50,24 +50,15 @@ export default async function AdminUsersPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end gap-4">
         <div>
-          <h1
-            className="text-2xl font-bold text-[var(--lt-ink)]"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            Gestión de Usuarios
-          </h1>
-          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.4vw,28px)', margin: 0 }}>Gestión de usuarios</h1>
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
             Administra roles, permisos y accesos a la plataforma.
           </p>
         </div>
-        <div className="text-right text-xs text-[var(--lt-ink-soft)]">
-          Total:{' '}
-          <span className="font-bold text-[var(--lt-ink)]">
-            {totalUsers}
-          </span>{' '}
-          usuarios
+        <div style={{ textAlign: 'right', fontSize: 12.5, color: 'var(--lh-fg3)', whiteSpace: 'nowrap' }}>
+          Total: <span style={{ fontWeight: 700, color: 'var(--lh-fg)' }}>{totalUsers}</span> usuarios
         </div>
       </div>
 

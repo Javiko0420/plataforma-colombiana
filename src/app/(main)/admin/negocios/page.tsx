@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { BusinessTable } from '@/components/admin/business-table'
 import { BusinessReportCard } from '@/components/admin/business-report-card'
-import { LtBadge } from '@/components/lt'
 import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -87,21 +86,18 @@ export default async function AdminBusinessesPage({
       {/* Sección: Negocios Reportados (prioridad alta) */}
       {reportedBusinesses.length > 0 && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-4">
             <div>
-              <h2
-                className="text-xl font-bold text-[var(--lt-terracota)]"
-                style={{ fontFamily: 'var(--lt-font-serif)' }}
-              >
-                Negocios Reportados
+              <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-terra)', margin: 0 }}>
+                Negocios reportados
               </h2>
-              <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
+              <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
                 Negocios con reportes pendientes de revisión por la comunidad.
               </p>
             </div>
-            <LtBadge tone="terracota">
+            <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', padding: '5px 11px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)', color: 'var(--lh-terra)', fontSize: 12.5, fontWeight: 600 }}>
               {reportedBusinesses.length} pendiente{reportedBusinesses.length !== 1 ? 's' : ''}
-            </LtBadge>
+            </span>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -114,25 +110,15 @@ export default async function AdminBusinessesPage({
 
       {/* Sección: Gestión General del Directorio */}
       <div className="space-y-6">
-        <div className="flex justify-between items-end">
+        <div className="flex justify-between items-end gap-4">
           <div>
-            <h1
-              className="text-2xl font-bold text-[var(--lt-ink)]"
-              style={{ fontFamily: 'var(--lt-font-serif)' }}
-            >
-              Gestión de Negocios
-            </h1>
-            <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
-              Administra el directorio, verifica empresas y gestiona la
-              visibilidad.
+            <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.4vw,28px)', margin: 0 }}>Gestión de negocios</h1>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
+              Administra el directorio, verifica empresas y gestiona la visibilidad.
             </p>
           </div>
-          <div className="text-right text-xs text-[var(--lt-ink-soft)]">
-            Total:{' '}
-            <span className="font-bold text-[var(--lt-ink)]">
-              {totalItems}
-            </span>{' '}
-            negocios encontrados
+          <div style={{ textAlign: 'right', fontSize: 12.5, color: 'var(--lh-fg3)', whiteSpace: 'nowrap' }}>
+            Total: <span style={{ fontWeight: 700, color: 'var(--lh-fg)' }}>{totalItems}</span> negocios
           </div>
         </div>
 

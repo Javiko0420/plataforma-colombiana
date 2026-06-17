@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import EventForm from '@/components/eventos/EventForm'
-import { LtPageShell, LtPanel } from '@/components/lt'
 
 export default async function CrearEventoPage() {
   const session = await getServerSession(authOptions)
@@ -12,23 +11,19 @@ export default async function CrearEventoPage() {
   }
 
   return (
-    <LtPageShell maxWidth="2xl">
-      <div className="text-center mb-8 space-y-2">
-        <h1
-          className="text-3xl md:text-4xl font-extrabold tracking-tight"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
-          Publica un Evento
-        </h1>
-        <p className="text-lg" style={{ color: 'var(--lt-ink-soft)' }}>
-          Comparte eventos con la comunidad y haz que la gente viva
-          experiencias increíbles.
-        </p>
-      </div>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)', paddingTop: '2.5rem', paddingBottom: '4rem' }}>
+      <div className="lh-container" style={{ maxWidth: 760 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <h1 className="lh-h1" style={{ fontSize: 'clamp(30px,4.5vw,42px)' }}>Publica un evento</h1>
+          <p style={{ fontSize: 17, color: 'var(--lh-fg2)', margin: '14px auto 0', maxWidth: 520, lineHeight: 1.55 }}>
+            Comparte eventos con la comunidad y haz que la gente viva experiencias increíbles.
+          </p>
+        </div>
 
-      <LtPanel className="p-6 md:p-8">
-        <EventForm />
-      </LtPanel>
-    </LtPageShell>
+        <div className="lh-card" style={{ padding: 'clamp(22px,4vw,32px)' }}>
+          <EventForm />
+        </div>
+      </div>
+    </div>
   )
 }

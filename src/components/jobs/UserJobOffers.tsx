@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Briefcase, Trash2, PlusCircle, Edit } from 'lucide-react';
 import { deleteUserJobOffer } from '@/app/actions/jobActions';
 import { JobOffer } from '@prisma/client';
-import { LtEmptyState, LtPanel, LtButton, LtBadge } from '@/components/lt';
+import { EmptyState } from '@/components/lh/EmptyState';
+import { Button } from '@/components/lh/Button';
 import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories';
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
 
 export default function UserJobOffers({
   initialJobs,
@@ -26,35 +28,33 @@ export default function UserJobOffers({
     if (!confirmed) return;
 
     setIsDeleting(jobId);
-    
+
     const response = await deleteUserJobOffer(jobId);
-    
+
     if (response.error) {
       alert(`Error: ${response.error}`);
     } else {
       setJobs((prev) => prev.filter((job) => job.id !== jobId));
     }
-    
+
     setIsDeleting(null);
   };
 
   if (jobs.length === 0) {
     return (
-      <LtEmptyState
+      <EmptyState
+        icon={<Briefcase size={26} />}
         title="Aún no tienes ofertas publicadas"
         description="¿Buscas talento para tu negocio o proyecto? Publica una vacante y conecta con la comunidad latina en Australia."
-        icon={<Briefcase className="w-12 h-12" style={{ color: 'var(--lt-ink-soft)' }} />}
         action={
           onCreateClick ? (
-            <LtButton variant="sticker" tone="terracota" size="md" rotate={-1} iconLeft={<PlusCircle className="w-5 h-5" />} onClick={onCreateClick}>
-              Publicar mi primera oferta
-            </LtButton>
+            <Button variant="primary" size="md" onClick={onCreateClick}>
+              <PlusCircle size={18} /> Publicar mi primera oferta
+            </Button>
           ) : (
-            <Link href="/empleos/publicar">
-              <LtButton variant="sticker" tone="terracota" size="md" rotate={-1} iconLeft={<PlusCircle className="w-5 h-5" />}>
-                Publicar mi primera oferta
-              </LtButton>
-            </Link>
+            <Button href="/empleos/publicar" variant="primary" size="md">
+              <PlusCircle size={18} /> Publicar mi primera oferta
+            </Button>
           )
         }
       />
@@ -69,42 +69,35 @@ export default function UserJobOffers({
         );
 
         return (
-          <LtPanel key={job.id} tone="bg" shadow="sm" className="p-5 flex flex-col">
-            <div className="flex justify-between items-start mb-3 gap-3">
-              <h4
-                className="font-bold line-clamp-2"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
+          <div key={job.id} className="lh-card" style={{ padding: 20, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+              <h4 className="line-clamp-2" style={{ fontFamily: 'var(--lh-font)', fontSize: 16, fontWeight: 600, letterSpacing: '-.01em', color: 'var(--lh-fg)', margin: 0 }}>
                 {job.title}
               </h4>
-              <LtBadge tone="sun" rotate={1}>
-                ⏳ {diffDays} {diffDays === 1 ? 'día' : 'días'}
-              </LtBadge>
+              <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 99, background: tint('var(--lh-warm)'), color: 'var(--lh-warm)', fontSize: 12, fontWeight: 600 }}>
+                {diffDays} {diffDays === 1 ? 'día' : 'días'}
+              </span>
             </div>
-            
-            <p className="text-sm mb-4 line-clamp-2 flex-grow" style={{ color: 'var(--lt-ink-soft)' }}>
+
+            <p className="line-clamp-2" style={{ fontSize: 13.5, color: 'var(--lh-fg2)', margin: '0 0 16px', flex: 1 }}>
               {categoryLabel(JOB_CATEGORIES, job.category)} • {job.location}
             </p>
 
-            <div className="pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 mt-auto flex justify-end gap-2">
-              <Link href={`/empleos/editar/${job.id}`}>
-                <LtButton variant="outline" tone="paper" size="sm" iconLeft={<Edit className="w-4 h-4" />}>
-                  Editar
-                </LtButton>
-              </Link>
-              <LtButton
-                variant="outline"
-                tone="paper"
-                size="sm"
-                iconLeft={<Trash2 className="w-4 h-4" />}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 14, borderTop: '1px solid var(--lh-border2)' }}>
+              <Button href={`/empleos/editar/${job.id}`} variant="secondary" size="sm">
+                <Edit size={15} /> Editar
+              </Button>
+              <button
+                type="button"
+                className="lh-btn lh-btn--sm lh-btn--secondary"
                 onClick={() => handleDelete(job.id, job.title)}
                 disabled={isDeleting === job.id}
-                className="!text-[var(--lt-terracota)] !border-[var(--lt-terracota)]"
+                style={{ color: 'var(--lh-terra)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, transparent)' }}
               >
-                {isDeleting === job.id ? 'Eliminando...' : 'Eliminar'}
-              </LtButton>
+                <Trash2 size={15} /> {isDeleting === job.id ? 'Eliminando…' : 'Eliminar'}
+              </button>
             </div>
-          </LtPanel>
+          </div>
         );
       })}
     </div>

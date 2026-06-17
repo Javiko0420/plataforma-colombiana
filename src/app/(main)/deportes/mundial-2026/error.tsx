@@ -16,38 +16,20 @@ export default function WorldcupError({
 
   return (
     <div
-      className="max-w-5xl mx-auto px-4 py-20 text-center"
-      style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}
+      className="lh-container text-center"
+      style={{ maxWidth: 980, padding: '80px 24px', minHeight: '100vh', background: 'var(--lh-bg)', fontFamily: 'var(--lh-font)' }}
     >
-      <h2
-        className="text-xl font-bold mb-3"
-        style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-      >
+      <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 22, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: '0 0 12px' }}>
         No se pudo cargar el Mundial 2026
       </h2>
-      <p
-        className="text-sm mb-8"
-        style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-      >
+      <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '0 0 28px' }}>
         Ocurrió un error al cargar los datos. Por favor intenta de nuevo.
       </p>
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={reset}
-          className="px-4 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-bold"
-          style={{
-            background: 'var(--lt-terracota)',
-            color: 'var(--lt-paper)',
-            boxShadow: '2px 2px 0 var(--lt-ink)',
-          }}
-        >
+      <div className="flex justify-center gap-3">
+        <button onClick={reset} className="lh-btn lh-btn--md lh-btn--primary">
           Reintentar
         </button>
-        <Link
-          href="/deportes"
-          className="px-4 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-bold"
-          style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink)' }}
-        >
+        <Link href="/deportes" className="lh-btn lh-btn--md lh-btn--secondary">
           ← Deportes
         </Link>
       </div>

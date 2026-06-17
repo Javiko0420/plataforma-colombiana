@@ -1,10 +1,11 @@
 import BusinessForm from "@/components/forms/business-form";
-import { LtPageShell } from "@/components/lt";
 
 export default function RegisterBusinessPage() {
   return (
-    <LtPageShell maxWidth="5xl">
-      <BusinessForm />
-    </LtPageShell>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-container" style={{ maxWidth: 880, paddingTop: 40, paddingBottom: 64 }}>
+        <BusinessForm />
+      </div>
+    </div>
   );
 }

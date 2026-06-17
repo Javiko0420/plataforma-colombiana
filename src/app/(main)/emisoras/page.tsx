@@ -1,12 +1,11 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Heart, Loader2, X, Search } from 'lucide-react'
+import { Heart, Loader2, X, Search, Radio as RadioIcon, Play, Square } from 'lucide-react'
 import { stations as featuredStations, useAudio, type Station } from '@/components/providers/audio-provider'
 import { useRadioFavorites } from '@/components/providers/radio-favorites'
 import { useTranslations } from '@/components/providers/language-provider'
-import { LtButton } from '@/components/lt/Button'
-import { Squiggle } from '@/components/lt/Squiggle'
+import { PageHeader } from '@/components/lh/PageHeader'
 
 type ApiResponse =
   | { success: true; data: { stations: Station[] } }
@@ -53,26 +52,9 @@ const GENRE_OPTIONS: Array<{ value: string; labelKey: string; fallback: string }
 
 const DEBOUNCE_MS = 400
 
-// Sol accent colors cycling by card index
-const ACCENT_BG = [
-  'var(--lt-terracota)',
-  'var(--lt-verde)',
-  'var(--lt-sun)',
-  'var(--lt-accent)',
-  'var(--lt-sun-core)',
-  'var(--lt-verde)',
-]
-const ACCENT_FG = [
-  'var(--lt-paper)',
-  'var(--lt-paper)',
-  'var(--lt-ink)',
-  'var(--lt-paper)',
-  'var(--lt-paper)',
-  'var(--lt-paper)',
-]
-type ValidTone = 'terracota' | 'verde' | 'sun' | 'accent'
-const BUTTON_TONES: ValidTone[] = ['terracota', 'verde', 'sun', 'accent', 'terracota', 'verde']
-const CARD_ROTATIONS = [-1, 1.5, -0.5, 1, -1.5, 0.5]
+// Acentos del sistema rotando por índice de tarjeta
+const ACCENTS = ['var(--lh-accent)', 'var(--lh-terra)', 'var(--lh-warm)', 'var(--lh-green)']
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
 
 export default function EmisorasPage() {
   const { play, pause, currentStation, isPlaying, isLoading } = useAudio()
@@ -200,94 +182,16 @@ export default function EmisorasPage() {
   }, [showResults, results])
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
 
-      {/* ── Header Sol ── */}
-      <header
-        style={{
-          background: 'var(--lt-bg)',
-          paddingTop: 64,
-          paddingBottom: 56,
-          paddingLeft: 24,
-          paddingRight: 24,
-          textAlign: 'center',
-          borderBottom: '2px solid var(--lt-ink)',
-        }}
-      >
-        {/* Eyebrow con squiggles */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 12,
-            marginBottom: 20,
-          }}
-        >
-          <Squiggle width={80} height={12} color="var(--lt-terracota)" />
-          <span
-            style={{
-              fontFamily: 'var(--lt-font-sans)',
-              fontSize: 13,
-              fontWeight: 700,
-              color: 'var(--lt-terracota)',
-              letterSpacing: '0.32em',
-              textTransform: 'uppercase',
-            }}
-          >
-            {t('radios.eyebrow', 'Escucha en vivo')}
-          </span>
-          <Squiggle width={80} height={12} color="var(--lt-terracota)" />
-        </div>
+      <PageHeader
+        eyebrow={t('radios.eyebrow', 'Escucha en vivo')}
+        title={t('radios.title', 'Emisoras que te llevan a casa')}
+        subtitle={t('radios.subtitle', 'Sintoniza tu emisora favorita desde cualquier parte del mundo.')}
+        accent="var(--lh-terra)"
+      />
 
-        {/* Título principal */}
-        <h1
-          style={{
-            fontFamily: 'var(--lt-font-serif)',
-            fontWeight: 800,
-            lineHeight: 1.1,
-            letterSpacing: '-0.02em',
-            color: 'var(--lt-ink)',
-            margin: '0 auto 16px',
-            maxWidth: 560,
-          }}
-        >
-          <span style={{ display: 'block', fontSize: 'clamp(40px, 5.5vw, 60px)' }}>
-            {t('radios.heading.line1', 'Emisoras que')}
-          </span>
-          <em
-            style={{
-              display: 'block',
-              fontSize: 'clamp(40px, 5.5vw, 60px)',
-              color: 'var(--lt-terracota)',
-              fontStyle: 'italic',
-            }}
-          >
-            {t('radios.heading.line2', 'te llevan a casa.')}
-          </em>
-        </h1>
-
-        <p
-          style={{
-            fontFamily: 'var(--lt-font-sans)',
-            fontSize: 17,
-            color: 'var(--lt-ink-soft)',
-            maxWidth: 480,
-            margin: '0 auto',
-            lineHeight: 1.6,
-          }}
-        >
-          {t('radios.subtitle', 'Sintoniza tu emisora favorita desde cualquier parte del mundo.')}
-        </p>
-      </header>
-
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: '40px 24px 120px',
-        }}
-      >
+      <div className="lh-container" style={{ maxWidth: 1200, paddingTop: 40, paddingBottom: 120 }}>
         <SearchPanel
           query={query}
           country={country}
@@ -301,114 +205,49 @@ export default function EmisorasPage() {
         {error && (
           <div
             role="alert"
-            style={{
-              marginTop: 16,
-              borderRadius: 12,
-              border: '2px solid var(--lt-terracota)',
-              background: 'var(--lt-paper)',
-              padding: '12px 16px',
-              fontFamily: 'var(--lt-font-sans)',
-              fontSize: 14,
-              color: 'var(--lt-terracota)',
-            }}
+            style={{ marginTop: 16, borderRadius: 13, border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)', background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', padding: '12px 16px', fontSize: 14, color: 'var(--lh-terra)' }}
           >
             {t('radios.error', 'No pudimos completar la búsqueda. Intenta de nuevo.')}
           </div>
         )}
 
         {hasFavorites && !showResults && (
-          <SolSection title={t('radios.section.favorites', 'Tus favoritas')}>
-            <StationGrid
-              stations={favorites}
-              currentStationId={currentStation?.id}
-              isPlaying={isPlaying}
-              isLoading={isLoading}
-              onPlay={handlePlay}
-              isFavorite={isFavorite}
-              onToggleFavorite={toggle}
-              t={t}
-            />
-          </SolSection>
+          <Section title={t('radios.section.favorites', 'Tus favoritas')}>
+            <StationGrid stations={favorites} currentStationId={currentStation?.id} isPlaying={isPlaying} isLoading={isLoading} onPlay={handlePlay} isFavorite={isFavorite} onToggleFavorite={toggle} t={t} />
+          </Section>
         )}
 
         {!showResults && (
-          <SolSection title={t('radios.section.featured', 'Destacadas Colombia')}>
-            <StationGrid
-              stations={featuredStations}
-              currentStationId={currentStation?.id}
-              isPlaying={isPlaying}
-              isLoading={isLoading}
-              onPlay={handlePlay}
-              isFavorite={isFavorite}
-              onToggleFavorite={toggle}
-              t={t}
-            />
-          </SolSection>
+          <Section title={t('radios.section.featured', 'Destacadas Colombia')}>
+            <StationGrid stations={featuredStations} currentStationId={currentStation?.id} isPlaying={isPlaying} isLoading={isLoading} onPlay={handlePlay} isFavorite={isFavorite} onToggleFavorite={toggle} t={t} />
+          </Section>
         )}
 
         {!showResults && (
-          <SolSection
-            title={t('radios.section.popular', 'Populares')}
-            loading={popularLoading}
-          >
+          <Section title={t('radios.section.popular', 'Populares')} loading={popularLoading}>
             {popular.length === 0 && !popularLoading ? (
-              <p
-                style={{
-                  fontFamily: 'var(--lt-font-sans)',
-                  fontSize: 15,
-                  color: 'var(--lt-ink-soft)',
-                }}
-              >
+              <p style={{ fontSize: 15, color: 'var(--lh-fg2)' }}>
                 {t('radios.popular.empty', 'No hay emisoras populares disponibles para este país.')}
               </p>
             ) : (
-              <StationGrid
-                stations={popular}
-                currentStationId={currentStation?.id}
-                isPlaying={isPlaying}
-                isLoading={isLoading}
-                onPlay={handlePlay}
-                isFavorite={isFavorite}
-                onToggleFavorite={toggle}
-                t={t}
-              />
+              <StationGrid stations={popular} currentStationId={currentStation?.id} isPlaying={isPlaying} isLoading={isLoading} onPlay={handlePlay} isFavorite={isFavorite} onToggleFavorite={toggle} t={t} />
             )}
-          </SolSection>
+          </Section>
         )}
 
         {showResults && (
-          <SolSection
-            title={t('radios.section.results', 'Resultados de búsqueda')}
-            loading={loading}
-          >
+          <Section title={t('radios.section.results', 'Resultados de búsqueda')} loading={loading}>
             <div aria-live="polite" className="sr-only">
-              {loading
-                ? t('radios.searching', 'Buscando emisoras…')
-                : `${results!.length} ${t('radios.resultsCount', 'resultados')}`}
+              {loading ? t('radios.searching', 'Buscando emisoras…') : `${results!.length} ${t('radios.resultsCount', 'resultados')}`}
             </div>
             {showEmpty ? (
-              <p
-                style={{
-                  fontFamily: 'var(--lt-font-sans)',
-                  fontSize: 15,
-                  color: 'var(--lt-ink-soft)',
-                }}
-              >
+              <p style={{ fontSize: 15, color: 'var(--lh-fg2)' }}>
                 {t('radios.results.empty', 'No encontramos emisoras con esos criterios. Prueba con otra búsqueda.')}
               </p>
             ) : (
-              <StationGrid
-                stations={cardStations}
-                currentStationId={currentStation?.id}
-                isPlaying={isPlaying}
-                isLoading={isLoading}
-                onPlay={handlePlay}
-                isFavorite={isFavorite}
-                onToggleFavorite={toggle}
-                t={t}
-              />
+              <StationGrid stations={cardStations} currentStationId={currentStation?.id} isPlaying={isPlaying} isLoading={isLoading} onPlay={handlePlay} isFavorite={isFavorite} onToggleFavorite={toggle} t={t} />
             )}
-          </SolSection>
+          </Section>
         )}
       </div>
     </div>
@@ -442,57 +281,13 @@ function SearchPanel({
   const genreId = 'radio-genre-select'
   const hasFilters = query.length > 0 || genre.length > 0
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    borderRadius: 12,
-    border: '2px solid var(--lt-ink)',
-    background: 'var(--lt-paper)',
-    padding: '10px 12px',
-    fontSize: 14,
-    fontFamily: 'var(--lt-font-sans)',
-    color: 'var(--lt-ink)',
-    outline: 'none',
-    appearance: 'none',
-  }
-
   return (
-    <section
-      aria-label={t('radios.search.aria', 'Buscar emisoras')}
-      style={{
-        borderRadius: 22,
-        border: '2.2px solid var(--lt-ink)',
-        background: 'var(--lt-paper)',
-        padding: 24,
-        boxShadow: '6px 7px 0 var(--lt-ink)',
-        marginBottom: 8,
-      }}
-    >
-      <div
-        style={{
-          display: 'grid',
-          gap: 12,
-          gridTemplateColumns: '1fr',
-        }}
-        className="sm:grid-cols-[1fr_auto_auto]"
-      >
+    <section aria-label={t('radios.search.aria', 'Buscar emisoras')} className="lh-card" style={{ padding: 22 }}>
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr' }} className="sm:grid-cols-[1fr_auto_auto]">
         {/* Search input */}
         <div style={{ position: 'relative' }}>
-          <label htmlFor={inputId} className="sr-only">
-            {t('radios.search.placeholder', 'Buscar emisora')}
-          </label>
-          <Search
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 16,
-              height: 16,
-              color: 'var(--lt-ink-soft)',
-              pointerEvents: 'none',
-            }}
-            aria-hidden="true"
-          />
+          <label htmlFor={inputId} className="sr-only">{t('radios.search.placeholder', 'Buscar emisora')}</label>
+          <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--lh-fg3)', pointerEvents: 'none' }} aria-hidden="true" />
           <input
             id={inputId}
             type="search"
@@ -501,25 +296,15 @@ function SearchPanel({
             value={query}
             onChange={e => onQueryChange(e.target.value)}
             placeholder={t('radios.search.placeholder', 'Buscar emisora por nombre…')}
-            style={{ ...inputStyle, paddingLeft: 40, paddingRight: query ? 36 : 12 }}
+            className="lh-input"
+            style={{ paddingLeft: 40, paddingRight: query ? 36 : 16 }}
           />
           {query && (
             <button
               type="button"
               onClick={() => onQueryChange('')}
               aria-label={t('radios.search.clear', 'Limpiar búsqueda')}
-              style={{
-                position: 'absolute',
-                right: 8,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                padding: 4,
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                color: 'var(--lt-ink-soft)',
-                display: 'flex',
-              }}
+              style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--lh-fg3)', display: 'flex' }}
             >
               <X style={{ width: 16, height: 16 }} aria-hidden="true" />
             </button>
@@ -528,38 +313,20 @@ function SearchPanel({
 
         {/* Country select */}
         <div>
-          <label htmlFor={countryId} className="sr-only">
-            {t('radios.filter.country', 'País')}
-          </label>
-          <select
-            id={countryId}
-            value={country}
-            onChange={e => onCountryChange(e.target.value)}
-            style={inputStyle}
-          >
+          <label htmlFor={countryId} className="sr-only">{t('radios.filter.country', 'País')}</label>
+          <select id={countryId} value={country} onChange={e => onCountryChange(e.target.value)} className="lh-input" style={{ minWidth: 160 }}>
             {COUNTRY_OPTIONS.map(opt => (
-              <option key={opt.code || 'any'} value={opt.code}>
-                {t(opt.labelKey, opt.fallback)}
-              </option>
+              <option key={opt.code || 'any'} value={opt.code}>{t(opt.labelKey, opt.fallback)}</option>
             ))}
           </select>
         </div>
 
         {/* Genre select */}
         <div>
-          <label htmlFor={genreId} className="sr-only">
-            {t('radios.filter.genre', 'Género')}
-          </label>
-          <select
-            id={genreId}
-            value={genre}
-            onChange={e => onGenreChange(e.target.value)}
-            style={inputStyle}
-          >
+          <label htmlFor={genreId} className="sr-only">{t('radios.filter.genre', 'Género')}</label>
+          <select id={genreId} value={genre} onChange={e => onGenreChange(e.target.value)} className="lh-input" style={{ minWidth: 160 }}>
             {GENRE_OPTIONS.map(opt => (
-              <option key={opt.value || 'any'} value={opt.value}>
-                {t(opt.labelKey, opt.fallback)}
-              </option>
+              <option key={opt.value || 'any'} value={opt.value}>{t(opt.labelKey, opt.fallback)}</option>
             ))}
           </select>
         </div>
@@ -570,16 +337,7 @@ function SearchPanel({
           <button
             type="button"
             onClick={onClear}
-            style={{
-              fontFamily: 'var(--lt-font-sans)',
-              fontSize: 12,
-              fontWeight: 600,
-              color: 'var(--lt-ink-soft)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-            }}
+            style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--lh-fg2)', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           >
             {t('radios.filter.clear', 'Limpiar filtros')}
           </button>
@@ -589,45 +347,16 @@ function SearchPanel({
   )
 }
 
-// ── SolSection ───────────────────────────────────────────────────────────────
+// ── Section ──────────────────────────────────────────────────────────────────
 
-function SolSection({
-  title,
-  loading,
-  children,
-}: {
-  title: string
-  loading?: boolean
-  children: React.ReactNode
-}) {
+function Section({ title, loading, children }: { title: string; loading?: boolean; children: React.ReactNode }) {
   return (
     <section style={{ marginTop: 48 }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          marginBottom: 24,
-        }}
-      >
-        <h2
-          style={{
-            fontFamily: 'var(--lt-font-serif)',
-            fontSize: 'clamp(22px, 3vw, 30px)',
-            fontWeight: 700,
-            color: 'var(--lt-ink)',
-            margin: 0,
-          }}
-        >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 'clamp(20px, 3vw, 26px)', fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>
           {title}
         </h2>
-        {loading && (
-          <Loader2
-            style={{ width: 18, height: 18, color: 'var(--lt-ink-soft)' }}
-            className="animate-spin"
-            aria-hidden="true"
-          />
-        )}
+        {loading && <Loader2 style={{ width: 18, height: 18, color: 'var(--lh-fg3)' }} className="animate-spin" aria-hidden="true" />}
       </div>
       {children}
     </section>
@@ -647,22 +376,9 @@ type GridProps = {
   t: (key: string, fallback?: string) => string
 }
 
-function StationGrid({
-  stations,
-  currentStationId,
-  isPlaying,
-  isLoading,
-  onPlay,
-  isFavorite,
-  onToggleFavorite,
-  t,
-}: GridProps) {
+function StationGrid({ stations, currentStationId, isPlaying, isLoading, onPlay, isFavorite, onToggleFavorite, t }: GridProps) {
   return (
-    <ul
-      role="list"
-      className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-      style={{ listStyle: 'none', padding: 0, margin: 0 }}
-    >
+    <ul role="list" className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
       {stations.map((s, i) => (
         <StationCard
           key={s.id}
@@ -695,24 +411,10 @@ type CardProps = {
   t: (key: string, fallback?: string) => string
 }
 
-function StationCard({
-  station,
-  index,
-  isCurrent,
-  isPlaying,
-  isLoading,
-  onPlay,
-  isFavorite,
-  onToggleFavorite,
-  t,
-}: CardProps) {
+function StationCard({ station, index, isCurrent, isPlaying, isLoading, onPlay, isFavorite, onToggleFavorite, t }: CardProps) {
   const [logoErrored, setLogoErrored] = useState(false)
 
-  const rot = CARD_ROTATIONS[index % CARD_ROTATIONS.length]
-  const accentBg = ACCENT_BG[index % ACCENT_BG.length]
-  const accentFg = ACCENT_FG[index % ACCENT_FG.length]
-  const buttonTone = BUTTON_TONES[index % BUTTON_TONES.length]
-
+  const accent = ACCENTS[index % ACCENTS.length]
   const showSpinner = isCurrent && isLoading
   const isActivePlaying = isCurrent && isPlaying
   const showLogo = !!station.logoUrl && !logoErrored
@@ -727,229 +429,68 @@ function StationCard({
     : `${t('radios.play', 'Reproducir')} ${station.name}`
 
   return (
-    <li
-      data-lt-rotate="true"
-      style={{
-        position: 'relative',
-        background: 'var(--lt-paper)',
-        borderRadius: 22,
-        padding: 28,
-        border: '2.2px solid var(--lt-ink)',
-        boxShadow: '6px 7px 0 var(--lt-ink)',
-        transform: `rotate(${rot}deg)`,
-        overflow: 'hidden',
-        listStyle: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
+    <li className="lh-card" style={{ position: 'relative', padding: 22, overflow: 'hidden', listStyle: 'none', display: 'flex', flexDirection: 'column' }}>
       {/* Círculo de acento decorativo */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          top: -28,
-          right: -28,
-          width: 110,
-          height: 110,
-          borderRadius: '50%',
-          background: accentBg,
-          opacity: 0.12,
-          pointerEvents: 'none',
-        }}
-      />
+      <div aria-hidden="true" style={{ position: 'absolute', top: -30, right: -30, width: 110, height: 110, borderRadius: '50%', background: tint(accent), pointerEvents: 'none' }} />
 
       {/* Fila superior: ícono + favorito */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 18,
-        }}
-      >
-        {/* Ícono de radio */}
-        <div
-          data-lt-wobble="true"
-          aria-hidden="true"
-          style={{
-            width: 64,
-            height: 64,
-            background: accentBg,
-            borderRadius: 18,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            filter: 'url(#lt-wobble-soft)',
-            border: '2px solid var(--lt-ink)',
-            boxShadow: '3px 3px 0 var(--lt-ink)',
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}
-        >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, position: 'relative' }}>
+        <div aria-hidden="true" style={{ width: 56, height: 56, background: tint(accent), borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, color: accent }}>
           {showLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={station.logoUrl}
-              alt=""
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              onError={() => setLogoErrored(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+            <img src={station.logoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setLogoErrored(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <svg width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-              <path
-                d="M15 4 L15 19 M8 9 Q15 4.5 22 9 M5 13 Q15 6.5 25 13"
-                stroke={accentFg}
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <line x1="11" y1="19" x2="19" y2="19" stroke={accentFg} strokeWidth="2.2" strokeLinecap="round" />
-              <line x1="15" y1="19" x2="15" y2="24" stroke={accentFg} strokeWidth="2.2" strokeLinecap="round" />
-              <line x1="10" y1="24" x2="20" y2="24" stroke={accentFg} strokeWidth="2.2" strokeLinecap="round" />
-            </svg>
+            <RadioIcon size={26} />
           )}
         </div>
 
-        {/* Botón favorito */}
         <button
           type="button"
           onClick={() => onToggleFavorite(station)}
           aria-pressed={isFavorite}
-          aria-label={
-            isFavorite
-              ? t('radios.favorite.remove', 'Quitar de favoritos')
-              : t('radios.favorite.add', 'Añadir a favoritos')
-          }
-          style={{
-            padding: 8,
-            borderRadius: 10,
-            border: 'none',
-            background: 'transparent',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            color: isFavorite ? 'var(--lt-accent)' : 'var(--lt-ink-soft)',
-          }}
+          aria-label={isFavorite ? t('radios.favorite.remove', 'Quitar de favoritos') : t('radios.favorite.add', 'Añadir a favoritos')}
+          style={{ padding: 8, borderRadius: 10, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', color: isFavorite ? 'var(--lh-terra)' : 'var(--lh-fg3)' }}
         >
-          <Heart
-            style={{
-              width: 20,
-              height: 20,
-              fill: isFavorite ? 'var(--lt-accent)' : 'transparent',
-              stroke: isFavorite ? 'var(--lt-accent)' : 'var(--lt-ink-soft)',
-              transition: 'fill 0.15s ease, stroke 0.15s ease',
-            }}
-            aria-hidden="true"
-          />
+          <Heart size={20} style={{ fill: isFavorite ? 'var(--lh-terra)' : 'transparent', stroke: isFavorite ? 'var(--lh-terra)' : 'var(--lh-fg3)', transition: 'fill .15s, stroke .15s' }} aria-hidden="true" />
         </button>
       </div>
 
-      {/* Nombre de la emisora */}
-      <h3
-        style={{
-          fontFamily: 'var(--lt-font-serif)',
-          fontSize: 22,
-          fontWeight: 700,
-          color: 'var(--lt-ink)',
-          letterSpacing: '-0.01em',
-          lineHeight: 1.15,
-          margin: '0 0 10px',
-        }}
-        title={station.name}
-      >
+      <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, color: 'var(--lh-fg)', letterSpacing: '-.015em', lineHeight: 1.2, margin: '0 0 8px', position: 'relative' }} title={station.name}>
         {station.name}
       </h3>
 
-      {/* Descripción */}
-      <p
-        style={{
-          fontFamily: 'var(--lt-font-sans)',
-          fontSize: 14,
-          color: 'var(--lt-ink-soft)',
-          lineHeight: 1.55,
-          margin: '0 0 10px',
-        }}
-      >
+      <p style={{ fontSize: 13.5, color: 'var(--lh-fg2)', lineHeight: 1.55, margin: '0 0 12px' }}>
         {descText}
       </p>
 
-      {/* Etiquetas */}
       {station.tags && station.tags.length > 0 && (
-        <ul
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-            margin: '0 0 20px',
-            listStyle: 'none',
-            padding: 0,
-          }}
-          aria-label={t('radios.tags', 'Etiquetas')}
-        >
+        <ul style={{ display: 'flex', flexWrap: 'wrap', gap: 6, margin: '0 0 18px', listStyle: 'none', padding: 0 }} aria-label={t('radios.tags', 'Etiquetas')}>
           {station.tags.slice(0, 3).map(tag => (
-            <li
-              key={tag}
-              style={{
-                fontFamily: 'var(--lt-font-sans)',
-                fontSize: 10,
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                fontWeight: 600,
-                padding: '3px 10px',
-                borderRadius: 999,
-                background: 'var(--lt-bg)',
-                border: '1.5px solid var(--lt-ink)',
-                color: 'var(--lt-ink)',
-              }}
-            >
+            <li key={tag} style={{ fontFamily: 'var(--lh-mono)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 600, padding: '4px 10px', borderRadius: 99, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)', color: 'var(--lh-fg2)' }}>
               {tag}
             </li>
           ))}
         </ul>
       )}
 
-      {/* Botón Play / Stop + enlace */}
-      <div
-        style={{
-          marginTop: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          flexWrap: 'wrap',
-        }}
-      >
-        <LtButton
-          variant="sticker"
-          tone={buttonTone}
-          size="sm"
-          rotate={-1.2}
-          loading={showSpinner}
-          loadingText={t('audio.connecting', 'Conectando…')}
+      <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          className="lh-btn lh-btn--sm lh-btn--primary"
           onClick={() => void onPlay(station)}
           aria-label={buttonLabel}
           disabled={showSpinner}
+          style={{ opacity: showSpinner ? 0.6 : 1 }}
         >
-          {isActivePlaying
-            ? `⏹ ${t('radios.stop', 'Detener')}`
-            : `▷ ${t('radios.play', 'Reproducir')}`}
-        </LtButton>
+          {showSpinner
+            ? <><Loader2 size={15} className="animate-spin" /> {t('audio.connecting', 'Conectando…')}</>
+            : isActivePlaying
+              ? <><Square size={14} fill="currentColor" /> {t('radios.stop', 'Detener')}</>
+              : <><Play size={14} fill="currentColor" /> {t('radios.play', 'Reproducir')}</>}
+        </button>
 
         {station.homepage && (
-          <a
-            href={station.homepage}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              fontFamily: 'var(--lt-font-sans)',
-              fontSize: 12,
-              color: 'var(--lt-ink-soft)',
-              textDecoration: 'underline',
-              marginLeft: 'auto',
-            }}
-          >
+          <a href={station.homepage} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12.5, color: 'var(--lh-fg3)', textDecoration: 'underline', marginLeft: 'auto' }}>
             {t('radios.website', 'Sitio web')}
           </a>
         )}

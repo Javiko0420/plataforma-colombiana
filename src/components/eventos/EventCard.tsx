@@ -2,99 +2,86 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { CalendarDays, MapPin } from 'lucide-react'
+import { CalendarDays, MapPin, ArrowRight } from 'lucide-react'
 import type { Event } from '@prisma/client'
-import { LtBadge } from '@/components/lt/Badge'
 import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 
-const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1]
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+
+const neutralChip: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 4,
+  fontSize: 12, fontWeight: 600, color: 'var(--lh-fg2)',
+  background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)',
+  padding: '5px 10px', borderRadius: 99,
+}
 
 interface EventCardProps {
   event: Event
   index?: number
 }
 
-export default function EventCard({ event, index = 0 }: EventCardProps) {
-  const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length]
+function categoryGradient(category: string): string {
+  if (['CONCIERTO', 'FESTIVAL', 'FIESTA'].includes(category)) return 'linear-gradient(160deg,var(--lh-terra),#b8543c)'
+  if (category === 'DEPORTES') return 'linear-gradient(160deg,var(--lh-green),#3f6b4d)'
+  return 'linear-gradient(160deg,var(--lh-accent),var(--lh-accent-ink))'
+}
 
-  const dateTone = ['CONCIERTO', 'FESTIVAL', 'FIESTA'].includes(event.category)
-    ? 'terracota'
-    : event.category === 'DEPORTES'
-    ? 'verde'
-    : 'sun'
+export default function EventCard({ event }: EventCardProps) {
+  const isFree = !event.ticketPrice || event.ticketPrice <= 0
 
   return (
-    <article
-      className="group flex flex-col h-full rounded-[var(--lt-radius-md)] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 hover:-translate-y-1"
-      style={{
-        background: 'var(--lt-paper)',
-        boxShadow: 'var(--lt-shadow-sticker-lg)',
-        transform: `rotate(${rotation}deg)`,
-      }}
-      data-lt-rotate="true"
-    >
-      {event.imageUrl && (
-        <div className="relative w-full h-48 overflow-hidden border-b-[2px] border-[var(--lt-ink)]">
-          <Image
-            src={event.imageUrl}
-            alt={event.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
-      )}
-
-      <div className="p-5 flex flex-col flex-grow gap-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <LtBadge tone={dateTone as 'terracota' | 'verde' | 'sun'} rotate={-1}>
-            <CalendarDays className="w-3 h-3" aria-hidden="true" />
-            {format(new Date(event.eventDate), "d MMM · HH:mm", { locale: es })}
-          </LtBadge>
-          <LtBadge tone="neutral" rotate={1}>{categoryLabel(EVENT_CATEGORIES, event.category)}</LtBadge>
-          {event.ticketPrice && event.ticketPrice > 0 ? (
-            <LtBadge tone="sun" rotate={-0.5}>${event.ticketPrice.toFixed(2)} AUD</LtBadge>
+    <Link href={`/eventos/${event.id}`} className="block group" aria-label={`Ver detalles de ${event.title}`} style={{ height: '100%' }}>
+      <article className="lh-card lh-card--interactive" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Header: imagen o gradiente */}
+        <div style={{ position: 'relative', height: 160, overflow: 'hidden', background: event.imageUrl ? 'var(--lh-surface2)' : categoryGradient(event.category), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {event.imageUrl ? (
+            <Image
+              src={event.imageUrl}
+              alt={event.title}
+              fill
+              className="group-hover:scale-105"
+              style={{ objectFit: 'cover', transition: 'transform .4s cubic-bezier(.22,.61,.36,1)' }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           ) : (
-            <LtBadge tone="verde" rotate={0.8}>Gratis</LtBadge>
+            <CalendarDays size={44} style={{ color: 'rgba(255,255,255,.85)' }} aria-hidden="true" />
           )}
         </div>
 
-        <h3
-          className="text-lg font-bold line-clamp-2 group-hover:text-[var(--lt-terracota)] transition-colors"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
-          {event.title}
-        </h3>
+        {/* Cuerpo */}
+        <div style={{ padding: '18px 18px 20px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            <span style={{ ...neutralChip, color: 'var(--lh-warm)', background: tint('var(--lh-warm)'), border: 'none' }}>
+              <CalendarDays size={12} aria-hidden="true" />
+              {format(new Date(event.eventDate), "d MMM · HH:mm", { locale: es })}
+            </span>
+            <span style={neutralChip}>{categoryLabel(EVENT_CATEGORIES, event.category)}</span>
+            {isFree ? (
+              <span style={{ ...neutralChip, color: 'var(--lh-green)', background: tint('var(--lh-green)'), border: 'none' }}>Gratis</span>
+            ) : (
+              <span style={{ ...neutralChip, color: 'var(--lh-warm)', background: tint('var(--lh-warm)'), border: 'none' }}>${event.ticketPrice!.toFixed(2)} AUD</span>
+            )}
+          </div>
 
-        <p
-          className="text-sm leading-relaxed line-clamp-3 flex-grow"
-          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-        >
-          {event.description}
-        </p>
+          <h3 className="line-clamp-2" style={{ fontFamily: 'var(--lh-font)', fontSize: 17.5, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: 0, lineHeight: 1.25 }}>
+            {event.title}
+          </h3>
 
-        <div className="flex items-center justify-between pt-3 border-t-[1.6px] border-[var(--lt-ink)]/20">
-          <span
-            className="inline-flex items-center gap-1 text-sm font-medium"
-            style={{ color: 'var(--lt-ink-soft)' }}
-          >
-            <MapPin className="w-4 h-4 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-            <span className="line-clamp-1">{event.location}</span>
-          </span>
-          <Link
-            href={`/eventos/${event.id}`}
-            className="text-xs font-bold px-3 py-1.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all group-hover:-translate-y-0.5"
-            style={{
-              background: 'var(--lt-terracota)',
-              color: 'var(--lt-paper)',
-              boxShadow: 'var(--lt-shadow-sticker)',
-            }}
-            aria-label={`Ver detalles de ${event.title}`}
-          >
-            Ver detalles →
-          </Link>
+          <p className="line-clamp-3" style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0, flex: 1 }}>
+            {event.description}
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingTop: 14, borderTop: '1px solid var(--lh-border2)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--lh-fg2)', minWidth: 0 }}>
+              <MapPin size={14} style={{ flexShrink: 0 }} aria-hidden="true" />
+              <span className="line-clamp-1">{event.location}</span>
+            </span>
+            <span className="lh-seemore" style={{ fontSize: 13.5, color: 'var(--lh-warm)', flexShrink: 0 }}>
+              Ver detalles <ArrowRight size={15} />
+            </span>
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </Link>
   )
 }

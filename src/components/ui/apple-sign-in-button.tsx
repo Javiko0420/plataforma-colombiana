@@ -37,7 +37,8 @@ export function AppleSignInButton({
       type="button"
       onClick={handleClick}
       disabled={isLoading}
-      className={`w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-[var(--lt-radius-sm)] border-2 border-black bg-black text-white text-sm font-medium transition-colors hover:bg-gray-900 hover:border-gray-900 disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
+      className={`w-full flex items-center justify-center gap-2.5 ${className}`}
+      style={{ padding: '14px 24px', borderRadius: 13, border: 'none', background: '#000', color: '#fff', fontSize: 15.5, fontWeight: 600, fontFamily: 'var(--lh-font)', cursor: isLoading ? 'not-allowed' : 'pointer', opacity: isLoading ? 0.6 : 1, transition: 'opacity .2s' }}
     >
       {isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin" />

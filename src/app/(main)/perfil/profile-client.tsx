@@ -4,23 +4,23 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from '@/components/providers/language-provider'
 import { BUSINESS_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
-import { 
+import {
   Briefcase,
-  Building2, 
+  Building2,
   CalendarDays,
-  MapPin, 
-  PlusCircle, 
-  CheckCircle2, 
+  MapPin,
+  PlusCircle,
+  CheckCircle2,
   Edit,
   ExternalLink,
-  Calendar, 
-  Mail, 
-  User as UserIcon, 
-  MessageSquare, 
-  ThumbsUp, 
-  Award, 
+  Calendar,
+  Mail,
+  User as UserIcon,
+  MessageSquare,
+  ThumbsUp,
+  Award,
   Settings,
-  Trash2
+  Trash2,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -32,7 +32,8 @@ import EventPostingContractModal from '@/components/eventos/EventPostingContract
 import { acceptJobPostingTerms } from '@/app/actions/jobActions'
 import { acceptEventPostingTerms } from '@/app/actions/eventActions'
 import { JobOffer, Event } from '@prisma/client'
-import { LtPageShell, LtPanel, LtButton, LtBadge, LtEmptyState, SunMotif, Squiggle } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
+import { EmptyState } from '@/components/lh/EmptyState'
 
 interface ProfileUser {
   id: string
@@ -64,10 +65,7 @@ interface RecentPost {
   content: string
   createdAt: Date
   likesCount: number
-  forum: {
-    name: string
-    slug: string
-  }
+  forum: { name: string; slug: string }
 }
 
 interface RecentComment {
@@ -75,13 +73,7 @@ interface RecentComment {
   content: string
   createdAt: Date
   likesCount: number
-  post: {
-    id: string
-    forum: {
-      name: string
-      slug: string
-    }
-  }
+  post: { id: string; forum: { name: string; slug: string } }
 }
 
 interface ProfileClientProps {
@@ -94,12 +86,27 @@ interface ProfileClientProps {
   hasAcceptedEventPostingTerms: boolean
 }
 
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+
 const statCards = [
-  { key: 'posts', icon: MessageSquare, tone: 'terracota' as const, valueKey: 'postsCount' as const },
-  { key: 'comments', icon: MessageSquare, tone: 'accent' as const, valueKey: 'commentsCount' as const },
-  { key: 'likes', icon: ThumbsUp, tone: 'verde' as const, valueKey: 'totalLikes' as const },
-  { key: 'reputation', icon: Award, tone: 'sun' as const, valueKey: 'reputation' as const },
+  { key: 'posts', icon: MessageSquare, color: 'var(--lh-terra)', valueKey: 'postsCount' as const },
+  { key: 'comments', icon: MessageSquare, color: 'var(--lh-accent)', valueKey: 'commentsCount' as const },
+  { key: 'likes', icon: ThumbsUp, color: 'var(--lh-green)', valueKey: 'totalLikes' as const },
+  { key: 'reputation', icon: Award, color: 'var(--lh-warm)', valueKey: 'reputation' as const },
 ]
+
+/* Header de sección de panel */
+function PanelHeader({ icon, color, title, action }: { icon: React.ReactNode; color: string; title: string; action?: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '18px 20px', borderBottom: '1px solid var(--lh-border)' }}>
+      <h2 style={{ display: 'flex', alignItems: 'center', gap: 9, fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: 0 }}>
+        <span style={{ color }}>{icon}</span>
+        {title}
+      </h2>
+      {action}
+    </div>
+  )
+}
 
 export default function ProfileClient({ user, recentPosts, recentComments, userJobs, userEvents, hasAcceptedJobPostingTerms, hasAcceptedEventPostingTerms }: ProfileClientProps) {
   const router = useRouter()
@@ -114,17 +121,12 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
     const confirmed = window.confirm(
       `⚠️ ¿Estás seguro de que quieres eliminar "${businessName}"?\n\nEsta acción no se puede deshacer y borrará todas las fotos y reseñas asociadas.`
     )
-
     if (!confirmed) return
 
     setIsDeleting(true)
     try {
-      const res = await fetch(`/api/businesses/${businessId}`, {
-        method: 'DELETE',
-      })
-
+      const res = await fetch(`/api/businesses/${businessId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Error al eliminar')
-
       alert('Negocio eliminado correctamente.')
       router.refresh()
     } catch {
@@ -135,11 +137,8 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
   }
 
   const handlePublishJobClick = () => {
-    if (hasAcceptedJobPostingTerms) {
-      router.push('/empleos/publicar')
-    } else {
-      setShowContractModal(true)
-    }
+    if (hasAcceptedJobPostingTerms) router.push('/empleos/publicar')
+    else setShowContractModal(true)
   }
 
   const handleAcceptTerms = async () => {
@@ -160,11 +159,8 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
   }
 
   const handlePublishEventClick = () => {
-    if (hasAcceptedEventPostingTerms) {
-      router.push('/perfil/eventos/crear')
-    } else {
-      setShowEventContractModal(true)
-    }
+    if (hasAcceptedEventPostingTerms) router.push('/perfil/eventos/crear')
+    else setShowEventContractModal(true)
   }
 
   const handleAcceptEventTerms = async () => {
@@ -199,381 +195,245 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
   }
 
   return (
-    <LtPageShell>
-      {/* Header */}
-      <LtPanel className="overflow-hidden mb-8" shadow="lg">
-        <div
-          className="relative h-28 border-b-[2.2px] border-[var(--lt-ink)] overflow-hidden"
-          style={{ background: 'var(--lt-sun)' }}
-        >
-          <div aria-hidden="true" className="absolute inset-0 flex items-center justify-end pr-6 opacity-20">
-            <SunMotif size={120} />
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-container" style={{ paddingTop: 40, paddingBottom: 64 }}>
+
+        {/* Header */}
+        <div className="lh-card" style={{ overflow: 'hidden', marginBottom: 28, padding: 0 }}>
+          <div style={{ position: 'relative', height: 100, background: 'linear-gradient(160deg,var(--lh-accent),var(--lh-accent-ink))' }} />
+          <div style={{ position: 'relative', padding: '0 24px 24px' }}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4" style={{ marginTop: -52 }}>
+              <div style={{ width: 104, height: 104, borderRadius: '50%', border: '4px solid var(--lh-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, background: 'var(--lh-surface2)', boxShadow: 'var(--lh-shadow)' }}>
+                {user.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={user.image} alt={user.name || user.email} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <UserIcon size={52} style={{ color: 'var(--lh-fg3)' }} aria-hidden="true" />
+                )}
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h1 className="truncate" style={{ fontFamily: 'var(--lh-font)', fontSize: 'clamp(24px,4vw,30px)', fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>
+                  {user.name || user.email}
+                </h1>
+                {user.nickname && <p style={{ fontSize: 15, color: 'var(--lh-fg2)', margin: '2px 0 0' }}>@{user.nickname}</p>}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 11px', borderRadius: 99, background: tint('var(--lh-accent)'), color: 'var(--lh-accent)', fontSize: 12.5, fontWeight: 600 }}>
+                    {roleNames[user.role] || user.role}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 14, fontWeight: 600, color: 'var(--lh-fg)' }}>
+                    <Award size={16} style={{ color: 'var(--lh-warm)' }} aria-hidden="true" />
+                    {user.reputation} pts
+                  </span>
+                </div>
+              </div>
+
+              <Button href="/perfil/editar" variant="secondary" size="sm">
+                <Settings size={15} /> Editar perfil
+              </Button>
+            </div>
           </div>
         </div>
-        <div className="relative px-6 pb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-14">
-            <div
-              className="w-28 h-28 rounded-full border-[3px] border-[var(--lt-ink)] flex items-center justify-center overflow-hidden shrink-0"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-            >
-              {user.image ? (
-                <img
-                  src={user.image}
-                  alt={user.name || user.email}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <UserIcon className="w-14 h-14" style={{ color: 'var(--lt-ink-soft)' }} aria-hidden="true" />
-              )}
-            </div>
 
-            <div className="flex-1 min-w-0">
-              <h1
-                className="text-2xl sm:text-3xl font-black truncate"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                {user.name || user.email}
-              </h1>
-              {user.nickname && (
-                <p className="text-base" style={{ color: 'var(--lt-ink-soft)' }}>
-                  @{user.nickname}
-                </p>
-              )}
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <LtBadge tone="terracota" rotate={-1}>
-                  {roleNames[user.role] || user.role}
-                </LtBadge>
-                <div className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: 'var(--lt-ink)' }}>
-                  <Award className="h-4 w-4" style={{ color: 'var(--lt-sun)' }} aria-hidden="true" />
-                  {user.reputation} pts
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4" style={{ marginBottom: 28 }}>
+          {statCards.map(({ key, icon: Icon, color, valueKey }) => (
+            <div key={key} className="lh-card" style={{ padding: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint(color), color }}>
+                  <Icon size={20} aria-hidden="true" />
+                </span>
+                <div>
+                  <p style={{ fontFamily: 'var(--lh-font)', fontSize: 24, fontWeight: 700, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>{statValues[valueKey]}</p>
+                  <p style={{ fontSize: 12.5, color: 'var(--lh-fg3)', margin: 0 }}>{t(`profile.stats.${key}`)}</p>
                 </div>
               </div>
             </div>
-
-            <Link href="/perfil/editar">
-              <LtButton variant="outline" tone="paper" size="sm" iconLeft={<Settings className="w-4 h-4" />}>
-                Editar perfil
-              </LtButton>
-            </Link>
-          </div>
+          ))}
         </div>
-      </LtPanel>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {statCards.map(({ key, icon: Icon, tone, valueKey }, i) => (
-          <LtPanel key={key} tone="paper" shadow="sm" className="p-5">
-            <div className="flex items-center gap-3">
-              <div
-                className="p-2.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)]"
-                style={{
-                  background: tone === 'sun' ? 'var(--lt-sun)' : tone === 'terracota' ? 'var(--lt-terracota)' : tone === 'verde' ? 'var(--lt-verde)' : 'var(--lt-accent)',
-                  color: tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
-                  boxShadow: '2px 2px 0 var(--lt-ink)',
-                  transform: `rotate(${i % 2 === 0 ? -1 : 1}deg)`,
-                }}
-              >
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <div>
-                <p className="text-2xl font-black" style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}>
-                  {statValues[valueKey]}
-                </p>
-                <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                  {t(`profile.stats.${key}`)}
-                </p>
-              </div>
-            </div>
-          </LtPanel>
-        ))}
-      </div>
+        {/* Action bar */}
+        <div style={{ marginBottom: 28, display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'flex-end' }}>
+          <Button variant="secondary" size="md" onClick={handlePublishEventClick}>
+            <CalendarDays size={18} /> Publicar evento
+          </Button>
+          <Button variant="primary" size="md" onClick={handlePublishJobClick}>
+            <PlusCircle size={18} /> Publicar oferta de empleo
+          </Button>
+        </div>
 
-      {/* Action bar */}
-      <div className="mb-8 flex flex-wrap gap-3 justify-end">
-        <LtButton
-          variant="sticker"
-          tone="sun"
-          size="md"
-          rotate={-1}
-          iconLeft={<CalendarDays className="w-5 h-5" />}
-          onClick={handlePublishEventClick}
-        >
-          Publicar Evento
-        </LtButton>
-        <LtButton
-          variant="sticker"
-          tone="terracota"
-          size="md"
-          rotate={1}
-          iconLeft={<PlusCircle className="w-5 h-5" />}
-          onClick={handlePublishJobClick}
-        >
-          Publicar Oferta de Empleo
-        </LtButton>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-3 space-y-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
 
           {/* Mis Eventos */}
-          <LtPanel shadow="md">
-            <div className="flex flex-wrap justify-between items-center gap-3 p-5 border-b-[2.2px] border-[var(--lt-ink)]">
-              <h2
-                className="text-xl font-bold flex items-center gap-2"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                <CalendarDays className="h-5 w-5" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-                Mis Eventos
-              </h2>
-              <LtButton
-                variant="sticker"
-                tone="sun"
-                size="sm"
-                rotate={-1}
-                iconLeft={<PlusCircle className="h-4 w-4" />}
-                onClick={handlePublishEventClick}
-              >
-                Nuevo Evento
-              </LtButton>
-            </div>
-            <div className="p-5">
+          <div className="lh-card" style={{ padding: 0 }}>
+            <PanelHeader
+              icon={<CalendarDays size={20} />}
+              color="var(--lh-warm)"
+              title="Mis eventos"
+              action={<Button variant="secondary" size="sm" onClick={handlePublishEventClick}><PlusCircle size={15} /> Nuevo evento</Button>}
+            />
+            <div style={{ padding: 20 }}>
               <UserEvents initialEvents={userEvents} onCreateClick={handlePublishEventClick} />
             </div>
-          </LtPanel>
+          </div>
 
           {/* Mis Ofertas */}
-          <LtPanel shadow="md">
-            <div className="p-5 border-b-[2.2px] border-[var(--lt-ink)]">
-              <h2
-                className="text-xl font-bold flex items-center gap-2"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                <Briefcase className="h-5 w-5" style={{ color: 'var(--lt-sun)' }} aria-hidden="true" />
-                Mis Ofertas de Empleo
-              </h2>
-            </div>
-            <div className="p-5">
+          <div className="lh-card" style={{ padding: 0 }}>
+            <PanelHeader icon={<Briefcase size={20} />} color="var(--lh-green)" title="Mis ofertas de empleo" />
+            <div style={{ padding: 20 }}>
               <UserJobOffers initialJobs={userJobs} onCreateClick={handlePublishJobClick} />
             </div>
-          </LtPanel>
+          </div>
 
           {/* Mis Negocios */}
-          <LtPanel shadow="md">
-            <div className="flex flex-wrap justify-between items-center gap-3 p-5 border-b-[2.2px] border-[var(--lt-ink)]">
-              <h2
-                className="text-xl font-bold flex items-center gap-2"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                <Building2 className="h-5 w-5" style={{ color: 'var(--lt-verde)' }} aria-hidden="true" />
-                Mis Territorios (Negocios)
-              </h2>
-              <Link href="/registrar-negocio">
-                <LtButton variant="sticker" tone="verde" size="sm" rotate={1} iconLeft={<PlusCircle className="h-4 w-4" />}>
-                  Nuevo Negocio
-                </LtButton>
-              </Link>
-            </div>
-            <div className="p-5">
+          <div className="lh-card" style={{ padding: 0 }}>
+            <PanelHeader
+              icon={<Building2 size={20} />}
+              color="var(--lh-accent)"
+              title="Mis negocios"
+              action={<Button href="/registrar-negocio" variant="secondary" size="sm"><PlusCircle size={15} /> Nuevo negocio</Button>}
+            />
+            <div style={{ padding: 20 }}>
               {user.businesses.length === 0 ? (
-                <LtEmptyState
+                <EmptyState
+                  icon={<Building2 size={26} />}
                   title="Aún no tienes negocios"
                   description="¡Es hora de conquistar el mercado! Registra tu emprendimiento y llega a miles de latinos en Australia."
-                  icon={<Building2 className="w-12 h-12" style={{ color: 'var(--lt-ink-soft)' }} />}
-                  action={
-                    <Link href="/registrar-negocio">
-                      <LtButton variant="sticker" tone="verde" size="md" rotate={-1}>
-                        Comenzar ahora
-                      </LtButton>
-                    </Link>
-                  }
+                  action={<Button href="/registrar-negocio" variant="primary" size="md">Comenzar ahora</Button>}
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {user.businesses.map((business, i) => (
-                    <LtPanel key={business.id} tone="bg" shadow="sm" className="overflow-hidden group flex flex-col">
-                      <Link
-                        href={`/negocio/${business.slug}`}
-                        className="block h-20 relative border-b-[2px] border-[var(--lt-ink)]"
-                        style={{ background: i % 2 === 0 ? 'var(--lt-terracota)' : 'var(--lt-verde)' }}
-                      >
+                  {user.businesses.map((business) => (
+                    <div key={business.id} className="lh-card" style={{ overflow: 'hidden', padding: 0, display: 'flex', flexDirection: 'column' }}>
+                      <Link href={`/negocio/${business.slug}`} style={{ display: 'block', height: 64, position: 'relative', background: tint('var(--lh-accent)') }}>
                         {business.isVerified && (
-                          <span className="absolute top-2 right-2 z-10">
-                            <LtBadge tone="sun" rotate={1}>
-                              <CheckCircle2 className="h-3 w-3" aria-hidden="true" /> Verificado
-                            </LtBadge>
+                          <span style={{ position: 'absolute', top: 8, right: 8, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 9px', borderRadius: 99, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', fontSize: 11, fontWeight: 600, color: 'var(--lh-green)' }}>
+                            <CheckCircle2 size={11} aria-hidden="true" /> Verificado
                           </span>
                         )}
                       </Link>
 
-                      <div className="p-4 pt-0 relative flex-1 flex flex-col">
-                        <Link
-                          href={`/negocio/${business.slug}`}
-                          className="w-14 h-14 rounded-[var(--lt-radius-sm)] border-[2px] border-[var(--lt-ink)] absolute -top-7 overflow-hidden transition-transform group-hover:scale-105"
-                          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                        >
+                      <div style={{ padding: '0 16px 16px', position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <Link href={`/negocio/${business.slug}`} style={{ width: 56, height: 56, borderRadius: 14, border: '3px solid var(--lh-surface)', position: 'absolute', top: -28, overflow: 'hidden', background: 'var(--lh-surface2)', display: 'block' }}>
                           {business.images && business.images.length > 0 ? (
-                            <Image src={business.images[0]} alt={business.name} fill className="object-cover" sizes="56px" />
+                            <Image src={business.images[0]} alt={business.name} fill style={{ objectFit: 'cover' }} sizes="56px" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl">🏢</div>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🏢</div>
                           )}
                         </Link>
 
-                        <div className="mt-9 flex-1">
+                        <div style={{ marginTop: 36, flex: 1 }}>
                           <Link href={`/negocio/${business.slug}`}>
-                            <h3
-                              className="font-bold text-base leading-tight hover:opacity-80 transition-opacity"
-                              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                            >
-                              {business.name}
-                            </h3>
+                            <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 16, fontWeight: 600, lineHeight: 1.25, color: 'var(--lh-fg)', margin: 0 }}>{business.name}</h3>
                           </Link>
-                          <p className="text-sm font-medium mt-1" style={{ color: 'var(--lt-terracota)' }}>
+                          <p style={{ fontSize: 13.5, fontWeight: 500, marginTop: 4, color: 'var(--lh-accent)' }}>
                             {categoryLabel(BUSINESS_CATEGORIES, business.category)}
                           </p>
-                          <div className="flex items-center gap-1.5 text-xs mt-2" style={{ color: 'var(--lt-ink-soft)' }}>
-                            <MapPin className="h-3 w-3" aria-hidden="true" />
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12.5, marginTop: 8, color: 'var(--lh-fg3)' }}>
+                            <MapPin size={13} aria-hidden="true" />
                             {business.city || 'Australia'}
                           </div>
                         </div>
 
-                        <div className="mt-5 pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 flex gap-2">
-                          <Link href={`/negocio/${business.slug}`} className="flex-1">
-                            <LtButton variant="outline" tone="paper" size="sm" className="w-full" iconLeft={<ExternalLink className="w-3 h-3" />}>
-                              Ver
-                            </LtButton>
+                        <div style={{ marginTop: 18, paddingTop: 14, borderTop: '1px solid var(--lh-border2)', display: 'flex', gap: 8 }}>
+                          <Link href={`/negocio/${business.slug}`} className="lh-btn lh-btn--sm lh-btn--secondary" style={{ flex: 1 }}>
+                            <ExternalLink size={13} /> Ver
                           </Link>
-                          <Link href={`/negocio/editar/${business.slug}`} className="flex-1">
-                            <LtButton variant="sticker" tone="terracota" size="sm" className="w-full" iconLeft={<Edit className="w-3 h-3" />}>
-                              Editar
-                            </LtButton>
+                          <Link href={`/negocio/editar/${business.slug}`} className="lh-btn lh-btn--sm lh-btn--primary" style={{ flex: 1 }}>
+                            <Edit size={13} /> Editar
                           </Link>
                           <button
                             onClick={() => handleDeleteBusiness(business.id, business.name)}
                             disabled={isDeleting}
-                            className="flex items-center justify-center px-3 py-2 rounded-[var(--lt-radius-sm)] border-[2px] border-[var(--lt-terracota)] transition-colors hover:bg-[var(--lt-terracota)] hover:text-[var(--lt-paper)] disabled:opacity-50"
-                            style={{ color: 'var(--lt-terracota)' }}
-                            title="Eliminar Negocio"
+                            className="lh-btn lh-btn--sm lh-btn--secondary"
+                            style={{ color: 'var(--lh-terra)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, transparent)', paddingLeft: 12, paddingRight: 12 }}
+                            title="Eliminar negocio"
+                            aria-label={`Eliminar ${business.name}`}
                           >
-                            <Trash2 className="w-4 h-4" aria-hidden="true" />
+                            <Trash2 size={15} aria-hidden="true" />
                           </button>
                         </div>
                       </div>
-                    </LtPanel>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
-          </LtPanel>
-        </div>
+          </div>
 
-        {/* Información */}
-        <div className="lg:col-span-1">
-          <LtPanel shadow="md" className="p-5">
-            <h2
-              className="text-xl font-bold mb-4"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
-              Información
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 mt-0.5 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('profile.info.email')}</p>
-                  <p className="font-medium text-sm break-all" style={{ color: 'var(--lt-ink)' }}>{user.email}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Calendar className="h-5 w-5 mt-0.5 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('profile.info.member')}</p>
-                  <p className="font-medium text-sm" style={{ color: 'var(--lt-ink)' }}>
-                    <DateDisplay date={user.createdAt} options={{ year: 'numeric', month: 'short', day: 'numeric' }} />
-                  </p>
-                </div>
-              </div>
-              {user.lastLoginAt && (
-                <div className="flex items-start gap-3">
-                  <Calendar className="h-5 w-5 mt-0.5 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
+          {/* Info + Actividad */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Información */}
+            <div className="lh-card" style={{ padding: 20 }}>
+              <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 16px' }}>Información</h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 11 }}>
+                  <Mail size={18} style={{ marginTop: 2, flexShrink: 0, color: 'var(--lh-accent)' }} aria-hidden="true" />
                   <div>
-                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('profile.info.lastLogin')}</p>
-                    <p className="font-medium text-sm" style={{ color: 'var(--lt-ink)' }}>
-                      <DateDisplay date={user.lastLoginAt} options={{ year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
+                    <p style={{ fontSize: 13, color: 'var(--lh-fg3)', margin: 0 }}>{t('profile.info.email')}</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-fg)', margin: 0, wordBreak: 'break-all' }}>{user.email}</p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 11 }}>
+                  <Calendar size={18} style={{ marginTop: 2, flexShrink: 0, color: 'var(--lh-accent)' }} aria-hidden="true" />
+                  <div>
+                    <p style={{ fontSize: 13, color: 'var(--lh-fg3)', margin: 0 }}>{t('profile.info.member')}</p>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-fg)', margin: 0 }}>
+                      <DateDisplay date={user.createdAt} options={{ year: 'numeric', month: 'short', day: 'numeric' }} />
                     </p>
                   </div>
                 </div>
+                {user.lastLoginAt && (
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 11 }}>
+                    <Calendar size={18} style={{ marginTop: 2, flexShrink: 0, color: 'var(--lh-accent)' }} aria-hidden="true" />
+                    <div>
+                      <p style={{ fontSize: 13, color: 'var(--lh-fg3)', margin: 0 }}>{t('profile.info.lastLogin')}</p>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-fg)', margin: 0 }}>
+                        <DateDisplay date={user.lastLoginAt} options={{ year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actividad reciente */}
+            <div className="lh-card lg:col-span-2" style={{ padding: 20 }}>
+              <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 16px' }}>
+                {t('profile.activity.title')}
+              </h2>
+
+              {recentPosts.length === 0 && recentComments.length === 0 ? (
+                <p style={{ textAlign: 'center', padding: '32px 0', fontSize: 14, color: 'var(--lh-fg3)' }}>
+                  {t('profile.activity.empty')}
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {recentPosts.map((post) => (
+                    <div key={`post-${post.id}`} style={{ borderLeft: '3px solid var(--lh-terra)', paddingLeft: 16, paddingTop: 4, paddingBottom: 4 }}>
+                      <Link href={`/foros/${post.forum.slug}`} style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-terra)' }}>{post.forum.name}</Link>
+                      <p className="line-clamp-2" style={{ marginTop: 4, fontSize: 14, color: 'var(--lh-fg)' }}>{post.content}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, fontSize: 12, color: 'var(--lh-fg3)' }}>
+                        <DateDisplay date={post.createdAt} options={{ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ThumbsUp size={12} aria-hidden="true" /> {post.likesCount}</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  {recentComments.map((comment) => (
+                    <div key={`comment-${comment.id}`} style={{ borderLeft: '3px solid var(--lh-accent)', paddingLeft: 16, paddingTop: 4, paddingBottom: 4 }}>
+                      <Link href={`/foros/${comment.post.forum.slug}`} style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-accent)' }}>{comment.post.forum.name}</Link>
+                      <p className="line-clamp-2" style={{ marginTop: 4, fontSize: 14, color: 'var(--lh-fg)' }}>{comment.content}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 6, fontSize: 12, color: 'var(--lh-fg3)' }}>
+                        <DateDisplay date={comment.createdAt} options={{ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><ThumbsUp size={12} aria-hidden="true" /> {comment.likesCount}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-          </LtPanel>
-        </div>
-
-        {/* Actividad reciente */}
-        <div className="lg:col-span-2">
-          <LtPanel shadow="md" className="p-5">
-            <h2
-              className="text-xl font-bold mb-4"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
-              {t('profile.activity.title')}
-            </h2>
-            <Squiggle width={160} height={8} color="var(--lt-terracota)" amplitude={2} className="mb-4" aria-hidden="true" />
-
-            {recentPosts.length === 0 && recentComments.length === 0 ? (
-              <p className="text-center py-8 text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
-                {t('profile.activity.empty')}
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {recentPosts.map((post) => (
-                  <div
-                    key={`post-${post.id}`}
-                    className="border-l-[3px] pl-4 py-2"
-                    style={{ borderColor: 'var(--lt-terracota)' }}
-                  >
-                    <Link
-                      href={`/foros/${post.forum.slug}`}
-                      className="text-sm font-medium hover:opacity-80 transition-opacity"
-                      style={{ color: 'var(--lt-terracota)' }}
-                    >
-                      {post.forum.name}
-                    </Link>
-                    <p className="mt-1 line-clamp-2 text-sm" style={{ color: 'var(--lt-ink)' }}>{post.content}</p>
-                    <div className="flex items-center gap-4 mt-2 text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                      <DateDisplay date={post.createdAt} options={{ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
-                      <span className="flex items-center gap-1">
-                        <ThumbsUp className="h-3 w-3" aria-hidden="true" />
-                        {post.likesCount}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                {recentComments.map((comment) => (
-                  <div
-                    key={`comment-${comment.id}`}
-                    className="border-l-[3px] pl-4 py-2"
-                    style={{ borderColor: 'var(--lt-accent)' }}
-                  >
-                    <Link
-                      href={`/foros/${comment.post.forum.slug}`}
-                      className="text-sm font-medium hover:opacity-80 transition-opacity"
-                      style={{ color: 'var(--lt-accent)' }}
-                    >
-                      {comment.post.forum.name}
-                    </Link>
-                    <p className="mt-1 line-clamp-2 text-sm" style={{ color: 'var(--lt-ink)' }}>{comment.content}</p>
-                    <div className="flex items-center gap-4 mt-2 text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                      <DateDisplay date={comment.createdAt} options={{ month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }} />
-                      <span className="flex items-center gap-1">
-                        <ThumbsUp className="h-3 w-3" aria-hidden="true" />
-                        {comment.likesCount}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </LtPanel>
+          </div>
         </div>
       </div>
 
@@ -590,6 +450,6 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
         onAccept={handleAcceptEventTerms}
         isSubmitting={isAcceptingEventTerms}
       />
-    </LtPageShell>
+    </div>
   )
 }

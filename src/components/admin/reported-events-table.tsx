@@ -18,7 +18,6 @@ import {
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
 type ReportedEvent = {
   id: string
@@ -47,22 +46,18 @@ const REASON_LABELS: Record<string, string> = {
   OTHER: 'Otro',
 }
 
-export default function ReportedEventsTable({
-  events,
-}: {
-  events: ReportedEvent[]
-}) {
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+const chip = (color: string): React.CSSProperties => ({
+  display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99,
+  background: tint(color), color, fontSize: 11.5, fontWeight: 600,
+})
+
+export default function ReportedEventsTable({ events }: { events: ReportedEvent[] }) {
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const handleApprove = async (eventId: string, title: string) => {
-    if (
-      !window.confirm(
-        `¿Restaurar el evento "${title}"?\nEsto lo hará visible de nuevo en el muro público y descartará los reportes.`
-      )
-    )
-      return
-
+    if (!window.confirm(`¿Restaurar el evento "${title}"?\nEsto lo hará visible de nuevo en el muro público y descartará los reportes.`)) return
     setLoadingId(`approve-${eventId}`)
     const res = await approveReportedEvent(eventId)
     if (!res.success) alert(res.error)
@@ -70,13 +65,7 @@ export default function ReportedEventsTable({
   }
 
   const handleReject = async (eventId: string, title: string) => {
-    if (
-      !window.confirm(
-        `¿ELIMINAR permanentemente el evento "${title}"?\nEsta acción es irreversible.`
-      )
-    )
-      return
-
+    if (!window.confirm(`¿ELIMINAR permanentemente el evento "${title}"?\nEsta acción es irreversible.`)) return
     setLoadingId(`reject-${eventId}`)
     const res = await rejectReportedEvent(eventId)
     if (!res.success) alert(res.error)
@@ -85,12 +74,10 @@ export default function ReportedEventsTable({
 
   if (events.length === 0) {
     return (
-      <LtPanel className="text-center py-12" shadow="sm">
-        <ShieldCheck className="h-12 w-12 text-[var(--lt-verde)] mx-auto mb-3" />
-        <p className="text-[var(--lt-ink-soft)] font-medium">
-          No hay eventos reportados pendientes de revisión.
-        </p>
-      </LtPanel>
+      <div className="lh-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+        <ShieldCheck size={44} style={{ color: 'var(--lh-green)', margin: '0 auto 12px' }} />
+        <p style={{ color: 'var(--lh-fg2)', fontWeight: 500, margin: 0 }}>No hay eventos reportados pendientes de revisión.</p>
+      </div>
     )
   }
 
@@ -98,136 +85,69 @@ export default function ReportedEventsTable({
     <div className="space-y-4">
       {events.map((evt) => {
         const isExpanded = expandedId === evt.id
-
         return (
-          <LtPanel
-            key={evt.id}
-            className="overflow-hidden p-0 border-[var(--lt-terracota)]"
-            shadow="md"
-          >
-            <div className="p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3
-                      className="font-bold text-[var(--lt-ink)] truncate"
-                      style={{ fontFamily: 'var(--lt-font-serif)' }}
-                    >
-                      {evt.title}
-                    </h3>
-                    <Link
-                      href={`/eventos/${evt.id}`}
-                      target="_blank"
-                      className="text-[var(--lt-accent)] hover:text-[var(--lt-terracota)] shrink-0"
-                    >
-                      <ExternalLink className="w-4 h-4" />
+          <div key={evt.id} className="lh-card" style={{ overflow: 'hidden', padding: 0, borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, var(--lh-border))' }}>
+            <div style={{ padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <h3 className="truncate" style={{ fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 16, color: 'var(--lh-fg)', margin: 0 }}>{evt.title}</h3>
+                    <Link href={`/eventos/${evt.id}`} target="_blank" style={{ color: 'var(--lh-accent)', flexShrink: 0, display: 'inline-flex' }}>
+                      <ExternalLink size={15} />
                     </Link>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--lt-ink-soft)]">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--lh-fg3)' }}>
                     <span>{categoryLabel(EVENT_CATEGORIES, evt.category)}</span>
                     <span>·</span>
                     <span>{evt.location}</span>
                     <span>·</span>
-                    <span>
-                      Organizador: {evt.user.name ?? evt.user.email}
-                    </span>
+                    <span>Organizador: {evt.user.name ?? evt.user.email}</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <LtBadge tone="terracota" className="inline-flex items-center gap-1.5">
-                    <Flag className="w-3.5 h-3.5" />
-                    {evt._count.reports}{' '}
-                    {evt._count.reports === 1 ? 'reporte' : 'reportes'}
-                  </LtBadge>
-                  {evt.isHidden && (
-                    <LtBadge tone="sun" className="inline-flex items-center gap-1.5">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      Oculto
-                    </LtBadge>
-                  )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                  <span style={chip('var(--lh-terra)')}><Flag size={13} /> {evt._count.reports} {evt._count.reports === 1 ? 'reporte' : 'reportes'}</span>
+                  {evt.isHidden && <span style={chip('var(--lh-warm)')}><AlertTriangle size={13} /> Oculto</span>}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-4 pt-4 border-t-[2px] border-[var(--lt-ink)]/15">
-                <button
-                  onClick={() =>
-                    setExpandedId(isExpanded ? null : evt.id)
-                  }
-                  className="inline-flex items-center gap-1.5 text-sm text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)] transition-colors"
-                >
-                  {isExpanded ? (
-                    <ChevronUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--lh-border2)' }}>
+                <button onClick={() => setExpandedId(isExpanded ? null : evt.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14, color: 'var(--lh-fg2)', background: 'transparent', border: 0, cursor: 'pointer' }}>
+                  {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   {isExpanded ? 'Ocultar reportes' : 'Ver reportes'}
                 </button>
 
-                <div className="flex items-center gap-2">
-                  <LtButton
-                    variant="sticker"
-                    tone="verde"
-                    size="sm"
-                    onClick={() => handleApprove(evt.id, evt.title)}
-                    disabled={loadingId !== null}
-                    loading={loadingId === `approve-${evt.id}`}
-                    loadingText="Aprobando..."
-                  >
-                    <ShieldCheck className="w-4 h-4" />
-                    Aprobar
-                  </LtButton>
-                  <LtButton
-                    variant="sticker"
-                    tone="terracota"
-                    size="sm"
-                    onClick={() => handleReject(evt.id, evt.title)}
-                    disabled={loadingId !== null}
-                    loading={loadingId === `reject-${evt.id}`}
-                    loadingText="Eliminando..."
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Eliminar
-                  </LtButton>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button type="button" onClick={() => handleApprove(evt.id, evt.title)} disabled={loadingId !== null} className="lh-btn lh-btn--sm" style={{ background: 'var(--lh-green)', color: '#fff', opacity: loadingId !== null ? 0.6 : 1 }}>
+                    <ShieldCheck size={15} /> {loadingId === `approve-${evt.id}` ? 'Aprobando…' : 'Aprobar'}
+                  </button>
+                  <button type="button" onClick={() => handleReject(evt.id, evt.title)} disabled={loadingId !== null} className="lh-btn lh-btn--sm" style={{ background: 'var(--lh-terra)', color: '#fff', opacity: loadingId !== null ? 0.6 : 1 }}>
+                    <Trash2 size={15} /> {loadingId === `reject-${evt.id}` ? 'Eliminando…' : 'Eliminar'}
+                  </button>
                 </div>
               </div>
             </div>
 
             {isExpanded && evt.reports.length > 0 && (
-              <div className="border-t-[2.2px] border-[var(--lt-ink)] bg-[var(--lt-bg)] px-5 py-4">
-                <h4 className="text-xs font-semibold text-[var(--lt-ink-soft)] uppercase tracking-wider mb-3">
-                  Reportes pendientes
-                </h4>
-                <div className="space-y-3">
+              <div style={{ borderTop: '1px solid var(--lh-border)', background: 'var(--lh-surface2)', padding: '16px 20px' }}>
+                <h4 style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, fontWeight: 600, color: 'var(--lh-fg3)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 12 }}>Reportes pendientes</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {evt.reports.map((report) => (
-                    <LtPanel key={report.id} className="p-3.5" shadow="sm" tone="paper">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <LtBadge tone="terracota">
-                          {REASON_LABELS[report.reason] ?? report.reason}
-                        </LtBadge>
-                        <span className="text-xs text-[var(--lt-ink-soft)]">
-                          {format(new Date(report.createdAt), "d MMM, yyyy · HH:mm", {
-                            locale: es,
-                          })}
-                        </span>
+                    <div key={report.id} style={{ padding: 14, borderRadius: 12, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 8 }}>
+                        <span style={chip('var(--lh-terra)')}>{REASON_LABELS[report.reason] ?? report.reason}</span>
+                        <span style={{ fontSize: 12, color: 'var(--lh-fg3)' }}>{format(new Date(report.createdAt), "d MMM, yyyy · HH:mm", { locale: es })}</span>
                       </div>
-                      {report.details && (
-                        <p className="text-sm text-[var(--lt-ink)] mb-2">
-                          {report.details}
-                        </p>
-                      )}
-                      <p className="text-xs text-[var(--lt-ink-soft)]">
-                        Reportado por:{' '}
-                        <span className="font-medium text-[var(--lt-ink)]">
-                          {report.reporter.name ?? report.reporter.email}
-                        </span>
+                      {report.details && <p style={{ fontSize: 14, color: 'var(--lh-fg)', margin: '0 0 8px' }}>{report.details}</p>}
+                      <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>
+                        Reportado por: <span style={{ fontWeight: 500, color: 'var(--lh-fg)' }}>{report.reporter.name ?? report.reporter.email}</span>
                       </p>
-                    </LtPanel>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
-          </LtPanel>
+          </div>
         )
       })}
     </div>

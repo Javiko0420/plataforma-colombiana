@@ -5,6 +5,8 @@
   "nav.jobs": "Jobs",
   "nav.events": "Events",
   "nav.forums": "Forums",
+  "nav.businesses": "Businesses",
+  "nav.radios": "Radio",
   "nav.sports": "Sports",
   "nav.weather": "Weather",
   "nav.rates": "Rates",
@@ -381,6 +383,7 @@
   ,"radios.eyebrow": "Listen live"
   ,"radios.heading.line1": "Radio stations that"
   ,"radios.heading.line2": "take you home."
+  ,"radios.title": "Radio stations that take you home"
   ,"radios.stop": "Stop"
   ,"banner.message": "Want faster access?"
   ,"banner.cta": "Download the App"

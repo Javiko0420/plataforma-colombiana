@@ -43,7 +43,7 @@ export default function SportsFilters({
   }, [router, pathname, searchParams])
 
   return (
-    <form onSubmit={onSubmit} className="mt-6 grid gap-3 md:grid-cols-3 items-end">
+    <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-3 items-end" style={{ textAlign: 'left' }}>
       <div className="flex gap-3 items-end md:col-span-2">
         <div className="flex-1">
           <TeamAutocomplete
@@ -55,27 +55,18 @@ export default function SportsFilters({
         </div>
         <label
           className="flex items-center gap-2 text-sm font-medium cursor-pointer"
-          style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
+          style={{ color: 'var(--lh-fg2)', whiteSpace: 'nowrap', paddingBottom: 12 }}
         >
           <input
             type="checkbox"
             name="live"
             defaultChecked={defaultLiveChecked}
-            className="w-4 h-4 rounded accent-[var(--lt-terracota)]"
+            style={{ width: 16, height: 16, accentColor: 'var(--lh-accent)', cursor: 'pointer' }}
           />
           {t('sports.filters.live')}
         </label>
       </div>
-      <button
-        type="submit"
-        className="ml-auto px-5 py-2.5 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
-        style={{
-          background: 'var(--lt-terracota)',
-          color: 'var(--lt-paper)',
-          boxShadow: 'var(--lt-shadow-sticker)',
-          fontFamily: 'var(--lt-font-sans)',
-        }}
-      >
+      <button type="submit" className="lh-btn lh-btn--md lh-btn--primary" style={{ marginLeft: 'auto' }}>
         {t('sports.filters.apply')}
       </button>
     </form>

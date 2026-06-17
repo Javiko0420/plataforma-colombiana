@@ -10,28 +10,21 @@ export default function GroupStandingsTable({
 }) {
   const t = (k: string) => translate(k, { locale })
   return (
-    <div
-      className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] overflow-hidden"
-      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-    >
+    <div className="lh-card" style={{ overflow: 'hidden', padding: 0 }}>
       {/* Group header — verde = estadio / césped */}
       <div
-        className="px-3 py-2.5 border-b-[2px] border-[var(--lt-ink)] font-bold text-sm flex items-center gap-2"
-        style={{
-          background: 'var(--lt-verde)',
-          color: 'var(--lt-paper)',
-          fontFamily: 'var(--lt-font-serif)',
-        }}
+        className="flex items-center gap-2"
+        style={{ padding: '12px 14px', borderBottom: '1px solid var(--lh-border)', background: 'color-mix(in oklch, var(--lh-green) 12%, var(--lh-surface))', fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 14, color: 'var(--lh-fg)' }}
       >
         <span aria-hidden="true">⚽</span>
         {group.group}
       </div>
 
-      <div className="p-3">
+      <div style={{ padding: 14 }}>
         {/* Column headers */}
         <div
-          className="grid grid-cols-9 text-xs mb-2 font-bold"
-          style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+          className="grid grid-cols-9"
+          style={{ fontFamily: 'var(--lh-mono)', fontSize: 10.5, fontWeight: 600, color: 'var(--lh-fg3)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '.04em' }}
         >
           <div>#</div>
           <div className="col-span-3">{t('sports.team')}</div>
@@ -39,7 +32,7 @@ export default function GroupStandingsTable({
           <div className="text-center">{t('sports.worldcup.win')}</div>
           <div className="text-center">{t('sports.worldcup.draw')}</div>
           <div className="text-center">{t('sports.worldcup.lose')}</div>
-          <div className="text-center font-bold">{t('sports.points')}</div>
+          <div className="text-center">{t('sports.points')}</div>
         </div>
 
         <ul className="space-y-0.5">
@@ -48,35 +41,22 @@ export default function GroupStandingsTable({
             return (
               <li
                 key={row.team.id}
-                className="grid grid-cols-9 text-sm py-1.5 rounded-sm"
+                className="grid grid-cols-9"
                 style={{
-                  background: i % 2 === 0 ? 'transparent' : 'var(--lt-bg)',
-                  color: 'var(--lt-ink)',
-                  fontFamily: 'var(--lt-font-sans)',
-                  borderLeft: qualifies
-                    ? '3px solid var(--lt-verde)'
-                    : '3px solid transparent',
-                  paddingLeft: '4px',
+                  fontSize: 13.5, padding: '6px 0 6px 6px', borderRadius: 6,
+                  color: 'var(--lh-fg)',
+                  borderLeft: qualifies ? '3px solid var(--lh-green)' : '3px solid transparent',
                   fontVariantNumeric: 'tabular-nums',
+                  alignItems: 'center',
                 }}
               >
-                <div
-                  className="font-bold"
-                  style={{ color: qualifies ? 'var(--lt-verde)' : 'var(--lt-ink-soft)' }}
-                >
-                  {row.rank}
-                </div>
-                <div className="col-span-3 truncate font-medium">{row.team.name}</div>
-                <div className="text-center">{row.played}</div>
-                <div className="text-center">{row.win}</div>
-                <div className="text-center">{row.draw}</div>
-                <div className="text-center">{row.lose}</div>
-                <div
-                  className="text-center font-bold"
-                  style={{ color: qualifies ? 'var(--lt-verde)' : 'var(--lt-ink)' }}
-                >
-                  {row.points}
-                </div>
+                <div style={{ fontWeight: 700, color: qualifies ? 'var(--lh-green)' : 'var(--lh-fg3)' }}>{row.rank}</div>
+                <div className="col-span-3 truncate" style={{ fontWeight: 500 }}>{row.team.name}</div>
+                <div className="text-center" style={{ color: 'var(--lh-fg2)' }}>{row.played}</div>
+                <div className="text-center" style={{ color: 'var(--lh-fg2)' }}>{row.win}</div>
+                <div className="text-center" style={{ color: 'var(--lh-fg2)' }}>{row.draw}</div>
+                <div className="text-center" style={{ color: 'var(--lh-fg2)' }}>{row.lose}</div>
+                <div className="text-center" style={{ fontWeight: 700, color: qualifies ? 'var(--lh-green)' : 'var(--lh-fg)' }}>{row.points}</div>
               </li>
             )
           })}
@@ -84,19 +64,10 @@ export default function GroupStandingsTable({
 
         {/* Qualification legend */}
         <div
-          className="mt-3 pt-2 flex items-center gap-1.5 text-xs border-t"
-          style={{
-            borderColor: 'var(--lt-ink)',
-            opacity: 0.4,
-            color: 'var(--lt-ink)',
-            fontFamily: 'var(--lt-font-sans)',
-          }}
+          className="flex items-center gap-1.5"
+          style={{ marginTop: 12, paddingTop: 10, fontSize: 12, borderTop: '1px solid var(--lh-border2)', color: 'var(--lh-fg3)' }}
         >
-          <span
-            className="inline-block w-2 h-2 rounded-full"
-            style={{ background: 'var(--lt-verde)' }}
-            aria-hidden="true"
-          />
+          <span className="inline-block" style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--lh-green)' }} aria-hidden="true" />
           Clasifican a octavos
         </div>
       </div>

@@ -12,7 +12,7 @@ export default async function WorldcupGroupStandingsGrid({ locale }: { locale: '
     groups = data.groups
   } catch {
     return (
-      <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+      <p className="text-sm" style={{ color: 'var(--lh-fg3)' }}>
         {t('sports.worldcup.empty.standings')}
       </p>
     )
@@ -20,7 +20,7 @@ export default async function WorldcupGroupStandingsGrid({ locale }: { locale: '
 
   if (groups.length === 0) {
     return (
-      <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+      <p className="text-sm" style={{ color: 'var(--lh-fg3)' }}>
         {t('sports.worldcup.empty.standings')}
       </p>
     )

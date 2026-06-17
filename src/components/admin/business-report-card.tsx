@@ -7,9 +7,7 @@ import {
   dismissBusinessReport,
   deactivateReportedBusiness,
 } from '@/app/(main)/admin/negocios/actions'
-import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
-/** Maps Prisma ReportReason enum to readable Spanish labels */
 const REASON_LABELS: Record<string, string> = {
   SPAM: 'Spam o publicidad',
   HARASSMENT: 'Acoso',
@@ -60,42 +58,33 @@ export function BusinessReportCard({ business }: BusinessReportCardProps) {
   if (isDismissed) return null
 
   return (
-    <LtPanel className="overflow-hidden border-[var(--lt-terracota)] hover:shadow-[var(--lt-shadow-sticker-lg)] transition-shadow p-0" shadow="md">
+    <div className="lh-card" style={{ overflow: 'hidden', padding: 0, borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, var(--lh-border))' }}>
       {/* Header */}
-      <div className="p-4 border-b-[2.2px] border-[var(--lt-ink)] flex justify-between items-start bg-[var(--lt-bg)]">
+      <div style={{ padding: 16, borderBottom: '1px solid var(--lh-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, background: 'var(--lh-surface2)' }}>
         <div>
-          <p className="text-sm font-semibold text-[var(--lt-ink)]">
-            {business.name}
-          </p>
-          <p className="text-xs text-[var(--lt-ink-soft)] mt-0.5">
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>{business.name}</p>
+          <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: '2px 0 0' }}>
             {business.city || 'Sin ciudad'} &bull; Dueño: {business.owner.name || business.owner.email}
           </p>
         </div>
-        <LtBadge tone="terracota" className="shrink-0">
+        <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 9px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)', color: 'var(--lh-terra)', fontSize: 11.5, fontWeight: 600 }}>
           ⚠️ {business._count.reports} reporte{business._count.reports !== 1 ? 's' : ''}
-        </LtBadge>
+        </span>
       </div>
 
       {/* Reports */}
-      <div className="p-4">
-        <p className="text-xs font-semibold text-[var(--lt-terracota)] uppercase tracking-wide mb-2">
+      <div style={{ padding: 16 }}>
+        <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--lh-terra)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 8 }}>
           Motivos de denuncia:
         </p>
-        <ul className="text-xs text-[var(--lt-ink-soft)] space-y-2 list-disc pl-4">
+        <ul style={{ fontSize: 12, color: 'var(--lh-fg3)', listStyle: 'disc', paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {business.reports.slice(0, 5).map((report) => (
             <li key={report.id}>
-              <span className="font-medium text-[var(--lt-ink)]">
-                {REASON_LABELS[report.reason] || report.reason}
-              </span>
-              {report.details && (
-                <span className="text-[var(--lt-ink-soft)]"> - &ldquo;{report.details}&rdquo;</span>
-              )}
-              <div className="text-[var(--lt-ink-soft)] opacity-80 mt-0.5">
+              <span style={{ fontWeight: 500, color: 'var(--lh-fg)' }}>{REASON_LABELS[report.reason] || report.reason}</span>
+              {report.details && <span style={{ color: 'var(--lh-fg3)' }}> - &ldquo;{report.details}&rdquo;</span>}
+              <div style={{ color: 'var(--lh-fg3)', opacity: 0.85, marginTop: 2 }}>
                 Por: {report.reporter.name || report.reporter.email} &bull;{' '}
-                {formatDistanceToNow(new Date(report.createdAt), {
-                  addSuffix: true,
-                  locale: es,
-                })}
+                {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: es })}
               </div>
             </li>
           ))}
@@ -103,30 +92,14 @@ export function BusinessReportCard({ business }: BusinessReportCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="p-3 bg-[var(--lt-bg)] border-t-[2.2px] border-[var(--lt-ink)] flex justify-end gap-2">
-        <LtButton
-          variant="outline"
-          tone="paper"
-          size="sm"
-          onClick={handleDeactivate}
-          disabled={isPending}
-          loading={isPending}
-          loadingText="Procesando..."
-        >
-          🚫 Desactivar Negocio
-        </LtButton>
-        <LtButton
-          variant="sticker"
-          tone="verde"
-          size="sm"
-          onClick={handleDismiss}
-          disabled={isPending}
-          loading={isPending}
-          loadingText="Procesando..."
-        >
-          ✅ Descartar Reportes
-        </LtButton>
+      <div style={{ padding: 12, background: 'var(--lh-surface2)', borderTop: '1px solid var(--lh-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <button type="button" onClick={handleDeactivate} disabled={isPending} className="lh-btn lh-btn--sm lh-btn--secondary" style={{ color: 'var(--lh-terra)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, transparent)', opacity: isPending ? 0.6 : 1 }}>
+          🚫 Desactivar negocio
+        </button>
+        <button type="button" onClick={handleDismiss} disabled={isPending} className="lh-btn lh-btn--sm" style={{ background: 'var(--lh-green)', color: '#fff', opacity: isPending ? 0.6 : 1 }}>
+          ✅ Descartar reportes
+        </button>
       </div>
-    </LtPanel>
+    </div>
   )
 }

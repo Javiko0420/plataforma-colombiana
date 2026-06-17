@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { Share2, AlertTriangle, Mail, Phone, ExternalLink, CheckCircle2, Clock } from 'lucide-react';
-import { LtButton } from '@/components/lt/Button';
-import { HandDrawnBox } from '@/components/lt/HandDrawnBox';
+import { Button } from '@/components/lh/Button';
 
 interface JobDetailActionsProps {
   job: {
@@ -15,6 +14,8 @@ interface JobDetailActionsProps {
     expiresAt: Date;
   };
 }
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
 
 export default function JobDetailActions({ job }: JobDetailActionsProps) {
   const [isContactRevealed, setIsContactRevealed] = useState(false);
@@ -52,132 +53,79 @@ export default function JobDetailActions({ job }: JobDetailActionsProps) {
     }
   };
 
+  const contactRow: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 11, padding: '11px 12px',
+    borderRadius: 12, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)',
+    color: 'var(--lh-fg)', textDecoration: 'none', fontSize: 14, fontWeight: 500,
+  };
+  const contactIcon = (bg: string): React.CSSProperties => ({
+    width: 30, height: 30, flexShrink: 0, borderRadius: 8, display: 'inline-flex',
+    alignItems: 'center', justifyContent: 'center', background: tint(bg), color: bg,
+  });
+
   return (
-    <div
-      className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 sticky top-24"
-      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-    >
+    <div className="lh-card" style={{ padding: 24, position: 'sticky', top: 88 }}>
       {/* Indicador de tiempo */}
-      <div className="flex justify-center mb-6">
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 22 }}>
         <span
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold"
-          style={{
-            background: 'var(--lt-sun)',
-            color: 'var(--lt-ink)',
-            boxShadow: 'var(--lt-shadow-sticker)',
-          }}
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 14px', borderRadius: 99, background: tint('var(--lh-warm)'), color: 'var(--lh-warm)', fontSize: 13, fontWeight: 600 }}
           aria-label={`Expira en ${diffDays} días`}
         >
-          <Clock className="w-4 h-4" aria-hidden="true" style={{ color: 'var(--lt-sun-core)' }} />
+          <Clock size={15} aria-hidden="true" />
           Expira en {diffDays} {diffDays === 1 ? 'día' : 'días'}
         </span>
       </div>
 
-      <div className="space-y-3">
-        {/* Botón principal de contacto */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Contacto */}
         {!isContactRevealed ? (
-          <LtButton
-            variant="sticker"
-            tone="terracota"
-            size="md"
-            rotate={-1}
-            className="w-full justify-center"
-            onClick={() => setIsContactRevealed(true)}
-            aria-expanded={false}
-          >
-            Ver Contacto
-          </LtButton>
+          <Button variant="primary" size="md" style={{ width: '100%' }} onClick={() => setIsContactRevealed(true)} aria-expanded={false}>
+            Ver contacto
+          </Button>
         ) : (
-          <HandDrawnBox padding="1rem" aria-live="polite">
-            <h4
-              className="text-xs font-bold uppercase tracking-wider mb-3 text-center"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-            >
-              Información del Reclutador
+          <div aria-live="polite" style={{ borderRadius: 14, border: '1px solid var(--lh-border)', background: 'var(--lh-surface2)', padding: 16 }}>
+            <h4 style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--lh-fg3)', textAlign: 'center', margin: '0 0 12px' }}>
+              Información del reclutador
             </h4>
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {job.email && (
-                <a
-                  href={`mailto:${job.email}`}
-                  className="flex items-center gap-3 p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5"
-                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
-                >
-                  <span
-                    className="p-1.5 rounded-[var(--lt-radius-sm)] border border-[var(--lt-ink)] shrink-0"
-                    style={{ background: 'var(--lt-sun)', color: 'var(--lt-ink)' }}
-                    aria-hidden="true"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                  </span>
-                  <span className="font-medium text-sm break-all">{job.email}</span>
+                <a href={`mailto:${job.email}`} style={contactRow}>
+                  <span aria-hidden="true" style={contactIcon('var(--lh-accent)')}><Mail size={15} /></span>
+                  <span style={{ wordBreak: 'break-all' }}>{job.email}</span>
                 </a>
               )}
               {job.phone && (
-                <a
-                  href={`tel:${job.phone}`}
-                  className="flex items-center gap-3 p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5"
-                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
-                >
-                  <span
-                    className="p-1.5 rounded-[var(--lt-radius-sm)] border border-[var(--lt-ink)] shrink-0"
-                    style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)' }}
-                    aria-hidden="true"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                  </span>
-                  <span className="font-medium text-sm">{job.phone}</span>
+                <a href={`tel:${job.phone}`} style={contactRow}>
+                  <span aria-hidden="true" style={contactIcon('var(--lh-green)')}><Phone size={15} /></span>
+                  <span>{job.phone}</span>
                 </a>
               )}
               {job.externalLink && (
-                <a
-                  href={job.externalLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5"
-                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
-                >
-                  <span
-                    className="p-1.5 rounded-[var(--lt-radius-sm)] border border-[var(--lt-ink)] shrink-0"
-                    style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)' }}
-                    aria-hidden="true"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </span>
-                  <span className="font-medium text-sm line-clamp-1">Enlace de postulación</span>
+                <a href={job.externalLink} target="_blank" rel="noopener noreferrer" style={contactRow}>
+                  <span aria-hidden="true" style={contactIcon('var(--lh-terra)')}><ExternalLink size={15} /></span>
+                  <span className="line-clamp-1">Enlace de postulación</span>
                 </a>
               )}
             </div>
-          </HandDrawnBox>
+          </div>
         )}
 
         {/* Compartir */}
-        <LtButton
-          variant="outline"
-          tone="ink"
-          size="md"
-          rotate={0.8}
-          className="w-full justify-center"
-          onClick={handleShare}
-          iconLeft={
-            copySuccess
-              ? <CheckCircle2 className="w-5 h-5" style={{ color: 'var(--lt-verde)' }} />
-              : <Share2 className="w-5 h-5" />
-          }
-        >
-          {copySuccess ? '¡Enlace copiado!' : 'Compartir Oferta'}
-        </LtButton>
+        <Button variant="secondary" size="md" style={{ width: '100%' }} onClick={handleShare}>
+          {copySuccess
+            ? <><CheckCircle2 size={18} style={{ color: 'var(--lh-green)' }} /> ¡Enlace copiado!</>
+            : <><Share2 size={18} /> Compartir oferta</>}
+        </Button>
       </div>
 
       {/* Reporte */}
-      <div className="mt-6 pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 text-center">
+      <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid var(--lh-border2)', textAlign: 'center' }}>
         <button
           onClick={handleReport}
-          className="inline-flex items-center gap-1.5 text-xs transition-colors bg-transparent focus:outline-none focus:underline"
-          style={{ color: 'var(--lt-ink-soft)' }}
-          onMouseOver={e => (e.currentTarget.style.color = 'var(--lt-terracota)')}
-          onMouseOut={e => (e.currentTarget.style.color = 'var(--lt-ink-soft)')}
+          className="lh-report-btn"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12.5, color: 'var(--lh-fg3)', background: 'transparent', border: 0, cursor: 'pointer', fontFamily: 'var(--lh-font)' }}
         >
-          <AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />
+          <AlertTriangle size={14} aria-hidden="true" />
           Reportar anuncio sospechoso
         </button>
       </div>

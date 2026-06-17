@@ -10,7 +10,7 @@ import { User, Camera, Save, ArrowLeft, Trash2, AlertTriangle } from "lucide-rea
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
-import { LtPageShell, LtPanel, LtButton } from "@/components/lt";
+import { Button } from "@/components/lh/Button";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -27,19 +27,15 @@ export default function EditProfilePage() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      nickname: "",
-      image: "",
-    },
+    defaultValues: { name: "", nickname: "", image: "" },
   });
 
   useEffect(() => {
     if (session?.user) {
       form.reset({
         name: session.user.name || "",
-        // @ts-ignore: nickname puede no estar en los tipos base de next-auth aun
-        nickname: session.user.nickname || "", 
+        // @ts-expect-error nickname puede no estar en los tipos base de next-auth aun
+        nickname: session.user.nickname || "",
         image: session.user.image || "",
       });
     }
@@ -54,15 +50,10 @@ export default function EditProfilePage() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/users/me", {
-        method: "DELETE",
-      });
-
+      const res = await fetch("/api/users/me", { method: "DELETE" });
       if (!res.ok) throw new Error("Error al eliminar cuenta");
-
       await signOut({ callbackUrl: "/" });
-
-    } catch (error) {
+    } catch {
       alert("Hubo un error al intentar eliminar tu cuenta.");
       setIsSubmitting(false);
     }
@@ -81,17 +72,12 @@ export default function EditProfilePage() {
 
       await update({
         ...session,
-        user: {
-            ...session?.user,
-            name: data.name,
-            image: data.image,
-            nickname: data.nickname
-        }
+        user: { ...session?.user, name: data.name, image: data.image, nickname: data.nickname },
       });
 
       router.push("/perfil");
       router.refresh();
-    } catch (error) {
+    } catch {
       alert("Hubo un error al guardar tu perfil.");
     } finally {
       setIsSubmitting(false);
@@ -100,47 +86,38 @@ export default function EditProfilePage() {
 
   if (!session) {
     return (
-      <LtPageShell maxWidth="2xl">
-        <p className="p-8 text-center" style={{ color: 'var(--lt-ink-soft)' }}>Cargando...</p>
-      </LtPageShell>
+      <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
+        <div className="lh-container" style={{ maxWidth: 680, paddingTop: 40 }}>
+          <p style={{ padding: 32, textAlign: 'center', color: 'var(--lh-fg3)' }}>Cargando…</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <LtPageShell maxWidth="2xl">
-      <div className="space-y-8">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/perfil"
-            className="p-2 rounded-full border-2 border-[var(--lt-ink)] transition-colors hover:-translate-y-0.5"
-            style={{ background: 'var(--lt-paper)' }}
-          >
-            <ArrowLeft className="w-5 h-5" style={{ color: 'var(--lt-ink)' }} />
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-container" style={{ maxWidth: 680, paddingTop: 40, paddingBottom: 64 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 28 }}>
+          <Link href="/perfil" className="lh-btn lh-btn--sm lh-btn--secondary" style={{ padding: 10 }} aria-label="Volver al perfil">
+            <ArrowLeft size={18} />
           </Link>
-          <h1
-            className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Editar mi Perfil
-          </h1>
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.5vw,28px)', margin: 0 }}>Editar mi perfil</h1>
         </div>
 
-        <LtPanel className="p-8">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="flex flex-col items-center gap-4">
-              <div
-                className="relative w-32 h-32 rounded-full overflow-hidden border-[3px] border-[var(--lt-ink)] group"
-                style={{ background: 'var(--lt-bg)' }}
-              >
+        <div className="lh-card" style={{ padding: 'clamp(24px,5vw,32px)' }}>
+          <form onSubmit={form.handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <div className="group" style={{ position: 'relative', width: 128, height: 128, borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--lh-border)', background: 'var(--lh-surface2)' }}>
                 {form.watch("image") ? (
-                  <Image src={form.watch("image")!} alt="Avatar" fill className="object-cover" />
+                  <Image src={form.watch("image")!} alt="Avatar" fill style={{ objectFit: 'cover' }} />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-16 h-16" style={{ color: 'var(--lt-ink-soft)' }} />
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <User size={56} style={{ color: 'var(--lh-fg3)' }} />
                   </div>
                 )}
-                
+
                 <CldUploadWidget
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onSuccess={(result: any) => {
                     form.setValue("image", result.info.secure_url, { shouldValidate: true });
                   }}
@@ -157,98 +134,66 @@ export default function EditProfilePage() {
                     <button
                       type="button"
                       onClick={() => open()}
-                      className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      className="opacity-0 group-hover:opacity-100"
+                      style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'opacity .2s', cursor: 'pointer', border: 0 }}
                     >
-                      <Camera className="w-8 h-8 text-white" />
+                      <Camera size={30} color="#fff" />
                     </button>
                   )}
                 </CldUploadWidget>
               </div>
-              <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                Haz clic en la foto para cambiarla
-              </p>
+              <p style={{ fontSize: 12.5, color: 'var(--lh-fg3)' }}>Haz clic en la foto para cambiarla</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid gap-2">
-                <label className="lt-label">Nombre Completo</label>
-                <input
-                  {...form.register("name")}
-                  className="lt-input"
-                />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label className="lh-label">Nombre completo</label>
+                <input {...form.register("name")} className={`lh-input${form.formState.errors.name ? ' lh-input--invalid' : ''}`} />
                 {form.formState.errors.name && (
-                  <p className="text-red-500 text-xs">{form.formState.errors.name.message}</p>
+                  <p style={{ marginTop: 6, fontSize: 12.5, color: 'var(--lh-terra)' }}>{form.formState.errors.name.message}</p>
                 )}
               </div>
 
-              <div className="grid gap-2">
-                <label className="lt-label">Apodo (Nickname)</label>
-                <input
-                  {...form.register("nickname")}
-                  placeholder="Ej: JaviDev"
-                  className="lt-input"
-                />
-                <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-                  Así te verán en los foros y comentarios.
-                </p>
+              <div>
+                <label className="lh-label">Apodo (nickname)</label>
+                <input {...form.register("nickname")} placeholder="Ej: JaviDev" className="lh-input" />
+                <p style={{ marginTop: 6, fontSize: 12.5, color: 'var(--lh-fg3)' }}>Así te verán en los foros y comentarios.</p>
               </div>
             </div>
 
-            <LtButton
-              type="submit"
-              variant="sticker"
-              tone="terracota"
-              size="md"
-              className="w-full"
-              disabled={isSubmitting}
-              loading={isSubmitting}
-              loadingText="Guardando..."
-              iconLeft={!isSubmitting ? <Save className="w-5 h-5" /> : undefined}
-            >
-              Guardar Cambios
-            </LtButton>
+            <Button type="submit" variant="primary" size="md" disabled={isSubmitting} style={{ width: '100%' }}>
+              {!isSubmitting && <Save size={18} />}
+              {isSubmitting ? 'Guardando…' : 'Guardar cambios'}
+            </Button>
           </form>
 
-          <hr className="my-8 border-[var(--lt-ink)] opacity-20" />
+          <hr style={{ margin: '32px 0', border: 0, borderTop: '1px solid var(--lh-border)' }} />
 
-          <div
-            className="rounded-[var(--lt-radius-lg)] border-2 border-red-500 p-6"
-            style={{ background: 'var(--lt-bg)' }}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className="p-3 rounded-full border-2 border-red-500"
-                style={{ background: 'var(--lt-paper)' }}
-              >
-                <AlertTriangle className="w-6 h-6 text-red-500" />
-              </div>
-              <div className="flex-1">
-                <h3
-                  className="text-lg font-bold mb-1"
-                  style={{ color: 'var(--lt-ink)' }}
-                >
-                  Eliminar Cuenta
-                </h3>
-                <p className="text-sm mb-4" style={{ color: 'var(--lt-ink-soft)' }}>
+          {/* Danger zone */}
+          <div style={{ borderRadius: 16, border: '1px solid color-mix(in oklch, var(--lh-terra) 35%, transparent)', background: 'color-mix(in oklch, var(--lh-terra) 7%, var(--lh-surface))', padding: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <span style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)', color: 'var(--lh-terra)' }}>
+                <AlertTriangle size={22} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 16, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 4px' }}>Eliminar cuenta</h3>
+                <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '0 0 16px', lineHeight: 1.55 }}>
                   Si eliminas tu cuenta, perderás acceso a todos tus negocios y reseñas. Esta acción no se puede deshacer.
                 </p>
-                <LtButton
+                <button
                   type="button"
-                  variant="sticker"
-                  tone="ink"
-                  size="sm"
                   onClick={handleDeleteAccount}
                   disabled={isSubmitting}
-                  iconLeft={<Trash2 className="w-4 h-4" />}
-                  style={{ background: '#dc2626', color: 'white', borderColor: '#991b1b' }}
+                  className="lh-btn lh-btn--sm"
+                  style={{ background: 'var(--lh-terra)', color: '#fff', opacity: isSubmitting ? 0.6 : 1 }}
                 >
-                  Sí, eliminar mi cuenta definitivamente
-                </LtButton>
+                  <Trash2 size={15} /> Sí, eliminar mi cuenta definitivamente
+                </button>
               </div>
             </div>
           </div>
-        </LtPanel>
+        </div>
       </div>
-    </LtPageShell>
+    </div>
   );
 }

@@ -12,15 +12,7 @@ export default async function WorldcupTeamsGrid({ locale }: { locale: 'es' | 'en
     teams = data.teams
   } catch {
     return (
-      <p
-        className="text-sm py-1 pl-3 border-l-2"
-        style={{
-          color: 'var(--lt-ink-soft)',
-          fontFamily: 'var(--lt-font-sans)',
-          borderColor: 'var(--lt-ink-soft)',
-          opacity: 0.65,
-        }}
-      >
+      <p className="text-sm py-1 pl-3" style={{ color: 'var(--lh-fg3)', borderLeft: '2px solid var(--lh-border)' }}>
         {t('sports.worldcup.empty.teams')}
       </p>
     )
@@ -28,15 +20,7 @@ export default async function WorldcupTeamsGrid({ locale }: { locale: 'es' | 'en
 
   if (teams.length === 0) {
     return (
-      <p
-        className="text-sm py-1 pl-3 border-l-2"
-        style={{
-          color: 'var(--lt-ink-soft)',
-          fontFamily: 'var(--lt-font-sans)',
-          borderColor: 'var(--lt-ink-soft)',
-          opacity: 0.65,
-        }}
-      >
+      <p className="text-sm py-1 pl-3" style={{ color: 'var(--lh-fg3)', borderLeft: '2px solid var(--lh-border)' }}>
         {t('sports.worldcup.empty.teams')}
       </p>
     )
@@ -47,11 +31,8 @@ export default async function WorldcupTeamsGrid({ locale }: { locale: 'es' | 'en
       {teams.map((team) => (
         <div
           key={team.id}
-          className="flex flex-col items-center gap-2.5 p-3 rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)] text-center transition-all duration-200 hover:-translate-y-1 hover:scale-105 cursor-default"
-          style={{
-            background: 'var(--lt-paper)',
-            boxShadow: 'var(--lt-shadow-sticker)',
-          }}
+          className="lh-card lh-card--interactive flex flex-col items-center gap-2.5 text-center"
+          style={{ padding: 14 }}
         >
           <Image
             src={team.logo}
@@ -60,10 +41,7 @@ export default async function WorldcupTeamsGrid({ locale }: { locale: 'es' | 'en
             height={56}
             className="object-contain"
           />
-          <span
-            className="text-xs font-medium leading-snug"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
-          >
+          <span style={{ fontSize: 12.5, fontWeight: 500, lineHeight: 1.35, color: 'var(--lh-fg)' }}>
             {team.name}
           </span>
         </div>

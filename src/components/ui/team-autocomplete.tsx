@@ -77,7 +77,7 @@ export default function TeamAutocomplete({
 
   return (
     <div className="flex flex-col relative">
-      <label htmlFor={`${name}-input`} className="text-lg md:text-xl font-medium text-foreground/80 mb-2">{label}</label>
+      <label htmlFor={`${name}-input`} className="lh-label">{label}</label>
       <div className="flex items-center gap-2">
         <input
           id={`${name}-input`}
@@ -87,24 +87,29 @@ export default function TeamAutocomplete({
           onChange={(e) => { setQuery(e.target.value); setOpen(true) }}
           onFocus={() => setOpen(true)}
           autoComplete="off"
-          className="border border-border rounded-md px-2 py-2 bg-background w-full"
+          className="lh-input"
           role="combobox"
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="list"
         />
         {selected ? (
-          <button type="button" onClick={onClear} className="text-sm text-foreground/70 underline">
-            Clear
+          <button type="button" onClick={onClear} style={{ fontSize: 13.5, color: 'var(--lh-fg2)', textDecoration: 'underline', background: 'transparent', border: 0, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            Limpiar
           </button>
         ) : null}
       </div>
       <input type="hidden" name={name} value={teamIdValue} />
       <input type="hidden" name="teamName" value={query} />
       {open && (options.length > 0 || loading) && (
-        <ul id={listId} role="listbox" className="absolute z-10 mt-1 w-full max-h-64 overflow-auto rounded-md border border-border bg-background shadow">
+        <ul
+          id={listId}
+          role="listbox"
+          className="absolute z-10"
+          style={{ marginTop: 4, top: '100%', width: '100%', maxHeight: 256, overflow: 'auto', borderRadius: 14, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', boxShadow: 'var(--lh-shadow-lg)' }}
+        >
           {loading ? (
-            <li className="px-3 py-2 text-sm text-foreground/70">Loading…</li>
+            <li style={{ padding: '10px 14px', fontSize: 14, color: 'var(--lh-fg3)' }}>Cargando…</li>
           ) : (
             options.map((opt) => (
               <li
@@ -113,19 +118,20 @@ export default function TeamAutocomplete({
                 aria-selected={selected?.id === opt.id}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => onSelect(opt)}
-                className="px-3 py-2 text-sm cursor-pointer hover:bg-foreground/10 flex items-center gap-2"
+                className="lh-autocomplete-opt"
+                style={{ padding: '10px 14px', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, color: 'var(--lh-fg)' }}
               >
                 {opt.badge || opt.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={(opt.badge || opt.logo) as string} alt="" className="h-4 w-4" />
+                  <img src={(opt.badge || opt.logo) as string} alt="" style={{ height: 16, width: 16 }} />
                 ) : null}
-                <span className="truncate">{opt.name}</span>
-                {opt.country ? <span className="ml-auto text-foreground/60 text-xs">{opt.country}</span> : null}
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opt.name}</span>
+                {opt.country ? <span style={{ marginLeft: 'auto', color: 'var(--lh-fg3)', fontSize: 12 }}>{opt.country}</span> : null}
               </li>
             ))
           )}
           {!loading && options.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-foreground/70">No results</li>
+            <li style={{ padding: '10px 14px', fontSize: 14, color: 'var(--lh-fg3)' }}>Sin resultados</li>
           ) : null}
         </ul>
       )}

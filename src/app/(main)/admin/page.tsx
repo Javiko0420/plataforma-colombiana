@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { LtPanel, LtButton } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 export const dynamic = 'force-dynamic' // Siempre datos frescos
 
@@ -73,13 +73,8 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1
-          className="text-3xl font-bold tracking-tight text-[var(--lt-ink)]"
-          style={{ fontFamily: 'var(--lt-font-serif)' }}
-        >
-          Dashboard
-        </h1>
-        <p className="text-[var(--lt-ink-soft)]">
+        <h1 className="lh-h2" style={{ fontSize: 'clamp(26px,4vw,34px)', margin: 0 }}>Dashboard</h1>
+        <p style={{ color: 'var(--lh-fg2)', margin: '6px 0 0' }}>
           Bienvenido al centro de comando de Plataforma Colombiana.
         </p>
       </div>
@@ -149,33 +144,23 @@ export default async function AdminDashboard() {
 
       {/* Paneles inferiores */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <LtPanel className="col-span-4 p-6 h-[400px]" shadow="md">
-          <h3
-            className="font-semibold mb-4 text-[var(--lt-ink)]"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            Actividad Reciente
-          </h3>
-          <div className="flex items-center justify-center h-full text-[var(--lt-ink-soft)]">
+        <div className="lh-card col-span-4" style={{ padding: 24, height: 400 }}>
+          <h3 style={{ fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 16, color: 'var(--lh-fg)', margin: '0 0 16px' }}>Actividad reciente</h3>
+          <div className="flex items-center justify-center" style={{ height: '100%', color: 'var(--lh-fg3)' }}>
             [Gráfico de Actividad de Usuarios - Próximamente]
           </div>
-        </LtPanel>
-        <LtPanel className="col-span-3 p-6 h-[400px]" shadow="md">
-          <h3
-            className="font-semibold mb-4 text-[var(--lt-ink)]"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            Acciones Rápidas
-          </h3>
-          <div className="space-y-4">
-            <LtButton variant="sticker" tone="sun" size="md" className="w-full justify-start">
+        </div>
+        <div className="lh-card col-span-3" style={{ padding: 24, height: 400 }}>
+          <h3 style={{ fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 16, color: 'var(--lh-fg)', margin: '0 0 16px' }}>Acciones rápidas</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Button variant="primary" size="md" style={{ width: '100%', justifyContent: 'flex-start' }}>
               ⚡ Disparar Webhook n8n (Sincronización Manual)
-            </LtButton>
-            <LtButton variant="outline" tone="paper" size="md" className="w-full justify-start">
+            </Button>
+            <Button variant="secondary" size="md" style={{ width: '100%', justifyContent: 'flex-start' }}>
               📄 Revisar Documentos Pendientes
-            </LtButton>
+            </Button>
           </div>
-        </LtPanel>
+        </div>
       </div>
     </div>
   )
@@ -197,28 +182,17 @@ function StatCard({
   const isAlert = trend === 'requires_action' && value > 0
 
   return (
-    <LtPanel
-      className={`p-6 ${isAlert ? 'border-[var(--lt-terracota)] bg-[var(--lt-paper)]' : ''}`}
-      shadow="sm"
-      tone="paper"
-    >
-      <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <h3 className="tracking-tight text-sm font-medium text-[var(--lt-ink-soft)]">
-          {title}
-        </h3>
-        <span className="text-xl">{icon}</span>
+    <div className="lh-card" style={{ padding: 22, borderColor: isAlert ? 'color-mix(in oklch, var(--lh-terra) 40%, var(--lh-border))' : undefined }}>
+      <div className="flex flex-row items-center justify-between" style={{ paddingBottom: 8 }}>
+        <h3 style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--lh-fg2)', margin: 0 }}>{title}</h3>
+        <span style={{ fontSize: 20 }}>{icon}</span>
       </div>
-      <div className="mt-2">
-        <div
-          className={`text-2xl font-bold text-[var(--lt-ink)] ${isAlert ? 'text-[var(--lt-terracota)]' : ''}`}
-          style={isAlert ? undefined : { fontFamily: 'var(--lt-font-serif)' }}
-        >
+      <div style={{ marginTop: 8 }}>
+        <div style={{ fontFamily: 'var(--lh-font)', fontSize: 26, fontWeight: 700, letterSpacing: '-.02em', color: isAlert ? 'var(--lh-terra)' : 'var(--lh-fg)' }}>
           {value}
         </div>
-        <p className="text-xs text-[var(--lt-ink-soft)] mt-1">
-          {description}
-        </p>
+        <p style={{ fontSize: 12, color: 'var(--lh-fg3)', marginTop: 4 }}>{description}</p>
       </div>
-    </LtPanel>
+    </div>
   )
 }

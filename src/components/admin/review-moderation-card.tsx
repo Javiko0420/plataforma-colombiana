@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { approveReview, hideReview } from '@/app/(main)/admin/resenas/actions'
-import { LtPanel, LtBadge, LtButton } from '@/components/lt'
 
 interface ReviewCardProps {
   review: {
@@ -40,72 +39,48 @@ export function ReviewModerationCard({ review }: ReviewCardProps) {
   if (isResolved) return null
 
   return (
-    <LtPanel className="overflow-hidden hover:shadow-[var(--lt-shadow-sticker-lg)] transition-shadow p-0" shadow="md">
+    <div className="lh-card" style={{ overflow: 'hidden', padding: 0 }}>
       {/* Header: Usuario y Negocio */}
-      <div className="p-4 border-b-[2.2px] border-[var(--lt-ink)] flex justify-between items-start bg-[var(--lt-bg)]">
-        <div className="flex gap-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--lt-sun)] border-[2px] border-[var(--lt-ink)] flex items-center justify-center text-[var(--lt-ink)] font-bold shrink-0">
+      <div style={{ padding: 16, borderBottom: '1px solid var(--lh-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, background: 'var(--lh-surface2)' }}>
+        <div style={{ display: 'flex', gap: 11 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,var(--lh-accent),var(--lh-accent-ink))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
             {review.user.name?.[0] || 'U'}
           </div>
           <div>
-            <p className="text-sm font-semibold text-[var(--lt-ink)]">
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>
               {review.user.name || 'Usuario Anónimo'}
-              <span className="text-xs font-normal text-[var(--lt-ink-soft)] ml-2">
-                ({review.user.email})
-              </span>
+              <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--lh-fg3)', marginLeft: 8 }}>({review.user.email})</span>
             </p>
-            <p className="text-xs text-[var(--lt-ink-soft)]">
-              Reseñó a{' '}
-              <span className="font-medium text-[var(--lt-accent)]">
-                {review.business.name}
-              </span>{' '}
-              •{' '}
-              {formatDistanceToNow(new Date(review.createdAt), {
-                addSuffix: true,
-                locale: es,
-              })}
+            <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>
+              Reseñó a <span style={{ fontWeight: 500, color: 'var(--lh-accent)' }}>{review.business.name}</span> •{' '}
+              {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: es })}
             </p>
           </div>
         </div>
-        <LtBadge tone="sun">
-          ⚠️ {review.reportCount} Reportes
-        </LtBadge>
+        <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', padding: '4px 9px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-warm) 14%, transparent)', color: 'var(--lh-warm)', fontSize: 11.5, fontWeight: 600 }}>
+          ⚠️ {review.reportCount} reportes
+        </span>
       </div>
 
       {/* Contenido de la Reseña */}
-      <div className="p-4">
-        <div className="flex items-center mb-2">
+      <div style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <span
-              key={i}
-              className={`text-lg ${i < review.rating ? 'text-[var(--lt-sun)]' : 'text-[var(--lt-ink-soft)] opacity-40'}`}
-            >
-              ★
-            </span>
+            <span key={i} style={{ fontSize: 17, color: i < review.rating ? 'var(--lh-warm)' : 'var(--lh-fg3)', opacity: i < review.rating ? 1 : 0.4 }}>★</span>
           ))}
         </div>
-        <p className="text-[var(--lt-ink)] text-sm leading-relaxed bg-[var(--lt-bg)] p-3 rounded-[var(--lt-radius-sm)] border-[2px] border-dashed border-[var(--lt-ink)]/30">
+        <p style={{ color: 'var(--lh-fg)', fontSize: 14, lineHeight: 1.6, background: 'var(--lh-surface2)', padding: 12, borderRadius: 12, border: '1px dashed var(--lh-border)', margin: 0 }}>
           &ldquo;{review.comment}&rdquo;
         </p>
 
-        {/* Razones de los reportes */}
         {review.reports.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-xs font-semibold text-[var(--lt-terracota)] uppercase tracking-wide">
-              Motivos de denuncia:
-            </p>
-            <ul className="text-xs text-[var(--lt-ink-soft)] space-y-1 list-disc pl-4">
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--lh-terra)', textTransform: 'uppercase', letterSpacing: '.06em', margin: 0 }}>Motivos de denuncia:</p>
+            <ul style={{ fontSize: 12, color: 'var(--lh-fg3)', listStyle: 'disc', paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {review.reports.slice(0, 3).map((rep, idx) => (
                 <li key={idx}>
-                  <span className="font-medium text-[var(--lt-ink)]">
-                    {rep.reason}
-                  </span>
-                  {rep.details && (
-                    <span className="text-[var(--lt-ink-soft)]">
-                      {' '}
-                      - &ldquo;{rep.details}&rdquo;
-                    </span>
-                  )}
+                  <span style={{ fontWeight: 500, color: 'var(--lh-fg)' }}>{rep.reason}</span>
+                  {rep.details && <span style={{ color: 'var(--lh-fg3)' }}> - &ldquo;{rep.details}&rdquo;</span>}
                 </li>
               ))}
             </ul>
@@ -114,30 +89,14 @@ export function ReviewModerationCard({ review }: ReviewCardProps) {
       </div>
 
       {/* Actions Footer */}
-      <div className="p-3 bg-[var(--lt-bg)] border-t-[2.2px] border-[var(--lt-ink)] flex justify-end gap-2">
-        <LtButton
-          variant="outline"
-          tone="paper"
-          size="sm"
-          onClick={handleReject}
-          disabled={isPending}
-          loading={isPending}
-          loadingText="Procesando..."
-        >
+      <div style={{ padding: 12, background: 'var(--lh-surface2)', borderTop: '1px solid var(--lh-border)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <button type="button" onClick={handleReject} disabled={isPending} className="lh-btn lh-btn--sm lh-btn--secondary" style={{ color: 'var(--lh-terra)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, transparent)', opacity: isPending ? 0.6 : 1 }}>
           🗑️ Eliminar
-        </LtButton>
-        <LtButton
-          variant="sticker"
-          tone="verde"
-          size="sm"
-          onClick={handleApprove}
-          disabled={isPending}
-          loading={isPending}
-          loadingText="Procesando..."
-        >
-          ✅ Aprobar y Publicar
-        </LtButton>
+        </button>
+        <button type="button" onClick={handleApprove} disabled={isPending} className="lh-btn lh-btn--sm" style={{ background: 'var(--lh-green)', color: '#fff', opacity: isPending ? 0.6 : 1 }}>
+          ✅ Aprobar y publicar
+        </button>
       </div>
-    </LtPanel>
+    </div>
   )
 }

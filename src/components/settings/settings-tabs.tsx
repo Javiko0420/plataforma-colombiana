@@ -5,16 +5,16 @@ import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { User, Lock, /* CreditCard, */ Save, /* ShieldCheck, */ Eye, EyeOff, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { User, Lock, Save, Eye, EyeOff, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
-import { LtPanel, LtButton } from "@/components/lt";
+import { Button } from "@/components/lh/Button";
 
 // VALIDACIÓN FRONTEND (Debe coincidir con backend)
 const settingsSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   nickname: z.string().optional(),
-  email: z.string().email(), // Solo lectura por ahora si es Google
+  email: z.string().email(),
   phoneNumber: z.string().regex(/^(\+?61|0)[2-478](?:[ -]?[0-9]){8}$/, "Formato inválido (Ej: 0412...)").optional().or(z.literal("")),
   dateOfBirth: z.string().refine((val) => {
     if (!val) return true;
@@ -28,7 +28,6 @@ const settingsSchema = z.object({
 
 type SettingsValues = z.infer<typeof settingsSchema>;
 
-// Password change validation (mirrors backend schema)
 const passwordChangeSchema = z
   .object({
     currentPassword: z.string().min(1, "La contraseña actual es requerida"),
@@ -53,7 +52,6 @@ const passwordChangeSchema = z
 
 type PasswordChangeValues = z.infer<typeof passwordChangeSchema>;
 
-/** Evaluate password strength for the visual indicator */
 function getPasswordStrength(password: string) {
   const checks = [
     { label: "Mínimo 8 caracteres", passed: password.length >= 8 },
@@ -66,13 +64,15 @@ function getPasswordStrength(password: string) {
   return { checks, score };
 }
 
+const errText: React.CSSProperties = { color: 'var(--lh-terra)', fontSize: 12.5, marginTop: 6 };
+const fieldHint: React.CSSProperties = { fontSize: 12.5, marginTop: 6, color: 'var(--lh-fg3)' };
+const comingSoon: React.CSSProperties = { padding: '5px 11px', borderRadius: 99, fontSize: 12, fontWeight: 600, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)', color: 'var(--lh-fg3)' };
+
 export default function SettingsTabs() {
   const { data: session, update } = useSession();
   const [activeTab, setActiveTab] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Password change state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [hasPassword, setHasPassword] = useState(false);
   const [isGoogleUser, setIsGoogleUser] = useState(false);
@@ -84,43 +84,28 @@ export default function SettingsTabs() {
 
   const form = useForm<SettingsValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      name: "",
-      nickname: "",
-      email: "",
-      phoneNumber: "",
-      dateOfBirth: "",
-      image: "",
-    },
+    defaultValues: { name: "", nickname: "", email: "", phoneNumber: "", dateOfBirth: "", image: "" },
   });
 
   const passwordForm = useForm<PasswordChangeValues>({
     resolver: zodResolver(passwordChangeSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   });
 
   const watchedNewPassword = passwordForm.watch("newPassword");
   const passwordStrength = getPasswordStrength(watchedNewPassword || "");
 
-  // Cargar datos desde la API al iniciar
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const res = await fetch("/api/users/me");
         if (!res.ok) throw new Error("Error al cargar datos");
-        
+
         const data = await res.json();
         const user = data.data;
-        
-        // Formatear fecha para el input type="date" (YYYY-MM-DD)
-        const dob = user.dateOfBirth 
-          ? new Date(user.dateOfBirth).toISOString().split('T')[0] 
-          : "";
-        
+
+        const dob = user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : "";
+
         form.reset({
           name: user.name || "",
           nickname: user.nickname || "",
@@ -130,13 +115,10 @@ export default function SettingsTabs() {
           image: user.image || "",
         });
 
-        // Auth info for security tab
         setHasPassword(user.hasPassword ?? false);
         setIsGoogleUser(user.isGoogleUser ?? false);
       } catch (error) {
         console.error("Error cargando datos del usuario:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -157,14 +139,10 @@ export default function SettingsTabs() {
       });
 
       const result = await res.json();
-
-      if (!res.ok) {
-        throw new Error(result.error || "Error al cambiar la contraseña");
-      }
+      if (!res.ok) throw new Error(result.error || "Error al cambiar la contraseña");
 
       setPasswordMessage({ type: "success", text: result.message });
       passwordForm.reset();
-      // Collapse the form after success
       setTimeout(() => setShowPasswordForm(false), 2500);
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Error desconocido";
@@ -188,18 +166,16 @@ export default function SettingsTabs() {
         throw new Error(err.error || "Error al actualizar");
       }
 
-      // Actualizar sesión cliente
       await update({
         ...session,
         user: {
-            ...session?.user,
-            name: data.name,
-            image: data.image,
-            // @ts-ignore
-            nickname: data.nickname,
-            phoneNumber: data.phoneNumber,
-            dateOfBirth: data.dateOfBirth
-        }
+          ...session?.user,
+          name: data.name,
+          image: data.image,
+          nickname: data.nickname,
+          phoneNumber: data.phoneNumber,
+          dateOfBirth: data.dateOfBirth,
+        },
       });
 
       alert("Perfil actualizado correctamente ✅");
@@ -211,183 +187,129 @@ export default function SettingsTabs() {
     }
   };
 
+  const tabBtn = (tab: string): React.CSSProperties => ({
+    width: '100%', display: 'flex', alignItems: 'center', gap: 11,
+    padding: '12px 16px', borderRadius: 12, border: '1px solid',
+    fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 14.5, cursor: 'pointer',
+    transition: 'background .18s, color .18s, border-color .18s',
+    background: activeTab === tab ? 'var(--lh-accent)' : 'var(--lh-surface)',
+    borderColor: activeTab === tab ? 'var(--lh-accent)' : 'var(--lh-border)',
+    color: activeTab === tab ? '#fff' : 'var(--lh-fg2)',
+  });
+
+  const sectionBox: React.CSSProperties = { borderRadius: 14, border: '1px solid var(--lh-border)', overflow: 'hidden' };
+
   return (
     <div className="flex flex-col md:flex-row gap-8">
-      
+
       {/* SIDEBAR DE NAVEGACIÓN */}
-      <aside className="w-full md:w-64 space-y-2">
-        <button
-          onClick={() => setActiveTab("general")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-ink)] transition-all font-medium ${
-            activeTab === "general"
-              ? "shadow-[var(--lt-shadow-sticker)]"
-              : "hover:-translate-y-0.5"
-          }`}
-          style={{
-            background: activeTab === "general" ? 'var(--lt-terracota)' : 'var(--lt-paper)',
-            color: activeTab === "general" ? 'var(--lt-paper)' : 'var(--lt-ink-soft)',
-          }}
-        >
-          <User className="w-5 h-5" /> General
+      <aside className="w-full md:w-60" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <button onClick={() => setActiveTab("general")} style={tabBtn("general")}>
+          <User size={18} /> General
         </button>
-        <button
-          onClick={() => setActiveTab("security")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-ink)] transition-all font-medium ${
-            activeTab === "security"
-              ? "shadow-[var(--lt-shadow-sticker)]"
-              : "hover:-translate-y-0.5"
-          }`}
-          style={{
-            background: activeTab === "security" ? 'var(--lt-terracota)' : 'var(--lt-paper)',
-            color: activeTab === "security" ? 'var(--lt-paper)' : 'var(--lt-ink-soft)',
-          }}
-        >
-          <Lock className="w-5 h-5" /> Seguridad
+        <button onClick={() => setActiveTab("security")} style={tabBtn("security")}>
+          <Lock size={18} /> Seguridad
         </button>
-        {/* TODO: Habilitar cuando se lance la monetización de la plataforma
-        <button
-          onClick={() => setActiveTab("billing")}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${activeTab === "billing" ? "bg-blue-600 text-white" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
-        >
-          <CreditCard className="w-5 h-5" /> Suscripciones
-        </button>
-        */}
       </aside>
 
       {/* ÁREA DE CONTENIDO */}
       <main className="flex-1">
-        
+
         {/* PESTAÑA: GENERAL */}
         {activeTab === "general" && (
-          <LtPanel className="p-8">
-            <h2
-              className="text-xl font-bold mb-6"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
-              Información Personal
+          <div className="lh-card" style={{ padding: 'clamp(20px,4vw,32px)' }}>
+            <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 24px' }}>
+              Información personal
             </h2>
-            
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              
-              {/* Foto de Perfil */}
-              <div className="flex items-center gap-6">
-                 <div
-                   className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-[var(--lt-ink)]"
-                   style={{ background: 'var(--lt-bg)' }}
-                 >
-                    {form.watch("image") ? (
-                        <Image src={form.watch("image")!} alt="Avatar" fill className="object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User style={{ color: 'var(--lt-ink-soft)' }} />
-                        </div>
-                    )}
-                 </div>
-                 <CldUploadWidget
-                    onSuccess={(result) => {
-                      if (result.info && typeof result.info === 'object' && 'secure_url' in result.info) {
-                        form.setValue("image", result.info.secure_url as string);
-                      }
-                    }}
-                    uploadPreset="latinterritory_uploads"
-                  >
-                    {({ open }) => (
-                      <button
-                        type="button"
-                        onClick={() => open()}
-                        className="text-sm font-bold hover:underline"
-                        style={{ color: 'var(--lt-terracota)' }}
-                      >
-                        Cambiar foto
-                      </button>
-                    )}
-                  </CldUploadWidget>
-              </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="lt-label">Nombre Completo</label>
-                  <input {...form.register("name")} className="lt-input" />
-                  {form.formState.errors.name && <p className="text-red-500 text-xs mt-1">{form.formState.errors.name.message}</p>}
+            <form onSubmit={form.handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Foto de perfil */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                <div style={{ position: 'relative', width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--lh-border)', background: 'var(--lh-surface2)' }}>
+                  {form.watch("image") ? (
+                    <Image src={form.watch("image")!} alt="Avatar" fill style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User style={{ color: 'var(--lh-fg3)' }} />
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="lt-label">Apodo (Nickname)</label>
-                  <input {...form.register("nickname")} className="lt-input" />
-                </div>
-                
-                <div>
-                  <label className="lt-label">Email</label>
-                  <input
-                    {...form.register("email")}
-                    disabled
-                    className="lt-input opacity-60 cursor-not-allowed"
-                    title="Para cambiar el email, ve a Seguridad"
-                  />
-                </div>
-
-                <div>
-                  <label className="lt-label">Teléfono (Australia)</label>
-                  <input {...form.register("phoneNumber")} placeholder="0412 345 678" className="lt-input" />
-                  {form.formState.errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{form.formState.errors.phoneNumber.message}</p>}
-                </div>
-
-                <div>
-                  <label className="lt-label">Fecha de Nacimiento</label>
-                  <input type="date" {...form.register("dateOfBirth")} className="lt-input" />
-                  <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>Debes ser mayor de 16 años.</p>
-                  {form.formState.errors.dateOfBirth && <p className="text-red-500 text-xs mt-1">{form.formState.errors.dateOfBirth.message}</p>}
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[var(--lt-ink)] opacity-20">
-                <LtButton
-                  type="submit"
-                  variant="sticker"
-                  tone="terracota"
-                  size="md"
-                  disabled={isSubmitting}
-                  loading={isSubmitting}
-                  loadingText="Guardando..."
-                  iconLeft={!isSubmitting ? <Save className="w-5 h-5" /> : undefined}
+                <CldUploadWidget
+                  onSuccess={(result) => {
+                    if (result.info && typeof result.info === 'object' && 'secure_url' in result.info) {
+                      form.setValue("image", result.info.secure_url as string);
+                    }
+                  }}
+                  uploadPreset="latinterritory_uploads"
                 >
-                  Guardar Cambios
-                </LtButton>
+                  {({ open }) => (
+                    <button type="button" onClick={() => open()} style={{ fontSize: 14, fontWeight: 600, color: 'var(--lh-accent)', background: 'transparent', border: 0, cursor: 'pointer' }}>
+                      Cambiar foto
+                    </button>
+                  )}
+                </CldUploadWidget>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-5">
+                <div>
+                  <label className="lh-label">Nombre completo</label>
+                  <input {...form.register("name")} className={`lh-input${form.formState.errors.name ? ' lh-input--invalid' : ''}`} />
+                  {form.formState.errors.name && <p style={errText}>{form.formState.errors.name.message}</p>}
+                </div>
+                <div>
+                  <label className="lh-label">Apodo (nickname)</label>
+                  <input {...form.register("nickname")} className="lh-input" />
+                </div>
+
+                <div>
+                  <label className="lh-label">Email</label>
+                  <input {...form.register("email")} disabled className="lh-input" style={{ opacity: 0.6, cursor: 'not-allowed' }} title="Para cambiar el email, ve a Seguridad" />
+                </div>
+
+                <div>
+                  <label className="lh-label">Teléfono (Australia)</label>
+                  <input {...form.register("phoneNumber")} placeholder="0412 345 678" className={`lh-input${form.formState.errors.phoneNumber ? ' lh-input--invalid' : ''}`} />
+                  {form.formState.errors.phoneNumber && <p style={errText}>{form.formState.errors.phoneNumber.message}</p>}
+                </div>
+
+                <div>
+                  <label className="lh-label">Fecha de nacimiento</label>
+                  <input type="date" {...form.register("dateOfBirth")} className={`lh-input${form.formState.errors.dateOfBirth ? ' lh-input--invalid' : ''}`} />
+                  <p style={fieldHint}>Debes ser mayor de 16 años.</p>
+                  {form.formState.errors.dateOfBirth && <p style={errText}>{form.formState.errors.dateOfBirth.message}</p>}
+                </div>
+              </div>
+
+              <div style={{ paddingTop: 18, borderTop: '1px solid var(--lh-border)' }}>
+                <Button type="submit" variant="primary" size="md" disabled={isSubmitting}>
+                  {!isSubmitting && <Save size={18} />}
+                  {isSubmitting ? 'Guardando…' : 'Guardar cambios'}
+                </Button>
               </div>
             </form>
-          </LtPanel>
+          </div>
         )}
 
         {/* PESTAÑA: SEGURIDAD */}
         {activeTab === "security" && (
-          <LtPanel className="p-8 space-y-6">
-            <h2
-              className="text-xl font-bold mb-4"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
-              Seguridad de la Cuenta
+          <div className="lh-card" style={{ padding: 'clamp(20px,4vw,32px)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: 0 }}>
+              Seguridad de la cuenta
             </h2>
 
-            <div className="border-2 border-[var(--lt-ink)] rounded-[var(--lt-radius-sm)] overflow-hidden">
-              <div className="p-4 flex justify-between items-center" style={{ background: 'var(--lt-bg)' }}>
+            <div style={sectionBox}>
+              <div style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, background: 'var(--lh-surface2)' }}>
                 <div>
-                  <h3 className="font-bold" style={{ color: 'var(--lt-ink)' }}>Contraseña</h3>
-                  <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
-                    Se recomienda cambiarla cada 3 meses.
-                  </p>
+                  <h3 style={{ fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>Contraseña</h3>
+                  <p style={{ fontSize: 13.5, color: 'var(--lh-fg2)', margin: '2px 0 0' }}>Se recomienda cambiarla cada 3 meses.</p>
                 </div>
 
                 {isGoogleUser && !hasPassword ? (
-                  <span
-                    className="text-xs px-3 py-1.5 rounded-full font-medium border-2 border-[var(--lt-ink)]"
-                    style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
-                  >
-                    Gestionada por Google
-                  </span>
+                  <span style={comingSoon}>Gestionada por Google</span>
                 ) : (
                   <button
                     type="button"
-                    className="font-bold text-sm hover:underline"
-                    style={{ color: 'var(--lt-terracota)' }}
+                    style={{ fontWeight: 600, fontSize: 14, color: 'var(--lh-accent)', background: 'transparent', border: 0, cursor: 'pointer' }}
                     onClick={() => {
                       setShowPasswordForm((prev) => !prev);
                       setPasswordMessage(null);
@@ -400,21 +322,12 @@ export default function SettingsTabs() {
               </div>
 
               {isGoogleUser && !hasPassword && (
-                <div className="px-4 pb-4">
-                  <div
-                    className="flex items-start gap-3 rounded-[var(--lt-radius-sm)] border-2 border-amber-500 p-3"
-                    style={{ background: 'var(--lt-bg)' }}
-                  >
-                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+                <div style={{ padding: '0 16px 16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 11, borderRadius: 12, border: '1px solid color-mix(in oklch, var(--lh-warm) 35%, transparent)', background: 'color-mix(in oklch, var(--lh-warm) 9%, var(--lh-surface))', padding: 12 }}>
+                    <AlertTriangle size={18} style={{ color: 'var(--lh-warm)', flexShrink: 0, marginTop: 2 }} />
+                    <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: 0 }}>
                       Tu cuenta está vinculada a Google. Para cambiar tu contraseña, hazlo directamente desde tu{" "}
-                      <a
-                        href="https://myaccount.google.com/security"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline font-medium"
-                        style={{ color: 'var(--lt-terracota)' }}
-                      >
+                      <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', fontWeight: 500, color: 'var(--lh-accent)' }}>
                         cuenta de Google
                       </a>.
                     </p>
@@ -423,90 +336,49 @@ export default function SettingsTabs() {
               )}
 
               {showPasswordForm && hasPassword && (
-                <div className="border-t-2 border-[var(--lt-ink)] p-4 space-y-5" style={{ background: 'var(--lt-paper)' }}>
-                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                <div style={{ borderTop: '1px solid var(--lh-border)', padding: 16, background: 'var(--lh-surface)' }}>
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>
-                      <label className="lt-label">Contraseña actual</label>
-                      <div className="relative">
-                        <input
-                          {...passwordForm.register("currentPassword")}
-                          type={showCurrentPw ? "text" : "password"}
-                          autoComplete="current-password"
-                          className="lt-input pr-12"
-                          placeholder="Ingresa tu contraseña actual"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowCurrentPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2"
-                          style={{ color: 'var(--lt-ink-soft)' }}
-                          aria-label={showCurrentPw ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        >
-                          {showCurrentPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      <label className="lh-label">Contraseña actual</label>
+                      <div style={{ position: 'relative' }}>
+                        <input {...passwordForm.register("currentPassword")} type={showCurrentPw ? "text" : "password"} autoComplete="current-password" className="lh-input" style={{ paddingRight: 44 }} placeholder="Ingresa tu contraseña actual" />
+                        <button type="button" onClick={() => setShowCurrentPw((v) => !v)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 0, cursor: 'pointer', color: 'var(--lh-fg3)', display: 'flex' }} aria-label={showCurrentPw ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                          {showCurrentPw ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
-                      {passwordForm.formState.errors.currentPassword && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {passwordForm.formState.errors.currentPassword.message}
-                        </p>
-                      )}
+                      {passwordForm.formState.errors.currentPassword && <p style={errText}>{passwordForm.formState.errors.currentPassword.message}</p>}
                     </div>
 
                     <div>
-                      <label className="lt-label">Nueva contraseña</label>
-                      <div className="relative">
-                        <input
-                          {...passwordForm.register("newPassword")}
-                          type={showNewPw ? "text" : "password"}
-                          autoComplete="new-password"
-                          className="lt-input pr-12"
-                          placeholder="Mínimo 8 caracteres"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowNewPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2"
-                          style={{ color: 'var(--lt-ink-soft)' }}
-                          aria-label={showNewPw ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        >
-                          {showNewPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      <label className="lh-label">Nueva contraseña</label>
+                      <div style={{ position: 'relative' }}>
+                        <input {...passwordForm.register("newPassword")} type={showNewPw ? "text" : "password"} autoComplete="new-password" className="lh-input" style={{ paddingRight: 44 }} placeholder="Mínimo 8 caracteres" />
+                        <button type="button" onClick={() => setShowNewPw((v) => !v)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 0, cursor: 'pointer', color: 'var(--lh-fg3)', display: 'flex' }} aria-label={showNewPw ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                          {showNewPw ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
-                      {passwordForm.formState.errors.newPassword && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {passwordForm.formState.errors.newPassword.message}
-                        </p>
-                      )}
+                      {passwordForm.formState.errors.newPassword && <p style={errText}>{passwordForm.formState.errors.newPassword.message}</p>}
 
                       {watchedNewPassword && (
-                        <div className="mt-3 space-y-2">
-                          <div className="flex gap-1">
+                        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div style={{ display: 'flex', gap: 4 }}>
                             {[1, 2, 3, 4, 5].map((i) => (
                               <div
                                 key={i}
-                                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                                  i <= passwordStrength.score
-                                    ? passwordStrength.score <= 2
-                                      ? "bg-red-500"
-                                      : passwordStrength.score <= 3
-                                        ? "bg-amber-500"
-                                        : "bg-emerald-500"
-                                    : "bg-[var(--lt-ink)] opacity-20"
-                                }`}
+                                style={{
+                                  height: 6, flex: 1, borderRadius: 99,
+                                  background: i <= passwordStrength.score
+                                    ? passwordStrength.score <= 2 ? '#ef4444' : passwordStrength.score <= 3 ? 'var(--lh-warm)' : 'var(--lh-green)'
+                                    : 'var(--lh-surface2)',
+                                }}
                               />
                             ))}
                           </div>
-                          <ul className="space-y-1">
+                          <ul style={{ display: 'flex', flexDirection: 'column', gap: 4, margin: 0, padding: 0, listStyle: 'none' }}>
                             {passwordStrength.checks.map((check) => (
-                              <li key={check.label} className="flex items-center gap-2 text-xs">
-                                {check.passed ? (
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                                ) : (
-                                  <XCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--lt-ink-soft)' }} />
-                                )}
-                                <span style={{ color: check.passed ? 'var(--lt-verde)' : 'var(--lt-ink-soft)' }}>
-                                  {check.label}
-                                </span>
+                              <li key={check.label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                                {check.passed ? <CheckCircle2 size={14} style={{ color: 'var(--lh-green)', flexShrink: 0 }} /> : <XCircle size={14} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} />}
+                                <span style={{ color: check.passed ? 'var(--lh-green)' : 'var(--lh-fg3)' }}>{check.label}</span>
                               </li>
                             ))}
                           </ul>
@@ -515,114 +387,49 @@ export default function SettingsTabs() {
                     </div>
 
                     <div>
-                      <label className="lt-label">Confirmar nueva contraseña</label>
-                      <div className="relative">
-                        <input
-                          {...passwordForm.register("confirmPassword")}
-                          type={showConfirmPw ? "text" : "password"}
-                          autoComplete="new-password"
-                          className="lt-input pr-12"
-                          placeholder="Repite la nueva contraseña"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPw((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2"
-                          style={{ color: 'var(--lt-ink-soft)' }}
-                          aria-label={showConfirmPw ? "Ocultar contraseña" : "Mostrar contraseña"}
-                        >
-                          {showConfirmPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      <label className="lh-label">Confirmar nueva contraseña</label>
+                      <div style={{ position: 'relative' }}>
+                        <input {...passwordForm.register("confirmPassword")} type={showConfirmPw ? "text" : "password"} autoComplete="new-password" className="lh-input" style={{ paddingRight: 44 }} placeholder="Repite la nueva contraseña" />
+                        <button type="button" onClick={() => setShowConfirmPw((v) => !v)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 0, cursor: 'pointer', color: 'var(--lh-fg3)', display: 'flex' }} aria-label={showConfirmPw ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                          {showConfirmPw ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
                       </div>
-                      {passwordForm.formState.errors.confirmPassword && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {passwordForm.formState.errors.confirmPassword.message}
-                        </p>
-                      )}
+                      {passwordForm.formState.errors.confirmPassword && <p style={errText}>{passwordForm.formState.errors.confirmPassword.message}</p>}
                     </div>
 
                     {passwordMessage && (
-                      <div
-                        className={`flex items-center gap-2 p-3 rounded-[var(--lt-radius-sm)] text-sm border-2 ${
-                          passwordMessage.type === "success"
-                            ? "border-emerald-500"
-                            : "border-red-500"
-                        }`}
-                        style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-                      >
-                        {passwordMessage.type === "success" ? (
-                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500" />
-                        ) : (
-                          <XCircle className="w-4 h-4 shrink-0 text-red-500" />
-                        )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderRadius: 12, fontSize: 14, border: `1px solid color-mix(in oklch, var(--lh-${passwordMessage.type === 'success' ? 'green' : 'terra'}) 30%, transparent)`, background: `color-mix(in oklch, var(--lh-${passwordMessage.type === 'success' ? 'green' : 'terra'}) 10%, var(--lh-surface))`, color: passwordMessage.type === 'success' ? 'var(--lh-green)' : 'var(--lh-terra)' }}>
+                        {passwordMessage.type === "success" ? <CheckCircle2 size={16} style={{ flexShrink: 0 }} /> : <XCircle size={16} style={{ flexShrink: 0 }} />}
                         {passwordMessage.text}
                       </div>
                     )}
 
-                    <LtButton
-                      type="submit"
-                      variant="sticker"
-                      tone="terracota"
-                      size="sm"
-                      disabled={passwordSubmitting}
-                      loading={passwordSubmitting}
-                      loadingText="Actualizando..."
-                      iconLeft={!passwordSubmitting ? <Lock className="w-4 h-4" /> : undefined}
-                    >
-                      Cambiar Contraseña
-                    </LtButton>
+                    <Button type="submit" variant="primary" size="sm" disabled={passwordSubmitting}>
+                      {!passwordSubmitting && <Lock size={15} />}
+                      {passwordSubmitting ? 'Actualizando…' : 'Cambiar contraseña'}
+                    </Button>
                   </form>
                 </div>
               )}
             </div>
 
-            <div
-              className="p-4 border-2 border-[var(--lt-ink)] rounded-[var(--lt-radius-sm)] flex justify-between items-center"
-              style={{ background: 'var(--lt-bg)' }}
-            >
-                <div>
-                    <h3 className="font-bold" style={{ color: 'var(--lt-ink)' }}>Autenticación de 2 Factores</h3>
-                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>Agrega una capa extra de seguridad.</p>
-                </div>
-                <span
-                  className="px-3 py-1 rounded-full text-xs font-bold border-2 border-[var(--lt-ink)]"
-                  style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
-                >
-                  Próximamente
-                </span>
-            </div>
-
-            <div
-              className="p-4 border-2 border-[var(--lt-ink)] rounded-[var(--lt-radius-sm)] flex justify-between items-center"
-              style={{ background: 'var(--lt-bg)' }}
-            >
-                <div>
-                    <h3 className="font-bold" style={{ color: 'var(--lt-ink)' }}>Verificación de Identidad</h3>
-                    <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>Verifica tu cuenta con ID australiano.</p>
-                </div>
-                <span
-                  className="px-3 py-1 rounded-full text-xs font-bold border-2 border-[var(--lt-ink)]"
-                  style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
-                >
-                  Próximamente
-                </span>
-            </div>
-          </LtPanel>
-        )}
-
-        {/* TODO: Habilitar cuando se lance la monetización de la plataforma
-        {activeTab === "billing" && (
-           <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm text-center py-16">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ShieldCheck className="w-8 h-8" />
+            <div style={{ padding: 16, ...sectionBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div>
+                <h3 style={{ fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>Autenticación de 2 factores</h3>
+                <p style={{ fontSize: 13.5, color: 'var(--lh-fg2)', margin: '2px 0 0' }}>Agrega una capa extra de seguridad.</p>
               </div>
-              <h2 className="text-2xl font-bold mb-2">Planes y Verificación</h2>
-              <p className="text-slate-500 max-w-md mx-auto">
-                  Próximamente podrás suscribirte a planes premium para destacar tus negocios y verificar tu cuenta con insignia azul.
-              </p>
-           </div>
+              <span style={comingSoon}>Próximamente</span>
+            </div>
+
+            <div style={{ padding: 16, ...sectionBox, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div>
+                <h3 style={{ fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>Verificación de identidad</h3>
+                <p style={{ fontSize: 13.5, color: 'var(--lh-fg2)', margin: '2px 0 0' }}>Verifica tu cuenta con ID australiano.</p>
+              </div>
+              <span style={comingSoon}>Próximamente</span>
+            </div>
+          </div>
         )}
-        */}
 
       </main>
     </div>

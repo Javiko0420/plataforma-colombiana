@@ -65,38 +65,37 @@ export function ForumGuidelinesBanner({
         title="⚠️ Aviso Importante del Foro"
         size="sm"
       >
-        <div className="space-y-4">
-          <p className="text-base text-gray-700 dark:text-gray-300">
-            Foros V1: solo texto y publicaciones se eliminan automáticamente
-            en ~24 horas.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p style={{ fontSize: 15, lineHeight: 1.6, color: 'var(--lh-fg2)', margin: 0 }}>
+            Foros V1: solo texto y publicaciones se eliminan automáticamente en ~24 horas.
           </p>
-          <p className="text-base font-semibold text-gray-900 dark:text-white">
+          <p style={{ fontSize: 15, lineHeight: 1.6, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>
             No compartas datos personales ni acusaciones sin fundamento.{' '}
-            <span className="font-normal">Prohibidos enlaces acortados.</span>
+            <span style={{ fontWeight: 400, color: 'var(--lh-fg2)' }}>Prohibidos enlaces acortados.</span>
           </p>
 
-          <div className="pt-1">
-            <Link
-              href="/normas-comunidad"
-              target="_blank"
-              className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
-            >
-              📄 Lee las Community Guidelines completas aquí
-            </Link>
-          </div>
+          <Link
+            href="/normas-comunidad"
+            target="_blank"
+            style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-accent)', display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'underline' }}
+          >
+            📄 Lee las Community Guidelines completas aquí
+          </Link>
 
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 12, borderTop: '1px solid var(--lh-border2)' }}>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+              className="lh-btn lh-btn--sm lh-btn--ghost"
+              style={{ minHeight: 44 }}
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={handleConfirm}
-              className="px-5 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors min-h-[44px]"
+              className="lh-btn lh-btn--sm lh-btn--primary"
+              style={{ minHeight: 44 }}
             >
               Entendido, entrar
             </button>
