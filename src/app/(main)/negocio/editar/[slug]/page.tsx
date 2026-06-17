@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import BusinessForm from "@/components/forms/business-form";
-import { LtPageShell } from "@/components/lt";
 
 export default async function EditBusinessPage({ params }: { params: Promise<{ slug: string }> }) {
   const session = await getServerSession(authOptions);
@@ -30,19 +29,21 @@ export default async function EditBusinessPage({ params }: { params: Promise<{ s
   }
 
   return (
-    <LtPageShell maxWidth="5xl">
-      <BusinessForm
-        initialData={{
-          ...business,
-          city: business.city || "Sydney",
-          website: business.website || "",
-          instagram: business.instagram || "",
-          whatsapp: business.whatsapp || "",
-          facebook: business.facebook || "",
-          address: business.address || "",
-          images: business.images || [],
-        }}
-      />
-    </LtPageShell>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-container" style={{ maxWidth: 880, paddingTop: 40, paddingBottom: 64 }}>
+        <BusinessForm
+          initialData={{
+            ...business,
+            city: business.city || "Sydney",
+            website: business.website || "",
+            instagram: business.instagram || "",
+            whatsapp: business.whatsapp || "",
+            facebook: business.facebook || "",
+            address: business.address || "",
+            images: business.images || [],
+          }}
+        />
+      </div>
+    </div>
   );
 }

@@ -3,11 +3,8 @@
 import * as React from 'react'
 import { topColombiaCities, internationalCities } from '@/lib/cities'
 import { useTranslations } from '@/components/providers/language-provider'
-import { cn } from '@/lib/utils'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { LeafSprig } from '@/components/lt/LeafSprig'
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline'
-import { Squiggle } from '@/components/lt/Squiggle'
+import { MapPin } from 'lucide-react'
+import { PageHeader } from '@/components/lh/PageHeader'
 
 type WeatherBundle = {
   current: {
@@ -69,12 +66,11 @@ function MiniChart({ points }: { points: WeatherBundle['next24h'] }) {
           <div key={i} className="flex flex-col items-center">
             <div className="h-20 flex items-end">
               <div
-                className="w-2 rounded-sm"
-                style={{ height: `${h}px`, background: 'var(--lt-terracota)', opacity: 0.8 }}
+                style={{ width: 8, borderRadius: 3, height: `${h}px`, background: 'var(--lh-warm)', opacity: 0.85 }}
                 aria-label={`${hour}:00, ${Math.round(p.temperatureC)} °C`}
               />
             </div>
-            <span className="mt-1 text-[10px]" style={{ color: 'var(--lt-ink-soft)' }}>{hour}h</span>
+            <span className="mt-1" style={{ fontSize: 10, color: 'var(--lh-fg3)' }}>{hour}h</span>
           </div>
         )
       })}
@@ -86,39 +82,25 @@ function CityWeatherCard({ city }: { city: { slug: string; name: string; country
   const { data, loading, error } = useWeather(`city=${encodeURIComponent(city.slug)}`)
 
   return (
-    <div
-      className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] p-4 transition-all hover:-translate-y-0.5"
-      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-    >
-      <div className="flex items-baseline justify-between mb-2">
+    <div className="lh-card" style={{ padding: 18 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
         <div>
-          <h3 className="font-bold text-base" style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}>
-            {city.name}
-          </h3>
-          {city.country && (
-            <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>{city.country}</span>
-          )}
+          <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 16, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>{city.name}</h3>
+          {city.country && <span style={{ fontSize: 12, color: 'var(--lh-fg3)' }}>{city.country}</span>}
         </div>
-        {loading && (
-          <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>Cargando…</span>
-        )}
+        {loading && <span style={{ fontSize: 12, color: 'var(--lh-fg3)' }}>Cargando…</span>}
       </div>
 
-      {error && (
-        <p className="text-sm" style={{ color: 'var(--lt-terracota)' }}>{error}</p>
-      )}
+      {error && <p style={{ fontSize: 14, color: 'var(--lh-terra)' }}>{error}</p>}
 
       {data && (
-        <div className="text-sm">
-          <div className="flex gap-4 items-start">
-            <div
-              className="text-3xl font-black"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-terracota)' }}
-            >
+        <div>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <div style={{ fontFamily: 'var(--lh-font)', fontSize: 32, fontWeight: 700, letterSpacing: '-.02em', color: 'var(--lh-warm)' }}>
               {Math.round(data.current.temperatureC)}°C
             </div>
-            <div className="flex flex-col gap-0.5" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-              <span className="font-medium" style={{ color: 'var(--lt-ink)' }}>{data.current.weatherTextEs}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, fontSize: 13.5, color: 'var(--lh-fg2)' }}>
+              <span style={{ fontWeight: 600, color: 'var(--lh-fg)' }}>{data.current.weatherTextEs}</span>
               <span>Sensación: {Math.round(data.current.feelsLikeC)}°C</span>
               <span>Humedad: {Math.round(data.current.humidityPercent)}%</span>
             </div>
@@ -162,88 +144,48 @@ export default function WeatherPage() {
   }, [t])
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
 
-      {/* ── Hero ── */}
-      <div
-        className="relative overflow-hidden border-b-[2px] border-[var(--lt-ink)] py-14 px-4"
-        style={{ background: 'var(--lt-paper)' }}
-      >
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
-          <SunMotif size={280} className="absolute opacity-[0.07]" style={{ top: '-40px', right: '-20px' }} />
-          <LeafSprig size={90} className="absolute opacity-20" style={{ bottom: '8px', left: '12px', transform: 'rotate(-18deg)' }} />
-        </div>
-        <div className="relative max-w-6xl mx-auto">
-          <h1
-            className="text-3xl md:text-4xl font-black mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('weather.title', 'Clima en Colombia')}
-          </h1>
-          <HandDrawnUnderline width={160} color="var(--lt-sun-core)" thickness={2.5} aria-hidden="true" />
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Tu ciudad hoy"
+        title={t('weather.title', 'Clima en Colombia')}
+        accent="var(--lh-warm)"
+      />
 
-      <main className={cn('mx-auto max-w-6xl px-4 py-10 space-y-12')}>
+      <main className="lh-container" style={{ maxWidth: 1100, paddingTop: 40, paddingBottom: 64, display: 'flex', flexDirection: 'column', gap: 48 }}>
 
         {/* Tu ciudad */}
         <section aria-labelledby="my-city-title">
-          <h2
-            id="my-city-title"
-            className="text-xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+          <h2 id="my-city-title" style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', marginBottom: 16 }}>
             {t('weather.yourCity', 'Tu ciudad')}
           </h2>
-          <div
-            className="rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] p-5"
-            style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-          >
-            <div className="flex items-center gap-4 flex-wrap">
+          <div className="lh-card" style={{ padding: 22 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               {(meLoading || meGeoLoading) && (
-                <p className="text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
-                  {t('weather.detecting', 'Detectando tu ubicación…')}
-                </p>
+                <p style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>{t('weather.detecting', 'Detectando tu ubicación…')}</p>
               )}
-              <button
-                type="button"
-                onClick={onUseLocation}
-                className="inline-flex items-center justify-center px-4 py-2 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-                style={{
-                  background: 'var(--lt-terracota)',
-                  color: 'var(--lt-paper)',
-                  boxShadow: 'var(--lt-shadow-sticker)',
-                  fontFamily: 'var(--lt-font-sans)',
-                }}
-              >
-                {t('weather.useLocation', 'Usar mi ubicación')}
+              <button type="button" onClick={onUseLocation} className="lh-btn lh-btn--sm lh-btn--primary">
+                <MapPin size={15} /> {t('weather.useLocation', 'Usar mi ubicación')}
               </button>
             </div>
 
-            {meGeoError && (
-              <p className="mt-2 text-sm" style={{ color: 'var(--lt-terracota)' }}>{meGeoError}</p>
-            )}
+            {meGeoError && <p style={{ marginTop: 8, fontSize: 14, color: 'var(--lh-terra)' }}>{meGeoError}</p>}
 
             {!meLoading && !meGeoLoading && !meData && !meGeoError && (
-              <p className="mt-2 text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+              <p style={{ marginTop: 8, fontSize: 14, color: 'var(--lh-fg3)' }}>
                 {t('weather.unavailable', 'No fue posible obtener tu ubicación por IP. Puedes consultar las ciudades principales abajo.')}
               </p>
             )}
 
             {meData && (
-              <div className="mt-4">
-                <div className="flex gap-6 items-start">
-                  <div
-                    className="text-5xl font-black"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-terracota)' }}
-                  >
+              <div style={{ marginTop: 16 }}>
+                <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+                  <div style={{ fontFamily: 'var(--lh-font)', fontSize: 48, fontWeight: 700, letterSpacing: '-.03em', lineHeight: 1, color: 'var(--lh-warm)' }}>
                     {Math.round(meData.current.temperatureC)}°C
                   </div>
-                  <div style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-                    <div className="text-base font-semibold" style={{ color: 'var(--lt-ink)' }}>
-                      {meData.current.weatherTextEs}
-                    </div>
-                    <div className="mt-1 text-sm">
+                  <div style={{ color: 'var(--lh-fg2)' }}>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--lh-fg)' }}>{meData.current.weatherTextEs}</div>
+                    <div style={{ marginTop: 4, fontSize: 14 }}>
                       {t('weather.feelsLike', 'Sensación')}: {Math.round(meData.current.feelsLikeC)}°C ·{' '}
                       {t('weather.humidity', 'Humedad')}: {Math.round(meData.current.humidityPercent)}%
                     </div>
@@ -257,14 +199,9 @@ export default function WeatherPage() {
 
         {/* Ciudades Colombia */}
         <section aria-labelledby="colombia-title">
-          <h2
-            id="colombia-title"
-            className="text-xl font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+          <h2 id="colombia-title" style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', marginBottom: 16 }}>
             {t('weather.topCities', 'Principales ciudades de Colombia')}
           </h2>
-          <Squiggle width={160} color="var(--lt-terracota)" amplitude={3} className="mb-5" aria-hidden="true" />
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {topColombiaCities.map(c => (
               <CityWeatherCard key={c.slug} city={c} />
@@ -274,17 +211,12 @@ export default function WeatherPage() {
 
         {/* Ciudades internacionales */}
         <section aria-labelledby="intl-title">
-          <h2
-            id="intl-title"
-            className="text-xl font-bold mb-1"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+          <h2 id="intl-title" style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', marginBottom: 6 }}>
             {t('weather.internationalCities', 'Ciudades internacionales')}
           </h2>
-          <p className="text-sm mb-2" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)', marginBottom: 16 }}>
             {t('weather.internationalDesc', 'Para colombianos en el exterior')}
           </p>
-          <Squiggle width={160} color="var(--lt-verde)" amplitude={3} className="mb-5" aria-hidden="true" />
           <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {internationalCities.map(c => (
               <CityWeatherCard key={c.slug} city={c} />

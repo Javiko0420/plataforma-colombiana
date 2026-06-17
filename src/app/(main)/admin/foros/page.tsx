@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { ForumModerationView } from '@/components/admin/forum-moderation-view'
 import { ForumSettingsPanel } from '@/components/admin/forum-settings-panel'
-import { LtBadge } from '@/components/lt'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,50 +72,40 @@ export default async function ForumModerationPage() {
     <div className="space-y-8">
       {/* Sección 1: Configuración de Foros Activos */}
       <section>
-        <div className="flex justify-between items-end mb-4">
+        <div className="flex justify-between items-end mb-4 gap-4">
           <div>
-            <h1
-              className="text-2xl font-bold text-[var(--lt-ink)]"
-              style={{ fontFamily: 'var(--lt-font-serif)' }}
-            >
-              Gestión de Foros
-            </h1>
-            <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
+            <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.4vw,28px)', margin: 0 }}>Gestión de foros</h1>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
               Configura los títulos y temas del día para los foros activos.
             </p>
           </div>
-          <LtBadge tone="accent">
-            {forumsForSettings.length} Activos
-          </LtBadge>
+          <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', padding: '5px 11px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-accent) 14%, transparent)', color: 'var(--lh-accent)', fontSize: 12.5, fontWeight: 600 }}>
+            {forumsForSettings.length} activos
+          </span>
         </div>
 
         <ForumSettingsPanel forums={forumsForSettings} />
       </section>
 
       {/* Separador visual */}
-      <hr className="border-[2.2px] border-[var(--lt-ink)] opacity-20" />
+      <hr style={{ border: 0, borderTop: '1px solid var(--lh-border)' }} />
 
       {/* Sección 2: Moderación de Contenido Reportado */}
       <section>
-        <div className="flex justify-between items-end mb-4">
+        <div className="flex justify-between items-end mb-4 gap-4">
           <div>
-            <h2
-              className="text-xl font-bold text-[var(--lt-ink)]"
-              style={{ fontFamily: 'var(--lt-font-serif)' }}
-            >
-              Moderación de Contenido
-            </h2>
-            <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
+            <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>Moderación de contenido</h2>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
               Revisa y gestiona el contenido reportado por la comunidad.
             </p>
           </div>
-          <div className="flex gap-2 text-xs">
-            <LtBadge tone="terracota">
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 11px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)', color: 'var(--lh-terra)', fontSize: 12.5, fontWeight: 600 }}>
               {formattedPosts.length} Posts
-            </LtBadge>
-            <LtBadge tone="sun">
+            </span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 11px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-warm) 14%, transparent)', color: 'var(--lh-warm)', fontSize: 12.5, fontWeight: 600 }}>
               {formattedComments.length} Comentarios
-            </LtBadge>
+            </span>
           </div>
         </div>
 

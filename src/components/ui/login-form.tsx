@@ -5,11 +5,10 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useTranslations } from '@/components/providers/language-provider'
-import { AccessibleInput } from './accessible-input'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { GoogleSignInButton } from './google-sign-in-button'
 import { AppleSignInButton } from './apple-sign-in-button'
-import { LtPanel, LtButton } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 interface LoginFormProps {
   callbackUrl?: string
@@ -22,10 +21,7 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
+  const [formData, setFormData] = useState({ email: '', password: '' })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,148 +53,107 @@ export default function LoginForm({ callbackUrl = '/', className = '' }: LoginFo
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
     if (error) setError(null)
   }
 
   return (
     <div className={`w-full ${className}`}>
-      <LtPanel className="p-8">
-        <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+      <div className="lh-card" style={{ padding: 'clamp(24px,5vw,36px)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(26px,4vw,32px)', margin: '0 0 8px' }}>
             {t('auth.login.title')}
           </h1>
-          <p style={{ color: 'var(--lt-ink-soft)' }}>
-            {t('auth.login.subtitle')}
-          </p>
+          <p style={{ color: 'var(--lh-fg2)', fontSize: 15 }}>{t('auth.login.subtitle')}</p>
         </div>
 
         <AppleSignInButton callbackUrl={callbackUrl} />
-        <div className="mt-3" />
+        <div style={{ height: 10 }} />
         <GoogleSignInButton callbackUrl={callbackUrl} />
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t-2 border-[var(--lt-ink)] opacity-20" />
+        <div style={{ position: 'relative', margin: '22px 0' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '100%', borderTop: '1px solid var(--lh-border)' }} />
           </div>
-          <div className="relative flex justify-center text-sm">
-            <span
-              className="px-4"
-              style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink-soft)' }}
-            >
+          <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+            <span style={{ padding: '0 14px', background: 'var(--lh-surface)', color: 'var(--lh-fg3)', fontSize: 13 }}>
               o con tu correo
             </span>
           </div>
         </div>
 
         {error && (
-          <div
-            className="mb-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500"
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-            role="alert"
-          >
-            <p className="text-sm">{error}</p>
+          <div role="alert" style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 13, background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)' }}>
+            <p style={{ fontSize: 14, color: 'var(--lh-terra)', margin: 0 }}>{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           <div>
-            <label htmlFor="email" className="lt-label">
-              {t('auth.login.email')}
-            </label>
-            <AccessibleInput
+            <label htmlFor="email" className="lh-label">{t('auth.login.email')}</label>
+            <input
               id="email"
               name="email"
               type="email"
-              label={t('auth.login.email')}
-              showLabel={false}
               value={formData.email}
               onChange={handleChange}
               required
               autoComplete="email"
               disabled={isLoading}
-              className="lt-input"
+              className="lh-input"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="lt-label">
-              {t('auth.login.password')}
-            </label>
-            <div className="relative">
-              <AccessibleInput
+            <label htmlFor="password" className="lh-label">{t('auth.login.password')}</label>
+            <div style={{ position: 'relative' }}>
+              <input
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
-                label={t('auth.login.password')}
-                showLabel={false}
                 value={formData.password}
                 onChange={handleChange}
                 required
                 autoComplete="current-password"
                 disabled={isLoading}
-                className="lt-input pr-12"
+                className="lh-input"
+                style={{ paddingRight: 44 }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                style={{ color: 'var(--lt-ink-soft)' }}
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 0, cursor: 'pointer', color: 'var(--lh-fg3)', display: 'flex' }}
                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
-                ) : (
-                  <Eye className="h-5 w-5" />
-                )}
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <Link
-              href="/auth/forgot-password"
-              className="text-sm font-medium hover:underline transition-colors"
-              style={{ color: 'var(--lt-terracota)' }}
-            >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+            <Link href="/auth/forgot-password" style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--lh-accent)' }}>
               {t('auth.login.forgotPassword')}
             </Link>
           </div>
 
-          <LtButton
-            type="submit"
-            variant="sticker"
-            tone="terracota"
-            size="md"
-            className="w-full"
-            disabled={isLoading}
-            loading={isLoading}
-            loadingText={t('auth.login.loading')}
-            iconLeft={!isLoading ? <LogIn className="h-5 w-5" /> : undefined}
-          >
-            {t('auth.login.submit')}
-          </LtButton>
+          <Button type="submit" variant="primary" size="md" disabled={isLoading} style={{ width: '100%' }}>
+            {!isLoading && <LogIn size={18} />}
+            {isLoading ? t('auth.login.loading') : t('auth.login.submit')}
+          </Button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
+        <div style={{ marginTop: 22, textAlign: 'center' }}>
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)' }}>
             {t('auth.login.noAccount')}{' '}
             <Link
               href={callbackUrl && callbackUrl !== '/' ? `/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}` : '/auth/signup'}
-              className="font-medium hover:underline transition-colors"
-              style={{ color: 'var(--lt-terracota)' }}
+              style={{ fontWeight: 600, color: 'var(--lh-accent)' }}
             >
               {t('auth.login.signUp')}
             </Link>
           </p>
         </div>
-      </LtPanel>
+      </div>
     </div>
   )
 }

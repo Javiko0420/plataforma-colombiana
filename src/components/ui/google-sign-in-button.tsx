@@ -3,7 +3,6 @@
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import { LtButton } from '@/components/lt'
 
 interface GoogleSignInButtonProps {
   callbackUrl?: string
@@ -53,17 +52,15 @@ export function GoogleSignInButton({
   )
 
   return (
-    <LtButton
+    <button
       type="button"
-      variant="outline"
-      tone="paper"
-      size="md"
       onClick={handleClick}
       disabled={isLoading}
-      className={`w-full ${className}`}
-      iconLeft={isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : googleIcon}
+      className={`lh-btn lh-btn--md lh-btn--secondary ${className}`}
+      style={{ width: '100%' }}
     >
+      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : googleIcon}
       {isLoading ? 'Conectando...' : label}
-    </LtButton>
+    </button>
   )
 }

@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import CompleteProfileForm from './complete-profile-form'
-import { LtPageShell } from '@/components/lt'
 
 export const metadata: Metadata = {
   title: 'Completar Perfil | Latin Territory',
@@ -10,16 +9,12 @@ export const metadata: Metadata = {
 
 export default function CompleteProfilePage() {
   return (
-    <Suspense
-      fallback={
-        <LtPageShell maxWidth="md" className="flex items-center justify-center">
-          <div className="animate-pulse" style={{ color: 'var(--lt-ink-soft)' }}>
-            Cargando...
-          </div>
-        </LtPageShell>
-      }
-    >
-      <CompleteProfileForm />
-    </Suspense>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'var(--lh-font)' }}>
+      <div style={{ width: '100%', maxWidth: 480 }}>
+        <Suspense fallback={<div className="animate-pulse" style={{ textAlign: 'center', color: 'var(--lh-fg3)' }}>Cargando…</div>}>
+          <CompleteProfileForm />
+        </Suspense>
+      </div>
+    </div>
   )
 }

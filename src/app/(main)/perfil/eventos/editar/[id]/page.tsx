@@ -5,7 +5,6 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import EventForm from '@/components/eventos/EventForm'
-import { LtPageShell, LtPanel } from '@/components/lt'
 
 export default async function EditarEventoPage({
   params,
@@ -37,45 +36,36 @@ export default async function EditarEventoPage({
   }
 
   return (
-    <LtPageShell maxWidth="2xl">
-      <Link
-        href="/perfil/eventos"
-        className="inline-flex items-center gap-2 text-sm mb-6 transition-colors hover:underline"
-        style={{ color: 'var(--lt-ink-soft)' }}
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a mis eventos
-      </Link>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)', paddingTop: '2.5rem', paddingBottom: '4rem' }}>
+      <div className="lh-container" style={{ maxWidth: 760 }}>
+        <Link href="/perfil/eventos" className="lh-btn lh-btn--sm lh-btn--secondary" style={{ marginBottom: 24 }}>
+          <ArrowLeft size={16} aria-hidden="true" /> Volver a mis eventos
+        </Link>
 
-      <div className="text-center mb-8 space-y-2">
-        <h1
-          className="text-3xl md:text-4xl font-extrabold tracking-tight"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
-          Editar evento
-        </h1>
-        <p className="text-lg" style={{ color: 'var(--lt-ink-soft)' }}>
-          Actualiza los datos de tu evento. Los cambios se reflejarán
-          inmediatamente en el muro.
-        </p>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <h1 className="lh-h1" style={{ fontSize: 'clamp(30px,4.5vw,42px)' }}>Editar evento</h1>
+          <p style={{ fontSize: 17, color: 'var(--lh-fg2)', margin: '14px auto 0', maxWidth: 520, lineHeight: 1.55 }}>
+            Actualiza los datos de tu evento. Los cambios se reflejarán inmediatamente en el muro.
+          </p>
+        </div>
+
+        <div className="lh-card" style={{ padding: 'clamp(22px,4vw,32px)' }}>
+          <EventForm
+            mode="edit"
+            eventId={event.id}
+            initialData={{
+              title: event.title,
+              description: event.description,
+              category: event.category,
+              eventDate: event.eventDate.toISOString(),
+              location: event.location,
+              imageUrl: event.imageUrl,
+              ticketLink: event.ticketLink,
+              ticketPrice: event.ticketPrice,
+            }}
+          />
+        </div>
       </div>
-
-      <LtPanel className="p-6 md:p-8">
-        <EventForm
-          mode="edit"
-          eventId={event.id}
-          initialData={{
-            title: event.title,
-            description: event.description,
-            category: event.category,
-            eventDate: event.eventDate.toISOString(),
-            location: event.location,
-            imageUrl: event.imageUrl,
-            ticketLink: event.ticketLink,
-            ticketPrice: event.ticketPrice,
-          }}
-        />
-      </LtPanel>
-    </LtPageShell>
+    </div>
   )
 }

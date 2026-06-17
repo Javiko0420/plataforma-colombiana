@@ -1,5 +1,5 @@
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 import { AudioPlayer } from "@/components/ui/audio-player";
 
 export default function MainLayout({
@@ -10,11 +10,11 @@ export default function MainLayout({
   return (
     <>
       <div className="min-h-screen flex flex-col">
-        <Header />
+        <SiteHeader />
         <main className="flex-1">
           {children}
         </main>
-        <Footer />
+        <SiteFooter />
       </div>
       <AudioPlayer />
     </>

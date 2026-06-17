@@ -1,289 +1,176 @@
-"use client"
+'use client'
 
 import Link from 'next/link'
-import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react'
-import { useTranslations } from '@/components/providers/language-provider'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { Squiggle } from '@/components/lt/Squiggle'
+import Image from 'next/image'
+import { Globe, Users, Radio, Facebook, Instagram, Mail } from 'lucide-react'
 
-function TikTokIcon({ className }: { className?: string }) {
+function TikTokIcon() {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z" />
     </svg>
   )
 }
 
-const SOCIAL_LINKS = [
-  { icon: Facebook,  href: 'https://www.facebook.com/profile.php?id=61590612274534', label: 'Facebook',  rotate: -2,   custom: false },
-  { icon: Instagram, href: 'https://www.instagram.com/latinterritory/',              label: 'Instagram', rotate: 1.5,  custom: false },
-  { icon: TikTokIcon, href: 'https://www.tiktok.com/@latin.territory',               label: 'TikTok',   rotate: -1,   custom: true  },
-  { icon: Mail,      href: 'mailto:privacy@latinterritory.com',                      label: 'Correo',   rotate: -1.5, custom: false },
+const FOOT_COLS = [
+  {
+    head: 'Explorar',
+    links: [
+      { label: 'Negocios',  href: '/directorio' },
+      { label: 'Empleos',   href: '/empleos' },
+      { label: 'Eventos',   href: '/eventos' },
+      { label: 'Foros',     href: '/foros' },
+      { label: 'Radio',     href: '/emisoras' },
+    ],
+  },
+  {
+    head: 'Comunidad',
+    links: [
+      { label: 'Registrarse',       href: '/auth/signup' },
+      { label: 'Publicar negocio',  href: '/registrar-negocio' },
+      { label: 'Publicar empleo',   href: '/empleos' },
+      { label: 'Ayuda',             href: '/soporte' },
+    ],
+  },
+  {
+    head: 'Latin Territory',
+    links: [
+      { label: 'Sobre nosotros', href: '/' },
+      { label: 'Contacto',       href: '/soporte' },
+      { label: 'Privacidad',     href: '/privacidad' },
+      { label: 'Términos',       href: '/terminos' },
+    ],
+  },
 ]
 
-function FooterColumnTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mb-4">
-      <h3
-        className="text-lg font-bold italic mb-1"
-        style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-sun)' }}
-      >
-        {children}
-      </h3>
-      <Squiggle width={80} height={10} color="var(--lt-sun-core)" amplitude={3} />
-    </div>
-  )
+const SOCIAL_LINKS = [
+  { Icon: Facebook,  href: 'https://www.facebook.com/profile.php?id=61590612274534', label: 'Facebook' },
+  { Icon: Instagram, href: 'https://www.instagram.com/latinterritory/',              label: 'Instagram' },
+  { Icon: Mail,      href: 'mailto:privacy@latinterritory.com',                      label: 'Email' },
+]
+
+const iconBtn: React.CSSProperties = {
+  width: 38, height: 38, borderRadius: 10,
+  border: '1px solid var(--lh-border)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  color: 'var(--lh-fg2)', transition: '.18s', cursor: 'pointer',
+  background: 'transparent', textDecoration: 'none',
 }
 
 export function Footer() {
-  const { t } = useTranslations()
   const year = new Date().getFullYear()
 
   return (
     <footer
-      className="relative"
-      style={{ background: 'var(--lt-ink)', color: 'var(--lt-paper)' }}
       role="contentinfo"
+      style={{
+        background: 'var(--lh-bg)',
+        borderTop: '1px solid var(--lh-border2)',
+        fontFamily: 'var(--lh-font)',
+      }}
     >
-      {/* Patrón weave decorativo al 4% opacity */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{ opacity: 0.04 }}
-      >
-        <svg width="100%" height="100%">
-          <rect width="100%" height="100%" fill="url(#lt-weave)" color="var(--lt-paper)" />
-        </svg>
-      </div>
+      <div style={{ maxWidth: 1220, margin: '0 auto', padding: '56px 24px 40px' }}>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
         {/* Grid principal */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 40 }}>
 
-          {/* ── Columna 1: Marca ── */}
-          <div>
-            <div className="flex items-center gap-2.5 mb-3">
-              <SunMotif size={44} className="shrink-0" />
-              <div className="flex flex-col leading-tight">
-                <span
-                  className="text-lg font-bold"
-                  style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-paper)' }}
-                >
-                  Latin <em style={{ color: 'var(--lt-sun)', fontStyle: 'italic' }}>Territory</em>
-                </span>
-              </div>
-            </div>
-
-            <p
-              className="text-sm mb-5 leading-relaxed"
-              style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-            >
-              {t('footer.tagline')}
+          {/* ── Columna marca ── */}
+          <div style={{ gridColumn: 'span 1', minWidth: 200 }}>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 16, textDecoration: 'none' }}>
+              <Image
+                src="/latin-territory-logo.png"
+                alt="Latin Territory"
+                width={42}
+                height={42}
+                style={{ display: 'block', width: 42, height: 42, objectFit: 'contain', borderRadius: 8 }}
+              />
+              <span style={{ fontWeight: 600, fontSize: 16.5, letterSpacing: '-.02em', color: 'var(--lh-fg)' }}>
+                Latin Territory
+              </span>
+            </Link>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)', lineHeight: 1.55, margin: '0 0 18px', maxWidth: 280 }}>
+              La comunidad latinoamericana en Australia y el mundo, conectada en un solo lugar.
             </p>
-
-            {/* Social icons en círculos sticker */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {SOCIAL_LINKS.map(({ icon: Icon, href, label, rotate }) => (
+            {/* Social icons */}
+            <div style={{ display: 'flex', gap: 9, flexWrap: 'wrap' }}>
+              {SOCIAL_LINKS.map(({ Icon, href, label }) => (
                 <a
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex items-center justify-center w-9 h-9 rounded-full border-[1.8px] transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-sun)] focus:ring-offset-2 focus:ring-offset-[var(--lt-ink)]"
-                  style={{
-                    borderColor: 'var(--lt-paper)',
-                    color: 'var(--lt-paper)',
-                    background: 'transparent',
-                    transform: `rotate(${rotate}deg)`,
-                    boxShadow: '2px 2px 0 rgba(255,243,216,0.25)',
-                  }}
                   target={href.startsWith('http') ? '_blank' : undefined}
                   rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  style={iconBtn}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'var(--lh-fg)'; el.style.background = 'var(--lh-surface2)' }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'var(--lh-fg2)'; el.style.background = 'transparent' }}
                 >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <Icon size={16} />
                 </a>
               ))}
-            </div>
-
-            {/* Newsletter input */}
-            <form
-              className="mt-5"
-              onSubmit={e => e.preventDefault()}
-              aria-label="Suscribirse al newsletter"
-            >
-              <label
-                htmlFor="footer-newsletter"
-                className="block text-xs mb-1.5 font-medium"
-                style={{ color: 'var(--lt-ink-soft)' }}
+              <a
+                href="https://www.tiktok.com/@latin.territory"
+                aria-label="TikTok"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={iconBtn}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'var(--lh-fg)'; el.style.background = 'var(--lh-surface2)' }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'var(--lh-fg2)'; el.style.background = 'transparent' }}
               >
-                Novedades directo a tu correo
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="footer-newsletter"
-                  name="email"
-                  type="email"
-                  placeholder="tu@correo.com"
-                  autoComplete="email"
-                  className="flex-1 px-3 py-2 text-sm rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-paper)]/40 bg-white/10 placeholder:text-[var(--lt-ink-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-sun)] focus:border-[var(--lt-sun)]"
-                  style={{ color: 'var(--lt-paper)' }}
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-2 text-sm font-semibold rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-sun)] transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-sun)] focus:ring-offset-2 focus:ring-offset-[var(--lt-ink)]"
-                  style={{
-                    background: 'var(--lt-sun)',
-                    color: 'var(--lt-ink)',
-                    boxShadow: '2px 2px 0 var(--lt-sun-core)',
-                  }}
-                >
-                  ✓
-                </button>
+                <TikTokIcon />
+              </a>
+            </div>
+          </div>
+
+          {/* ── Columnas de links ── */}
+          {FOOT_COLS.map(({ head, links }) => (
+            <div key={head}>
+              <div style={{
+                fontSize: 12, fontFamily: 'var(--lh-mono)',
+                letterSpacing: '.12em', textTransform: 'uppercase',
+                color: 'var(--lh-fg3)', marginBottom: 15,
+              }}>
+                {head}
               </div>
-            </form>
-          </div>
-
-          {/* ── Columna 2: Enlaces Rápidos ── */}
-          <div>
-            <FooterColumnTitle>{t('footer.quickLinks')}</FooterColumnTitle>
-            <ul className="space-y-2">
-              {[
-                { href: '/directorio', label: t('footer.links.directory') },
-                { href: '/empleos',    label: t('nav.jobs') },
-                { href: '/eventos',    label: t('nav.events') },
-                { href: '/foros',      label: t('footer.links.forums') },
-                { href: '/deportes',   label: t('footer.links.sports') },
-                { href: '/clima',      label: t('footer.links.weather') },
-                { href: '/tasas',      label: t('nav.rates') },
-              ].map(({ href, label }) => (
-                <li key={href}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
+                {links.map(({ label, href }) => (
                   <Link
+                    key={label}
                     href={href}
-                    className="text-sm transition-colors hover:text-[var(--lt-sun)] focus:outline-none focus:underline"
-                    style={{ color: 'var(--lt-ink-soft)' }}
+                    style={{ fontSize: 14, color: 'var(--lh-fg2)', textDecoration: 'none', transition: '.18s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--lh-fg)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--lh-fg2)' }}
                   >
                     {label}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* ── Columna 3: Categorías ── */}
-          <div>
-            <FooterColumnTitle>{t('footer.categories')}</FooterColumnTitle>
-            <ul className="space-y-2">
-              {[
-                { href: '/directorio?categoria=GASTRONOMIA', label: t('footer.category.gastronomy') },
-                { href: '/directorio?categoria=TECNOLOGIA',  label: t('footer.category.technology') },
-                { href: '/directorio?categoria=ARTESANIAS',  label: t('footer.category.handicrafts') },
-                { href: '/directorio?categoria=MODA',        label: t('footer.category.fashion') },
-                { href: '/directorio?categoria=SERVICIOS',   label: 'Servicios Profesionales' },
-                { href: '/directorio?categoria=EDUCACION',   label: 'Educación' },
-              ].map(({ href, label }) => (
-                <li key={href + label}>
-                  <Link
-                    href={href}
-                    className="text-sm transition-colors hover:text-[var(--lt-sun)] focus:outline-none focus:underline"
-                    style={{ color: 'var(--lt-ink-soft)' }}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* ── Columna 4: Contacto ── */}
-          <div>
-            <FooterColumnTitle>{t('footer.contact')}</FooterColumnTitle>
-            <div className="space-y-3 mb-4">
-              {[
-                { icon: Mail,    label: 'Email',    value: 'privacy@latinterritory.com', href: 'mailto:privacy@latinterritory.com' },
-                { icon: Phone,   label: 'Teléfono', value: '+61 0468771870',             href: 'tel:+610468771870' },
-                { icon: MapPin,  label: 'Ubicación', value: 'Brisbane, Australia',       href: null },
-              ].map(({ icon: Icon, label, value, href }) => (
-                <div key={label} className="flex items-start gap-3">
-                  <Icon className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" style={{ color: 'var(--lt-sun)' }} />
-                  {href
-                    ? <a href={href} className="text-sm transition-colors hover:text-[var(--lt-sun)] focus:outline-none focus:underline" style={{ color: 'var(--lt-ink-soft)' }}>{value}</a>
-                    : <span className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{value}</span>
-                  }
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-
-            <Link
-              href="/soporte"
-              className="inline-flex items-center gap-1 text-sm transition-colors hover:text-[var(--lt-sun)] focus:outline-none focus:underline"
-              style={{ color: 'var(--lt-ink-soft)' }}
-            >
-              Soporte y Reclamos →
-            </Link>
-
-            {/* Sticker "Hecho con ❤️ en Brisbane" */}
-            <div
-              className="mt-6 inline-block px-3 py-2 text-xs font-semibold rounded-[var(--lt-radius-sm)] border-[1.6px]"
-              style={{
-                background: 'var(--lt-terracota)',
-                color: 'var(--lt-paper)',
-                borderColor: 'var(--lt-paper)',
-                boxShadow: '3px 3px 0 rgba(255,243,216,0.3)',
-                transform: 'rotate(-2deg)',
-              }}
-              data-lt-rotate="true"
-              aria-label="Hecho con amor en Brisbane"
-            >
-              Hecho con ❤️ en Brisbane
-            </div>
-          </div>
-        </div>
-
-        {/* ── Divider ── */}
-        <div className="flex justify-center mb-6" aria-hidden="true">
-          <Squiggle width={200} height={12} color="var(--lt-ink-soft)" amplitude={4} />
+          ))}
         </div>
 
         {/* ── Pie de página ── */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-            <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
-              © {year} {t('app.name')}. {t('footer.rights')}
-            </p>
-            <span className="hidden sm:inline" style={{ color: 'var(--lt-ink-soft)', opacity: 0.4 }}>|</span>
-            <div className="flex gap-4">
-              {[
-                { href: '/privacidad',      label: t('footer.privacy') },
-                { href: '/terminos',        label: t('footer.terms') },
-                { href: '/normas-comunidad', label: 'Normas' },
-              ].map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="text-sm transition-colors hover:text-[var(--lt-sun)] focus:outline-none focus:underline"
-                  style={{ color: 'var(--lt-ink-soft)' }}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="text-center md:text-right">
-            <p className="text-xs font-medium" style={{ color: 'var(--lt-ink-soft)' }}>
-              Operado por{' '}
-              <a
-                href="https://javiwarrior.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold transition-colors hover:text-[var(--lt-sun)] focus:outline-none focus:underline"
-                style={{ color: 'var(--lt-paper)' }}
-              >
-                JaviWarrior Studio
-              </a>
-            </p>
-            <p className="text-[10px] tracking-wider mt-0.5" style={{ color: 'var(--lt-ink-soft)', opacity: 0.6 }}>
-              ABN: 34 656 367 780
-            </p>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 16, flexWrap: 'wrap', marginTop: 44, paddingTop: 24,
+          borderTop: '1px solid var(--lh-border2)',
+        }}>
+          <span style={{ fontSize: 13, color: 'var(--lh-fg3)' }}>
+            © {year} Latin Territory. Hecho con cariño para la comunidad latina.
+            {' · '}
+            <a
+              href="https://javiwarrior.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--lh-fg2)', textDecoration: 'none' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--lh-fg)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--lh-fg2)' }}
+            >
+              JaviWarrior Studio
+            </a>
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--lh-fg3)' }}>
+            <Globe size={15} style={{ color: 'var(--lh-fg3)' }} />
+            Español · English
           </div>
         </div>
       </div>

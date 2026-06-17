@@ -5,7 +5,7 @@ import { createJobOffer, updateUserJobOffer, JobOfferInput } from '@/app/actions
 import { JOB_CATEGORIES } from '@/lib/constants/categories';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { LtButton, LtPanel } from '@/components/lt';
+import { Button } from '@/components/lh/Button';
 
 interface JobFormProps {
   mode?: 'create' | 'edit';
@@ -70,34 +70,39 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
     }
   }
 
+  const checkbox: React.CSSProperties = {
+    marginTop: 2, width: 17, height: 17, flexShrink: 0,
+    accentColor: 'var(--lh-accent)', cursor: 'pointer',
+  };
+  const checkLabel: React.CSSProperties = {
+    display: 'flex', alignItems: 'flex-start', gap: 11, cursor: 'pointer',
+  };
+  const checkText: React.CSSProperties = {
+    fontSize: 14, lineHeight: 1.5, color: 'var(--lh-fg2)',
+  };
+
   return (
     <div>
-      <div className="mb-8 border-b-[2px] border-[var(--lt-ink)] pb-4">
-        <h2
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
+      <div style={{ marginBottom: 28, paddingBottom: 18, borderBottom: '1px solid var(--lh-border)' }}>
+        <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 24, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>
           {isEdit ? 'Editar oferta' : 'Publicar nueva oferta'}
         </h2>
-        <p
-          className="text-sm mt-1"
-          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-        >
+        <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '6px 0 0' }}>
           {isEdit
             ? 'Modifica los campos que necesites actualizar.'
             : 'Completa los campos para que tu oferta sea visible en el muro de empleos.'}
         </p>
       </div>
 
-      <form action={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor="title" className="lt-label">Título del cargo</label>
-            <input id="title" name="title" required defaultValue={initialData?.title} className="lt-input" placeholder="Ej: Barista con experiencia" />
+      <form action={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="title" className="lh-label">Título del cargo</label>
+            <input id="title" name="title" required defaultValue={initialData?.title} className="lh-input" placeholder="Ej: Barista con experiencia" />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="category" className="lt-label">Categoría</label>
-            <select id="category" name="category" required defaultValue={initialData?.category || ''} className="lt-input appearance-none cursor-pointer">
+          <div>
+            <label htmlFor="category" className="lh-label">Categoría</label>
+            <select id="category" name="category" required defaultValue={initialData?.category || ''} className="lh-input">
               <option value="" disabled>Selecciona una categoría</option>
               {JOB_CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -106,15 +111,15 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="description" className="lt-label">Descripción</label>
-          <textarea id="description" name="description" required rows={4} defaultValue={initialData?.description} className="lt-input resize-none" placeholder="Describe los requisitos y beneficios del puesto..."></textarea>
+        <div>
+          <label htmlFor="description" className="lh-label">Descripción</label>
+          <textarea id="description" name="description" required rows={4} defaultValue={initialData?.description} className="lh-input" style={{ resize: 'none' }} placeholder="Describe los requisitos y beneficios del puesto..." />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor="location" className="lt-label">Ubicación</label>
-            <select id="location" name="location" required defaultValue={initialData?.location || ''} className="lt-input appearance-none cursor-pointer">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="location" className="lh-label">Ubicación</label>
+            <select id="location" name="location" required defaultValue={initialData?.location || ''} className="lh-input">
               <option value="" disabled>Selecciona una ubicación</option>
               <option value="Brisbane">Brisbane</option>
               <option value="Sydney">Sydney</option>
@@ -123,9 +128,9 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
               <option value="Remoto">Remoto</option>
             </select>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="jobType" className="lt-label">Tipo de empleo</label>
-            <select id="jobType" name="jobType" required defaultValue={initialData?.jobType || 'Full-time'} className="lt-input appearance-none cursor-pointer">
+          <div>
+            <label htmlFor="jobType" className="lh-label">Tipo de empleo</label>
+            <select id="jobType" name="jobType" required defaultValue={initialData?.jobType || 'Full-time'} className="lh-input">
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
               <option value="Freelance">Freelance</option>
@@ -134,17 +139,12 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="hourlyRate" className="lt-label">
-            Salario por hora (AUD) <span style={{ color: 'var(--lt-accent)' }}>*</span>
+        <div>
+          <label htmlFor="hourlyRate" className="lh-label">
+            Salario por hora (AUD) <span style={{ color: 'var(--lh-terra)' }}>*</span>
           </label>
-          <div className="relative">
-            <span
-              className="absolute left-3 top-1/2 -translate-y-1/2 font-medium"
-              style={{ color: 'var(--lt-ink-soft)' }}
-            >
-              $
-            </span>
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontWeight: 500, color: 'var(--lh-fg3)' }}>$</span>
             <input
               id="hourlyRate"
               name="hourlyRate"
@@ -153,79 +153,49 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
               min="0.01"
               required
               defaultValue={initialData?.hourlyRate ?? ''}
-              className="lt-input pl-7"
+              className="lh-input"
+              style={{ paddingLeft: 28 }}
               placeholder="Ej: 28.50"
             />
           </div>
-          <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>Obligatorio por requisito legal australiano.</p>
+          <p style={{ fontSize: 12.5, color: 'var(--lh-fg3)', margin: '7px 0 0' }}>Obligatorio por requisito legal australiano.</p>
         </div>
 
-        <LtPanel tone="bg" shadow="sm" className="p-5 space-y-4">
-          <h3
-            className="text-sm font-bold"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+        {/* Información de contacto */}
+        <div style={{ borderRadius: 16, border: '1px solid var(--lh-border)', background: 'var(--lh-surface2)', padding: 20 }}>
+          <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 14.5, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 14px' }}>
             Información de contacto{' '}
-            <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(al menos 1 campo)</span>
+            <span style={{ fontWeight: 400, color: 'var(--lh-fg3)' }}>(al menos 1 campo)</span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input name="email" type="email" placeholder="Email" defaultValue={initialData?.email || ''} className="lt-input" />
-            <input name="phone" type="text" placeholder="Teléfono" defaultValue={initialData?.phone || ''} className="lt-input" />
-            <input name="externalLink" type="url" placeholder="URL externa" defaultValue={initialData?.externalLink || ''} className="lt-input" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input name="email" type="email" placeholder="Email" defaultValue={initialData?.email || ''} className="lh-input" />
+            <input name="phone" type="text" placeholder="Teléfono" defaultValue={initialData?.phone || ''} className="lh-input" />
+            <input name="externalLink" type="url" placeholder="URL externa" defaultValue={initialData?.externalLink || ''} className="lh-input" />
           </div>
-        </LtPanel>
+        </div>
 
         {error && (
-          <LtPanel tone="bg" shadow="sm" className="px-4 py-3 flex items-center gap-2 text-sm border-[var(--lt-accent)]">
-            <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--lt-accent)' }} />
-            <span style={{ color: 'var(--lt-accent)' }}>{error}</span>
-          </LtPanel>
+          <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 16px', borderRadius: 13, background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)' }}>
+            <AlertCircle size={16} style={{ color: 'var(--lh-terra)', flexShrink: 0 }} />
+            <span style={{ fontSize: 14, color: 'var(--lh-terra)' }}>{error}</span>
+          </div>
         )}
 
-        <div className="space-y-3 pt-4 border-t-[2px] border-[var(--lt-ink)]">
-          <label className="flex items-start space-x-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={agreedNoPayment}
-              onChange={(e) => setAgreedNoPayment(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded border-[var(--lt-ink)] accent-[var(--lt-terracota)] shrink-0"
-            />
-            <span
-              className="text-sm transition-colors"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-            >
-              Confirmo que esta oferta no exige ningún pago a los candidatos.
-            </span>
+        {/* Confirmaciones */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 18, borderTop: '1px solid var(--lh-border)' }}>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={agreedNoPayment} onChange={(e) => setAgreedNoPayment(e.target.checked)} style={checkbox} />
+            <span style={checkText}>Confirmo que esta oferta no exige ningún pago a los candidatos.</span>
           </label>
-
-          <label className="flex items-start space-x-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={agreedSalaryCompliance}
-              onChange={(e) => setAgreedSalaryCompliance(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded border-[var(--lt-ink)] accent-[var(--lt-terracota)] shrink-0"
-            />
-            <span
-              className="text-sm transition-colors"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-            >
-              Confirmo que el salario publicado cumple los mínimos legales aplicables (Award/EA o salario mínimo nacional).
-            </span>
+          <label style={checkLabel}>
+            <input type="checkbox" checked={agreedSalaryCompliance} onChange={(e) => setAgreedSalaryCompliance(e.target.checked)} style={checkbox} />
+            <span style={checkText}>Confirmo que el salario publicado cumple los mínimos legales aplicables (Award/EA o salario mínimo nacional).</span>
           </label>
-
-          <label className="flex items-start space-x-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              checked={agreedToTerms}
-              onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded border-[var(--lt-ink)] accent-[var(--lt-terracota)] shrink-0"
-            />
-            <span
-              className="text-sm transition-colors"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-            >
+          <label style={checkLabel}>
+            <input type="checkbox" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} style={checkbox} />
+            <span style={checkText}>
               Acepto los{' '}
-              <Link href="/job-posting-terms" target="_blank" rel="noopener noreferrer" className="underline font-medium" style={{ color: 'var(--lt-terracota)' }} onClick={(e) => e.stopPropagation()}>
+              <Link href="/job-posting-terms" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--lh-accent)', fontWeight: 500, textDecoration: 'underline' }} onClick={(e) => e.stopPropagation()}>
                 términos y condiciones
               </Link>{' '}
               de publicación de empleos.
@@ -233,27 +203,17 @@ export default function JobForm({ mode = 'create', jobId, initialData }: JobForm
           </label>
         </div>
 
-        <div className={`flex gap-4 mt-6 ${isEdit ? 'flex-row' : ''}`}>
+        <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
           {isEdit && (
-            <Link href="/perfil" className="flex-1">
-              <LtButton variant="outline" tone="paper" size="lg" className="w-full">
-                Cancelar
-              </LtButton>
-            </Link>
+            <Button href="/perfil" variant="secondary" size="md" style={{ flex: 1 }}>
+              Cancelar
+            </Button>
           )}
-          <LtButton
-            type="submit"
-            variant="sticker"
-            tone="terracota"
-            size="lg"
-            rotate={-1}
-            disabled={loading}
-            loading={loading}
-            loadingText={isEdit ? 'Guardando cambios...' : 'Publicando...'}
-            className={isEdit ? 'flex-1' : 'w-full'}
-          >
-            {isEdit ? 'Guardar cambios' : 'Publicar oferta'}
-          </LtButton>
+          <Button type="submit" variant="primary" size="md" disabled={loading} style={{ flex: 1 }}>
+            {loading
+              ? (isEdit ? 'Guardando cambios…' : 'Publicando…')
+              : (isEdit ? 'Guardar cambios' : 'Publicar oferta')}
+          </Button>
         </div>
       </form>
     </div>

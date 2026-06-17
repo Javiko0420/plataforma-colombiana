@@ -9,93 +9,126 @@ export function AudioPlayer() {
   const { isPlaying, isLoading, volume, muted, nowPlaying, currentStation, togglePlayPause, setVolume, toggleMute, error } = useAudio()
   const { t } = useTranslations()
 
+  const subtext = isLoading
+    ? t('audio.connecting', 'Conectando…')
+    : nowPlaying?.title
+      ? `${nowPlaying.title}${nowPlaying.artist ? ' — ' + nowPlaying.artist : ''}`
+      : t('audio.ready', 'Listo para reproducir')
+
   return (
-    /* Desktop: bottom-4 right-4 fijo. Mobile: stretch bottom-2 left-2 right-2 */
-    <div className="fixed z-40 bottom-2 left-2 right-2 sm:bottom-4 sm:left-auto sm:right-4 sm:w-auto">
+    <div className="fixed z-40 bottom-2 left-2 right-2 sm:bottom-5 sm:left-auto sm:right-5 sm:w-auto">
       <div
-        className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-[var(--lt-radius-md)]"
         style={{
-          background: 'var(--lt-paper)',
-          border: '2px solid var(--lt-ink)',
-          boxShadow: 'var(--lt-shadow-sticker)',
-          fontFamily: 'var(--lt-font-sans)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '10px 14px',
+          borderRadius: 18,
+          background: 'var(--lh-surface)',
+          border: '1px solid var(--lh-border)',
+          boxShadow: 'var(--lh-shadow-lg)',
+          backdropFilter: 'blur(20px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+          fontFamily: 'var(--lh-font)',
         }}
       >
-        {/* Icono Radio */}
+        {/* Icono emisora */}
         <div
-          className="p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0"
-          style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
           aria-hidden="true"
+          style={{
+            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+            background: 'var(--lh-terra)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff',
+          }}
         >
-          <Radio className="w-4 h-4" />
+          <Radio size={18} />
         </div>
 
-        {/* Texto: nombre de emisora + estado */}
-        <div className="min-w-0 flex-1">
-          <p
-            className="text-sm font-semibold truncate"
-            style={{ color: 'var(--lt-ink)' }}
-          >
+        {/* Nombre + estado */}
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <p style={{
+            margin: 0, fontSize: 13.5, fontWeight: 600, lineHeight: 1.3,
+            color: 'var(--lh-fg)',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
             {currentStation?.name ?? t('audio.stationFallback', 'Emisora')}
             {isPlaying && (
-              <span
-                className="ml-2 inline-block align-middle text-[10px] px-1.5 py-0.5 rounded font-bold"
-                style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)' }}
-              >
+              <span style={{
+                marginLeft: 7, display: 'inline-block', verticalAlign: 'middle',
+                fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 5,
+                background: 'var(--lh-terra)', color: '#fff',
+              }}>
                 {t('audio.liveTag', 'LIVE')}
               </span>
             )}
           </p>
           <p
-            className="text-xs truncate"
-            style={{ color: 'var(--lt-ink-soft)' }}
             aria-live="polite"
+            style={{
+              margin: 0, fontSize: 12, lineHeight: 1.4,
+              color: 'var(--lh-fg3)',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}
           >
-            {isLoading
-              ? t('audio.connecting', 'Conectando…')
-              : nowPlaying?.title
-                ? `${nowPlaying.title}${nowPlaying.artist ? ' — ' + nowPlaying.artist : ''}`
-                : t('audio.ready', 'Listo para reproducir')}
+            {subtext}
           </p>
         </div>
 
         {/* Controles */}
-        <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 4, flexShrink: 0 }}>
+
           {/* Play / Pause */}
           <button
             type="button"
             onClick={() => void togglePlayPause()}
-            className="inline-flex items-center justify-center h-9 w-9 rounded-full border-2 border-[var(--lt-ink)] transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-            style={{
-              background: 'var(--lt-terracota)',
-              color: 'var(--lt-paper)',
-              boxShadow: 'var(--lt-shadow-sticker)',
-            }}
             aria-label={isPlaying ? t('audio.pause', 'Pausar') : t('audio.play', 'Reproducir')}
+            style={{
+              width: 36, height: 36, borderRadius: '50%', border: 'none',
+              background: 'var(--lh-accent)', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: '.18s', flexShrink: 0,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--lh-accent-ink)' }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--lh-accent)' }}
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {isPlaying ? <Pause size={15} /> : <Play size={15} />}
           </button>
 
           {/* Volumen — solo desktop */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden sm:flex" style={{ alignItems: 'center', gap: 8 }}>
             <button
               type="button"
               onClick={() => toggleMute()}
-              className="inline-flex items-center justify-center h-8 w-8 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-              style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
               aria-label={muted ? t('audio.unmute', 'Activar sonido') : t('audio.mute', 'Silenciar')}
+              style={{
+                width: 32, height: 32, borderRadius: 8,
+                border: '1px solid var(--lh-border)',
+                background: 'transparent', color: 'var(--lh-fg2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: '.18s',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLElement
+                el.style.color = 'var(--lh-fg)'
+                el.style.background = 'var(--lh-surface2)'
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLElement
+                el.style.color = 'var(--lh-fg2)'
+                el.style.background = 'transparent'
+              }}
             >
-              {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
             </button>
+
             <input
               type="range"
-              min={0}
-              max={1}
-              step={0.01}
+              min={0} max={1} step={0.01}
               value={muted ? 0 : volume}
               onChange={e => setVolume(Number(e.target.value))}
               aria-label={t('audio.volumeLabel', 'Volumen')}
-              className="w-24 accent-[var(--lt-terracota)]"
+              style={{ width: 80, accentColor: 'var(--lh-accent)', cursor: 'pointer' }}
             />
           </div>
         </div>

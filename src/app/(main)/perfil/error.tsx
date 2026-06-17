@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { Button } from '@/components/lh/Button'
 
 export default function PerfilError({
   error,
@@ -14,35 +15,22 @@ export default function PerfilError({
   }, [error])
 
   return (
-    <div
-      className="min-h-[60vh] flex flex-col items-center justify-center gap-6 px-4"
-      style={{ background: 'var(--lt-bg)' }}
-    >
-      <div
-        className="w-full max-w-md rounded-[var(--lt-radius-lg)] border-[2.5px] border-[var(--lt-terracota)] p-8"
-        style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-      >
-        <h2
-          className="text-xl font-bold mb-3"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
+    <div style={{ background: 'var(--lh-bg)', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, padding: '0 24px', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-card" style={{ width: '100%', maxWidth: 440, padding: 'clamp(24px,5vw,32px)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, var(--lh-border))' }}>
+        <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 12px' }}>
           Error al cargar el perfil
         </h2>
-        <p className="text-sm mb-2" style={{ color: 'var(--lt-ink-soft)' }}>
+        <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '0 0 8px' }}>
           {error.message || 'Ocurrió un error inesperado.'}
         </p>
         {error.digest && (
-          <p className="text-xs font-mono mb-4" style={{ color: 'var(--lt-ink-soft)' }}>
+          <p style={{ fontSize: 12, fontFamily: 'var(--lh-mono)', color: 'var(--lh-fg3)', margin: '0 0 16px' }}>
             ID: {error.digest}
           </p>
         )}
-        <button
-          onClick={reset}
-          className="mt-2 px-5 py-2 rounded-[var(--lt-radius-sm)] border-[2px] border-[var(--lt-ink)] text-sm font-semibold transition-colors hover:bg-[var(--lt-ink)] hover:text-[var(--lt-paper)]"
-          style={{ color: 'var(--lt-ink)' }}
-        >
+        <Button onClick={reset} variant="primary" size="sm" style={{ marginTop: 8 }}>
           Reintentar
-        </button>
+        </Button>
       </div>
     </div>
   )

@@ -57,22 +57,16 @@ export default async function AuditPage({
     <div className="space-y-6">
       <div className="flex justify-between items-end">
         <div>
-          <h1
-            className="text-2xl font-bold text-[var(--lt-ink)]"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            Centro de Auditoría
-          </h1>
-          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
-            Registro inmutable de todas las acciones del sistema y eventos de
-            seguridad.
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.4vw,28px)', margin: 0 }}>Centro de auditoría</h1>
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
+            Registro inmutable de todas las acciones del sistema y eventos de seguridad.
           </p>
         </div>
       </div>
 
       {/* Tabs de Navegación */}
-      <div className="border-b-[2.2px] border-[var(--lt-ink)]">
-        <nav className="-mb-[2.2px] flex space-x-8">
+      <div style={{ borderBottom: '1px solid var(--lh-border)' }}>
+        <nav className="flex space-x-8" style={{ marginBottom: -1 }}>
           <TabLink
             active={tab === 'audit'}
             href="/admin/auditoria?tab=audit"
@@ -91,7 +85,7 @@ export default async function AuditPage({
       {/* Contenido Dinámico */}
       {content}
 
-      <div className="text-right text-xs text-[var(--lt-ink-soft)]">
+      <div style={{ textAlign: 'right', fontSize: 12.5, color: 'var(--lh-fg3)' }}>
         Mostrando últimos eventos. Total histórico: {totalItems}
       </div>
     </div>
@@ -112,13 +106,15 @@ function TabLink({
   return (
     <Link
       href={href}
-      className={`group inline-flex items-center py-4 px-1 border-b-[2.2px] font-medium text-sm transition-colors ${
-        active
-          ? 'border-[var(--lt-terracota)] text-[var(--lt-terracota)]'
-          : 'border-transparent text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)] hover:border-[var(--lt-ink-soft)]'
-      }`}
+      className="inline-flex items-center"
+      style={{
+        padding: '14px 4px', borderBottom: '2px solid',
+        fontWeight: 500, fontSize: 14, transition: 'color .18s, border-color .18s',
+        borderColor: active ? 'var(--lh-accent)' : 'transparent',
+        color: active ? 'var(--lh-accent)' : 'var(--lh-fg2)',
+      }}
     >
-      <span className="mr-2">{icon}</span>
+      <span style={{ marginRight: 8 }}>{icon}</span>
       {label}
     </Link>
   )

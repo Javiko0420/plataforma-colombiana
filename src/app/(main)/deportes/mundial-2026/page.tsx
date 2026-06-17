@@ -15,11 +15,7 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
   return (
     <div className="space-y-2">
       {Array.from({ length: rows }).map((_, i) => (
-        <div
-          key={i}
-          className="h-16 rounded-[var(--lt-radius-sm)] animate-pulse"
-          style={{ background: 'var(--lt-paper)', opacity: 0.6 }}
-        />
+        <div key={i} className="lh-skeleton" style={{ height: 64, borderRadius: 14 }} />
       ))}
     </div>
   )
@@ -28,20 +24,8 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 function SectionTitle({ id, title, badge }: { id: string; title: string; badge?: ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <div
-        aria-hidden="true"
-        className="w-1 h-7 rounded-full flex-none"
-        style={{ background: 'var(--lt-verde)' }}
-      />
-      <h2
-        id={id}
-        className="text-xl md:text-2xl font-bold"
-        style={{
-          fontFamily: 'var(--lt-font-serif)',
-          color: 'var(--lt-ink)',
-          letterSpacing: '-0.01em',
-        }}
-      >
+      <div aria-hidden="true" className="flex-none" style={{ width: 4, height: 26, borderRadius: 99, background: 'var(--lh-green)' }} />
+      <h2 id={id} style={{ fontFamily: 'var(--lh-font)', fontSize: 22, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>
         {title}
       </h2>
       {badge}
@@ -61,13 +45,8 @@ export default async function WorldcupPage() {
 
   const liveBadge = initialLiveData.hasLive ? (
     <span
-      className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-[var(--lt-radius-sm)]"
-      style={{
-        background: 'var(--lt-terracota)',
-        color: 'var(--lt-paper)',
-        boxShadow: '1px 1px 0 var(--lt-ink)',
-        fontFamily: 'var(--lt-font-sans)',
-      }}
+      className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1"
+      style={{ background: 'var(--lh-terra)', color: '#fff', borderRadius: 99 }}
     >
       <span className="animate-pulse leading-none">●</span>
       EN VIVO
@@ -75,10 +54,10 @@ export default async function WorldcupPage() {
   ) : undefined
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100dvh' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100dvh', fontFamily: 'var(--lh-font)' }}>
       <WorldcupHero locale={locale} />
 
-      <main className="max-w-5xl mx-auto px-4 py-10 space-y-14">
+      <main className="lh-container" style={{ maxWidth: 980, paddingTop: 40, paddingBottom: 56, display: 'flex', flexDirection: 'column', gap: 56 }}>
 
         <section aria-labelledby="wc-live-title">
           <SectionTitle id="wc-live-title" title={t('sports.live')} badge={liveBadge} />
@@ -103,13 +82,9 @@ export default async function WorldcupPage() {
           <SectionTitle id="wc-teams-title" title={t('sports.worldcup.teams')} />
           <Suspense
             fallback={
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                 {Array.from({ length: 12 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-24 rounded-[var(--lt-radius-md)] animate-pulse"
-                    style={{ background: 'var(--lt-paper)', opacity: 0.6 }}
-                  />
+                  <div key={i} className="lh-skeleton" style={{ height: 96, borderRadius: 16 }} />
                 ))}
               </div>
             }

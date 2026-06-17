@@ -16,11 +16,7 @@ export default function ShareButton({ title, text }: ShareButtonProps) {
 
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: title,
-          text: text,
-          url: url,
-        });
+        await navigator.share({ title, text, url });
         return;
       } catch (error) {
         console.log("Error al compartir o cancelado", error);
@@ -39,19 +35,19 @@ export default function ShareButton({ title, text }: ShareButtonProps) {
   return (
     <button
       onClick={handleShare}
-      className="flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 border-[2px] border-[var(--lt-ink)] shadow-[var(--lt-shadow-sticker)]"
+      title="Compartir"
+      aria-label="Compartir"
       style={{
-        background: copied ? 'var(--lt-verde)' : 'var(--lt-paper)',
-        color: copied ? 'var(--lt-paper)' : 'var(--lt-ink-soft)',
-        transform: copied ? 'scale(1.1)' : 'scale(1)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 44, height: 44, borderRadius: '50%',
+        border: '1px solid', cursor: 'pointer',
+        transition: 'background .2s, color .2s, border-color .2s',
+        background: copied ? 'var(--lh-green)' : 'var(--lh-surface)',
+        borderColor: copied ? 'var(--lh-green)' : 'var(--lh-border)',
+        color: copied ? '#fff' : 'var(--lh-fg2)',
       }}
-      title="Compartir negocio"
     >
-      {copied ? (
-        <Check className="w-5 h-5" />
-      ) : (
-        <Share2 className="w-5 h-5" />
-      )}
+      {copied ? <Check size={18} /> : <Share2 size={18} />}
     </button>
   );
 }

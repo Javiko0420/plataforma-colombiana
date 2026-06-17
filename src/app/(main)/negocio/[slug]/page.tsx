@@ -15,10 +15,8 @@ import ShareButton from "@/components/ui/share-button"
 import { ReportBusinessButton } from "@/components/ui/report-business-button"
 import ReviewForm from "@/components/reviews/review-form"
 import ReviewsList from "@/components/reviews/reviews-list"
-import { LtBadge } from '@/components/lt/Badge'
-import { LtButton } from '@/components/lt/Button'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { Squiggle } from '@/components/lt/Squiggle'
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const slug = (await params).slug
@@ -56,183 +54,119 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
     : null
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh', paddingBottom: '5rem' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', paddingBottom: '5rem', fontFamily: 'var(--lh-font)' }}>
 
       {/* ── HERO ── */}
-      <div
-        className="relative h-56 md:h-80 overflow-hidden border-b-[2px] border-[var(--lt-ink)]"
-        style={{ background: 'var(--lt-paper)' }}
-      >
+      <div style={{ position: 'relative', height: 'clamp(220px,32vw,320px)', overflow: 'hidden', borderBottom: '1px solid var(--lh-border2)', background: 'var(--lh-surface2)' }}>
         {business.images && business.images.length > 0 ? (
           <>
-            <Image
-              src={business.images[0]}
-              alt={`Portada de ${business.name}`}
-              fill
-              className="object-cover opacity-50 scale-105"
-              priority
-            />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, var(--lt-ink) 0%, transparent 60%)' }} />
+            <Image src={business.images[0]} alt={`Portada de ${business.name}`} fill style={{ objectFit: 'cover', opacity: 0.6 }} priority />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--lh-bg) 0%, transparent 65%)' }} />
           </>
         ) : (
-          <>
-            <div className="absolute inset-0" style={{ background: 'var(--lt-bg)' }} />
-            <div aria-hidden="true" className="absolute inset-0 flex items-center justify-center opacity-10">
-              <SunMotif size={280} />
-            </div>
-          </>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
+            <span style={{ fontFamily: 'var(--lh-font)', fontSize: 'clamp(40px,9vw,110px)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '-.04em', color: 'var(--lh-fg3)', opacity: 0.25 }}>
+              {categoryLabel(BUSINESS_CATEGORIES, business.category)}
+            </span>
+          </div>
         )}
 
-        {/* Nombre como watermark */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
-          <span
-            className="text-5xl md:text-8xl font-black uppercase tracking-tighter select-none truncate max-w-4xl px-4 opacity-[0.07]"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {categoryLabel(BUSINESS_CATEGORIES, business.category)}
-          </span>
-        </div>
-
         {/* Botón volver */}
-        <Link
-          href="/directorio"
-          className="absolute top-5 left-5 z-20 flex items-center gap-2 px-4 py-2 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-          style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-          aria-label="Volver al directorio"
-        >
-          <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Directorio
+        <Link href="/directorio" className="lh-btn lh-btn--sm lh-btn--secondary" style={{ position: 'absolute', top: 20, left: 20, zIndex: 20 }} aria-label="Volver al directorio">
+          <ArrowLeft size={16} aria-hidden="true" /> Directorio
         </Link>
 
         {/* Botón editar (solo dueño) */}
         {session?.user?.id === business.ownerId && (
-          <Link
-            href={`/negocio/editar/${business.slug}`}
-            className="absolute top-5 right-5 z-20 flex items-center gap-2 px-4 py-2 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-sun)]"
-            style={{ background: 'var(--lt-sun)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-            aria-label="Editar este negocio"
-          >
-            <Edit className="w-4 h-4" aria-hidden="true" />
-            Editar Negocio
+          <Link href={`/negocio/editar/${business.slug}`} className="lh-btn lh-btn--sm lh-btn--primary" style={{ position: 'absolute', top: 20, right: 20, zIndex: 20 }} aria-label="Editar este negocio">
+            <Edit size={16} aria-hidden="true" /> Editar negocio
           </Link>
         )}
       </div>
 
       {/* ── Cuerpo ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+      <div className="lh-container" style={{ marginTop: -64, position: 'relative', zIndex: 10 }}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* ── Columna principal ── */}
-          <div className="lg:col-span-2 space-y-8">
-            <div
-              className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 md:p-8"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-            >
+          <div className="lg:col-span-2">
+            <div className="lh-card" style={{ padding: 'clamp(22px,4vw,32px)' }}>
               {/* Encabezado */}
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4" style={{ marginBottom: 24 }}>
                 <div>
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <LtBadge tone="terracota" rotate={-1}>{categoryLabel(BUSINESS_CATEGORIES, business.category)}</LtBadge>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 11px', borderRadius: 99, background: tint('var(--lh-terra)'), color: 'var(--lh-terra)', fontSize: 12.5, fontWeight: 600 }}>
+                      {categoryLabel(BUSINESS_CATEGORIES, business.category)}
+                    </span>
                     {business.isVerified && (
-                      <LtBadge tone="verde" rotate={1}>
-                        <CheckCircle2 className="w-3 h-3" aria-hidden="true" /> Verificado
-                      </LtBadge>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 99, background: tint('var(--lh-green)'), color: 'var(--lh-green)', fontSize: 12.5, fontWeight: 600 }}>
+                        <CheckCircle2 size={12} aria-hidden="true" /> Verificado
+                      </span>
                     )}
                   </div>
 
-                  <h1
-                    className="text-3xl md:text-4xl font-black mb-2"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    {business.name}
-                  </h1>
+                  <h1 className="lh-h2" style={{ fontSize: 'clamp(26px,3.6vw,36px)', margin: '0 0 10px' }}>{business.name}</h1>
 
-                  <div className="flex items-center gap-2 text-sm mb-3" style={{ color: 'var(--lt-ink-soft)' }}>
-                    <MapPin className="w-4 h-4 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 14, marginBottom: 12, color: 'var(--lh-fg2)' }}>
+                    <MapPin size={15} style={{ color: 'var(--lh-terra)', flexShrink: 0 }} aria-hidden="true" />
                     <span>{business.city || 'Australia'}{business.state && `, ${business.state}`}</span>
                   </div>
 
                   {averageRating && (
-                    <div
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[var(--lt-radius-pill)] border-[1.6px] border-[var(--lt-ink)]"
-                      style={{ background: 'var(--lt-sun)', color: 'var(--lt-ink)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
-                      aria-label={`Calificación promedio: ${averageRating} de 5`}
-                    >
-                      <Star className="w-4 h-4 fill-current" aria-hidden="true" />
-                      <span className="font-bold text-sm">{averageRating}</span>
-                      <span className="text-xs opacity-70">({business.reviews.length})</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 99, background: tint('var(--lh-warm)'), color: 'var(--lh-warm)' }} aria-label={`Calificación promedio: ${averageRating} de 5`}>
+                      <Star size={15} style={{ fill: 'currentColor' }} aria-hidden="true" />
+                      <span style={{ fontWeight: 700, fontSize: 14 }}>{averageRating}</span>
+                      <span style={{ fontSize: 12, opacity: 0.75 }}>({business.reviews.length})</span>
                     </div>
                   )}
                 </div>
 
-                <div className="flex flex-col items-start md:items-end gap-2">
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }} className="md:items-end">
                   <ShareButton title={business.name} text={`Mira este negocio: ${business.name}`} />
                   <ReportBusinessButton businessId={business.id} />
                 </div>
               </div>
 
-              <Squiggle width={200} height={10} color="var(--lt-terracota)" amplitude={3} className="mb-6" aria-hidden="true" />
+              <div style={{ height: 1, background: 'var(--lh-border2)', margin: '0 0 24px' }} />
 
               {/* Descripción */}
-              <div className="mb-8">
-                <h2
-                  className="text-xl font-bold mb-4"
-                  style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                >
-                  Sobre nosotros
-                </h2>
-                <p
-                  className="whitespace-pre-line leading-relaxed"
-                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-                >
-                  {business.description}
-                </p>
+              <div style={{ marginBottom: 32 }}>
+                <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 14px' }}>Sobre nosotros</h2>
+                <p style={{ whiteSpace: 'pre-line', lineHeight: 1.65, fontSize: 15, color: 'var(--lh-fg2)', margin: 0 }}>{business.description}</p>
               </div>
 
               {/* Galería */}
               {business.images && business.images.length > 0 && (
-                <div className="mb-8">
-                  <h2
-                    className="text-xl font-bold mb-4 flex items-center gap-2"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    <ImageIcon className="w-5 h-5" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-                    Galería
+                <div style={{ marginBottom: 32 }}>
+                  <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--lh-font)', fontSize: 19, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 14px' }}>
+                    <ImageIcon size={18} style={{ color: 'var(--lh-terra)' }} aria-hidden="true" /> Galería
                   </h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {business.images.map((img, idx) => (
                       <div
                         key={idx}
-                        className={`relative rounded-[var(--lt-radius-sm)] overflow-hidden border-[2px] border-[var(--lt-ink)] group cursor-pointer ${idx === 0 ? 'col-span-2 row-span-2 h-64 md:h-auto' : 'h-32'}`}
-                        style={{ boxShadow: 'var(--lt-shadow-sticker)' }}
+                        className={`group ${idx === 0 ? 'col-span-2 row-span-2' : ''}`}
+                        style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid var(--lh-border)', height: idx === 0 ? 260 : 124 }}
                       >
-                        <Image
-                          src={img}
-                          alt={`Foto ${idx + 1} de ${business.name}`}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
+                        <Image src={img} alt={`Foto ${idx + 1} de ${business.name}`} fill className="group-hover:scale-105" style={{ objectFit: 'cover', transition: 'transform .5s cubic-bezier(.22,.61,.36,1)' }} />
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <Squiggle width={200} height={10} color="var(--lt-sun)" amplitude={3} className="mb-8" aria-hidden="true" />
+              <div style={{ height: 1, background: 'var(--lh-border2)', margin: '0 0 28px' }} />
 
               {/* Reseñas */}
-              <div className="grid md:grid-cols-2 gap-10">
+              <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <h2
-                    className="text-2xl font-bold mb-6"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
+                  <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 20, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: '0 0 20px' }}>
                     Opiniones ({business.reviews.length})
                   </h2>
                   <ReviewsList reviews={business.reviews} />
                 </div>
                 <div>
-                  <div className="sticky top-24">
+                  <div style={{ position: 'sticky', top: 88 }}>
                     <ReviewForm businessId={business.id} />
                   </div>
                 </div>
@@ -242,42 +176,22 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
 
           {/* ── Sidebar de contacto ── */}
           <div>
-            <div
-              className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 sticky top-24"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-            >
-              <h3
-                className="text-lg font-bold mb-5"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                Contacto Directo
+            <div className="lh-card" style={{ padding: 24, position: 'sticky', top: 88 }}>
+              <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 18px' }}>
+                Contacto directo
               </h3>
 
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {business.address && (
-                  <a
+                  <ContactRow
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.address + ', ' + (business.city || 'Australia'))}`}
                     target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5 group"
-                    style={{ background: 'var(--lt-bg)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                    aria-label="Abrir dirección en Google Maps"
-                  >
-                    <div
-                      className="w-9 h-9 flex items-center justify-center rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0 group-hover:scale-110 transition-transform"
-                      style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)' }}
-                      aria-hidden="true"
-                    >
-                      <MapPin className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--lt-ink-soft)' }}>Dirección</p>
-                      <p className="text-sm font-medium truncate" style={{ color: 'var(--lt-ink)' }}>{business.address}</p>
-                      <span className="text-xs flex items-center gap-1" style={{ color: 'var(--lt-terracota)' }}>
-                        Abrir mapa <ExternalLink className="w-3 h-3" aria-hidden="true" />
-                      </span>
-                    </div>
-                  </a>
+                    icon={<MapPin size={16} />}
+                    label="Dirección"
+                    value={business.address}
+                    color="var(--lh-terra)"
+                    truncate
+                  />
                 )}
 
                 {business.whatsapp && (
@@ -285,56 +199,28 @@ export default async function BusinessDetailPage({ params }: { params: Promise<{
                     href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] font-bold text-sm transition-all hover:-translate-y-0.5"
-                    style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
+                    className="lh-btn lh-btn--md"
+                    style={{ width: '100%', background: 'var(--lh-green)', color: '#fff' }}
                     aria-label={`WhatsApp de ${business.name}`}
                   >
-                    <MessageCircle className="w-5 h-5" aria-hidden="true" />
-                    WhatsApp
+                    <MessageCircle size={18} aria-hidden="true" /> WhatsApp
                   </a>
                 )}
 
                 {business.phone && (
-                  <ContactRow
-                    href={`tel:${business.phone}`}
-                    icon={<Phone className="w-4 h-4" />}
-                    label="Teléfono"
-                    value={business.phone}
-                    tone="sun"
-                  />
+                  <ContactRow href={`tel:${business.phone}`} icon={<Phone size={16} />} label="Teléfono" value={business.phone} color="var(--lh-accent)" />
                 )}
 
                 {business.email && (
-                  <ContactRow
-                    href={`mailto:${business.email}`}
-                    icon={<Mail className="w-4 h-4" />}
-                    label="Email"
-                    value={business.email}
-                    tone="sun"
-                  />
+                  <ContactRow href={`mailto:${business.email}`} icon={<Mail size={16} />} label="Email" value={business.email} color="var(--lh-accent)" truncate />
                 )}
 
                 {business.website && (
-                  <ContactRow
-                    href={business.website}
-                    target="_blank"
-                    icon={<Globe className="w-4 h-4" />}
-                    label="Sitio Web"
-                    value={business.website}
-                    tone="sun"
-                    truncate
-                  />
+                  <ContactRow href={business.website} target="_blank" icon={<Globe size={16} />} label="Sitio web" value={business.website} color="var(--lh-accent)" truncate />
                 )}
 
                 {business.instagram && (
-                  <ContactRow
-                    href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
-                    target="_blank"
-                    icon={<Instagram className="w-4 h-4" />}
-                    label="Instagram"
-                    value={`@${business.instagram.replace(/^@/, '')}`}
-                    tone="accent"
-                  />
+                  <ContactRow href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`} target="_blank" icon={<Instagram size={16} />} label="Instagram" value={`@${business.instagram.replace(/^@/, '')}`} color="var(--lh-terra)" />
                 )}
               </div>
             </div>
@@ -355,7 +241,7 @@ function ContactRow({
   icon,
   label,
   value,
-  tone,
+  color,
   truncate = false,
 }: {
   href: string
@@ -363,30 +249,22 @@ function ContactRow({
   icon: React.ReactNode
   label: string
   value: string
-  tone: 'sun' | 'accent'
+  color: string
   truncate?: boolean
 }) {
-  const bg = tone === 'sun' ? 'var(--lt-sun)' : 'var(--lt-accent)'
-  const iconColor = tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)'
-
   return (
     <a
       href={href}
       target={target}
       rel={target === '_blank' ? 'noopener noreferrer' : undefined}
-      className="flex items-center gap-3 p-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] transition-all hover:-translate-y-0.5 group"
-      style={{ background: 'var(--lt-bg)', boxShadow: 'var(--lt-shadow-sticker)' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 11, padding: 12, borderRadius: 12, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', textDecoration: 'none', transition: 'background .18s' }}
     >
-      <div
-        className="w-9 h-9 flex items-center justify-center rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0 group-hover:scale-110 transition-transform"
-        style={{ background: bg, color: iconColor }}
-        aria-hidden="true"
-      >
+      <span aria-hidden="true" style={{ width: 36, height: 36, flexShrink: 0, borderRadius: 10, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: `color-mix(in oklch, ${color} 14%, transparent)`, color }}>
         {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--lt-ink-soft)' }}>{label}</p>
-        <p className={`text-sm font-medium ${truncate ? 'truncate' : ''}`} style={{ color: 'var(--lt-ink)' }}>{value}</p>
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontFamily: 'var(--lh-mono)', fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.08em', color: 'var(--lh-fg3)', margin: 0 }}>{label}</p>
+        <p className={truncate ? 'truncate' : ''} style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-fg)', margin: 0 }}>{value}</p>
       </div>
     </a>
   )

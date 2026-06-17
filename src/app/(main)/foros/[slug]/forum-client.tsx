@@ -265,12 +265,12 @@ export default function ForumClient({
   if (loading) {
     return (
       <div className="flex flex-col items-center py-12" role="status" aria-live="polite">
-        <div
-          className="animate-spin w-12 h-12 rounded-full border-4 mx-auto mb-4"
-          style={{ borderColor: 'var(--lt-ink-soft)', borderTopColor: 'var(--lt-terracota)' }}
+        <span
+          className="animate-spin"
+          style={{ width: 44, height: 44, borderRadius: '50%', border: '3px solid var(--lh-border)', borderTopColor: 'var(--lh-accent)', marginBottom: 16 }}
           aria-hidden="true"
         />
-        <p style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>{t.loading}</p>
+        <p style={{ color: 'var(--lh-fg3)' }}>{t.loading}</p>
       </div>
     );
   }
@@ -278,13 +278,9 @@ export default function ForumClient({
   if (error) {
     return (
       <div className="text-center py-12">
-        <AlertCircle className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-        <p className="mb-4 font-medium" style={{ color: 'var(--lt-terracota)' }}>{error}</p>
-        <button
-          onClick={loadPosts}
-          className="px-5 py-2.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-          style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-        >
+        <AlertCircle size={48} style={{ color: 'var(--lh-terra)', margin: '0 auto 16px' }} aria-hidden="true" />
+        <p style={{ marginBottom: 16, fontWeight: 500, color: 'var(--lh-terra)' }}>{error}</p>
+        <button onClick={loadPosts} className="lh-btn lh-btn--md lh-btn--primary">
           {t.retry}
         </button>
       </div>
@@ -295,20 +291,14 @@ export default function ForumClient({
     <div className="space-y-6">
       {/* Nickname Form - Show automatically if user has no nickname */}
       {currentUser && !currentUser.nickname && (
-        <div
-          className="p-6 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)]"
-          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-        >
-          <h3
-            className="text-lg font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+        <div className="lh-card" style={{ padding: 24 }}>
+          <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 6px' }}>
             {t.setNickname || 'Configura tu nickname'}
           </h3>
-          <p className="text-sm mb-4" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
+          <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: '0 0 16px' }}>
             {t.nicknameRules || 'Para participar en los foros necesitas un nickname. Debe tener entre 3-20 caracteres (letras, números y guión bajo).'}
           </p>
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: 8 }}>
             <label htmlFor="forum-nickname" className="sr-only">Nickname</label>
             <input
               id="forum-nickname"
@@ -318,14 +308,13 @@ export default function ForumClient({
               onChange={(e) => setNicknameInput(e.target.value)}
               placeholder="mi_nickname"
               maxLength={20}
-              className="flex-1 px-4 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] text-sm"
-              style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
+              className="lh-input"
+              style={{ flex: 1 }}
             />
             <button
               onClick={handleUpdateNickname}
               disabled={!nicknameInput.trim()}
-              className="px-4 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[var(--lt-sun)]"
-              style={{ background: 'var(--lt-sun)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
+              className="lh-btn lh-btn--md lh-btn--primary"
             >
               {t.nicknameSave || 'Guardar'}
             </button>
@@ -339,22 +328,15 @@ export default function ForumClient({
           {!showNewPost ? (
             <button
               onClick={() => setShowNewPost(true)}
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-[var(--lt-radius-md)] border-[2px] border-dashed border-[var(--lt-ink)] transition-all hover:border-[var(--lt-terracota)] hover:bg-[var(--lt-paper)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-              style={{ color: 'var(--lt-ink)' }}
               aria-expanded={false}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '16px 24px', borderRadius: 16, border: '1.5px dashed var(--lh-border)', background: 'var(--lh-surface)', color: 'var(--lh-fg2)', cursor: 'pointer', fontFamily: 'var(--lh-font)', fontWeight: 600, fontSize: 14.5, transition: 'border-color .2s, color .2s' }}
             >
-              <Plus className="w-5 h-5" aria-hidden="true" />
-              <span className="font-semibold" style={{ fontFamily: 'var(--lt-font-sans)' }}>{t.postNew}</span>
+              <Plus size={18} aria-hidden="true" />
+              <span>{t.postNew}</span>
             </button>
           ) : (
-            <div
-              className="p-6 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)]"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-            >
-              <h3
-                className="text-lg font-bold mb-4"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
+            <div className="lh-card" style={{ padding: 24 }}>
+              <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 16px' }}>
                 {t.postNew}
               </h3>
               <ForumPostForm
@@ -369,12 +351,9 @@ export default function ForumClient({
 
       {/* Posts List */}
       {posts.length === 0 ? (
-        <div
-          className="text-center py-12 rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
-          style={{ background: 'var(--lt-paper)' }}
-        >
-          <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-20" style={{ color: 'var(--lt-ink)' }} aria-hidden="true" />
-          <p style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>{t.emptyPosts}</p>
+        <div className="lh-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+          <MessageSquare size={48} style={{ color: 'var(--lh-fg3)', opacity: 0.5, margin: '0 auto 16px' }} aria-hidden="true" />
+          <p style={{ color: 'var(--lh-fg2)' }}>{t.emptyPosts}</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -410,7 +389,7 @@ export default function ForumClient({
 
                   {/* Comments List */}
                   {comments[post.id]?.length === 0 ? (
-                    <p className="ml-12 text-foreground/50 text-sm">{t.emptyComments}</p>
+                    <p className="ml-12 text-sm" style={{ color: 'var(--lh-fg3)' }}>{t.emptyComments}</p>
                   ) : (
                     <div className="space-y-3">
                       {comments[post.id]?.map((comment) => (

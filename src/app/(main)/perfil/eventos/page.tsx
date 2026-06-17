@@ -3,10 +3,9 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import Link from 'next/link'
 import { PlusCircle } from 'lucide-react'
 import UserEvents from '@/components/eventos/UserEvents'
-import { LtPageShell, LtButton } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 export const metadata: Metadata = {
   title: 'Mis Eventos | Latin Territory',
@@ -26,33 +25,22 @@ export default async function MisEventosPage() {
   })
 
   return (
-    <LtPageShell maxWidth="5xl">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1
-            className="text-4xl md:text-5xl font-extrabold tracking-tight"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Mis Eventos
-          </h1>
-          <p className="text-lg mt-2" style={{ color: 'var(--lt-ink-soft)' }}>
-            Administra todos los eventos que has publicado.
-          </p>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)', paddingTop: '2.5rem', paddingBottom: '4rem' }}>
+      <div className="lh-container" style={{ maxWidth: 1040 }}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4" style={{ marginBottom: 32 }}>
+          <div>
+            <h1 className="lh-h1" style={{ fontSize: 'clamp(30px,4.5vw,44px)' }}>Mis eventos</h1>
+            <p style={{ fontSize: 16, color: 'var(--lh-fg2)', margin: '10px 0 0' }}>
+              Administra todos los eventos que has publicado.
+            </p>
+          </div>
+          <Button href="/perfil/eventos/crear" variant="primary" size="md">
+            <PlusCircle size={18} /> Crear evento
+          </Button>
         </div>
-        <Link href="/perfil/eventos/crear">
-          <LtButton
-            variant="sticker"
-            tone="sun"
-            size="md"
-            rotate={-1}
-            iconLeft={<PlusCircle className="w-5 h-5" />}
-          >
-            Crear Evento
-          </LtButton>
-        </Link>
-      </div>
 
-      <UserEvents initialEvents={misEventos} />
-    </LtPageShell>
+        <UserEvents initialEvents={misEventos} />
+      </div>
+    </div>
   )
 }

@@ -5,11 +5,10 @@ import { useSearchParams } from 'next/navigation'
 import { Search, Filter, MapPin, Phone, MessageCircle, Building2, Instagram, X } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { LtBadge } from '@/components/lt/Badge'
-import { LtButton } from '@/components/lt/Button'
-import { HandDrawnBox } from '@/components/lt/HandDrawnBox'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { cn } from '@/lib/utils'
+import { Card } from '@/components/lh/Card'
+import { Button } from '@/components/lh/Button'
+import { Reveal } from '@/components/lh/Reveal'
+import { EmptyState } from '@/components/lh/EmptyState'
 import { BUSINESS_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
 
 interface Business {
@@ -33,11 +32,10 @@ interface DirectoryClientProps {
   initialBusinesses: Business[]
 }
 
-const cities = [
-  'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Canberra'
-]
+const cities = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Gold Coast', 'Canberra']
 
-const CARD_ROTATIONS = [-1.5, 1.2, -0.8, 1.5, -1.2, 0.9, -1.4, 1.1]
+/** Tinte suave de un color del sistema para chips */
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
 
 export default function DirectoryClient({ initialBusinesses }: DirectoryClientProps) {
   const searchParams = useSearchParams()
@@ -56,18 +54,17 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
   })
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="lh-container" style={{ paddingTop: 40, paddingBottom: 80 }}>
 
       {/* ── Buscador y filtros ── */}
-      <HandDrawnBox padding="1.25rem" className="mb-8">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <Card style={{ padding: 20, marginBottom: 28 }}>
+        <div className="flex flex-col lg:flex-row gap-3">
           {/* Barra de búsqueda */}
-          <div className="flex-1 relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5"
-              aria-hidden="true"
-              style={{ color: 'var(--lt-ink-soft)' }}
-            />
+          <div
+            className="flex-1"
+            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 6px 4px 16px', border: '1px solid var(--lh-border)', borderRadius: 15, background: 'var(--lh-surface2)' }}
+          >
+            <Search size={18} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} aria-hidden="true" />
             <label htmlFor="dir-search" className="sr-only">Buscar negocios</label>
             <input
               id="dir-search"
@@ -76,8 +73,7 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
               placeholder="Buscar arepas, contadores, mecánicos…"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] transition-all"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
+              style={{ flex: 1, border: 0, background: 'transparent', outline: 'none', color: 'var(--lh-fg)', fontSize: 15.5, fontFamily: 'var(--lh-font)', padding: '11px 0' }}
             />
           </div>
 
@@ -86,10 +82,10 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
             <label htmlFor="dir-cat" className="sr-only">Categoría</label>
             <select
               id="dir-cat"
+              className="lh-input"
+              style={{ width: 'auto', minWidth: 180 }}
               value={selectedCategory}
               onChange={e => setSelectedCategory(e.target.value)}
-              className="px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] cursor-pointer"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las categorías</option>
               {BUSINESS_CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
@@ -98,10 +94,10 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
             <label htmlFor="dir-city" className="sr-only">Ciudad</label>
             <select
               id="dir-city"
+              className="lh-input"
+              style={{ width: 'auto', minWidth: 160 }}
               value={selectedCity}
               onChange={e => setSelectedCity(e.target.value)}
-              className="px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] cursor-pointer"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las ciudades</option>
               {cities.map(city => <option key={city} value={city}>{city}</option>)}
@@ -109,30 +105,28 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
           </div>
 
           {/* Toggle filtros móvil */}
-          <LtButton
-            variant="outline"
-            tone="ink"
+          <Button
+            variant="secondary"
             size="sm"
-            iconLeft={showFilters ? <X className="h-4 w-4" aria-hidden="true" /> : <Filter className="h-4 w-4" aria-hidden="true" />}
-            onClick={() => setShowFilters(!showFilters)}
             className="lg:hidden"
+            onClick={() => setShowFilters(!showFilters)}
             aria-expanded={showFilters}
             aria-controls="dir-mobile-filters"
           >
+            {showFilters ? <X size={16} aria-hidden="true" /> : <Filter size={16} aria-hidden="true" />}
             Filtros
-          </LtButton>
+          </Button>
         </div>
 
         {/* Filtros móvil */}
         {showFilters && (
-          <div id="dir-mobile-filters" className="lg:hidden mt-4 pt-4 border-t-[1.6px] border-[var(--lt-ink)]/30 grid gap-4">
+          <div id="dir-mobile-filters" className="lg:hidden mt-4 pt-4 grid gap-3" style={{ borderTop: '1px solid var(--lh-border2)' }}>
             <label htmlFor="dir-cat-m" className="sr-only">Categoría</label>
             <select
               id="dir-cat-m"
+              className="lh-input"
               value={selectedCategory}
               onChange={e => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las categorías</option>
               {BUSINESS_CATEGORIES.map(cat => <option key={cat.value} value={cat.value}>{cat.label}</option>)}
@@ -140,10 +134,9 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
             <label htmlFor="dir-city-m" className="sr-only">Ciudad</label>
             <select
               id="dir-city-m"
+              className="lh-input"
               value={selectedCity}
               onChange={e => setSelectedCity(e.target.value)}
-              className="w-full px-4 py-3 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] bg-[var(--lt-bg)] text-sm outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink)' }}
             >
               <option value="">Todas las ciudades</option>
               {cities.map(city => <option key={city} value={city}>{city}</option>)}
@@ -151,197 +144,165 @@ export default function DirectoryClient({ initialBusinesses }: DirectoryClientPr
           </div>
         )}
 
-        {/* Chips de categoría activos */}
+        {/* Chips de filtros activos */}
         {(selectedCategory || selectedCity) && (
           <div className="mt-3 flex flex-wrap gap-2 items-center">
-            <span className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>Filtrando por:</span>
+            <span style={{ fontSize: 12.5, color: 'var(--lh-fg3)' }}>Filtrando por:</span>
             {selectedCategory && (
-              <LtBadge tone="terracota" rotate={-1}>
-                {categoryLabel(BUSINESS_CATEGORIES, selectedCategory)}
-                <button onClick={() => setSelectedCategory('')} aria-label={`Quitar filtro ${categoryLabel(BUSINESS_CATEGORIES, selectedCategory)}`} className="ml-1">
-                  <X className="h-3 w-3" />
-                </button>
-              </LtBadge>
+              <ActiveChip
+                label={categoryLabel(BUSINESS_CATEGORIES, selectedCategory)}
+                color="var(--lh-terra)"
+                onRemove={() => setSelectedCategory('')}
+              />
             )}
             {selectedCity && (
-              <LtBadge tone="verde" rotate={1}>
-                {selectedCity}
-                <button onClick={() => setSelectedCity('')} aria-label={`Quitar filtro ${selectedCity}`} className="ml-1">
-                  <X className="h-3 w-3" />
-                </button>
-              </LtBadge>
+              <ActiveChip
+                label={selectedCity}
+                color="var(--lh-green)"
+                onRemove={() => setSelectedCity('')}
+              />
             )}
           </div>
         )}
-      </HandDrawnBox>
+      </Card>
 
       {/* ── Contador ── */}
-      <div className="mb-6">
-        <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
+      <div style={{ marginBottom: 22 }}>
+        <p style={{ fontSize: 14, color: 'var(--lh-fg2)' }}>
           Mostrando{' '}
-          <strong style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-serif)' }}>
-            {filteredBusinesses.length}
-          </strong>{' '}
-          territorios latinos
+          <strong style={{ color: 'var(--lh-fg)', fontWeight: 600 }}>{filteredBusinesses.length}</strong>{' '}
+          {filteredBusinesses.length === 1 ? 'negocio' : 'negocios'}
         </p>
       </div>
 
       {/* ── Grid de negocios ── */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredBusinesses.map((business, i) => {
-          const rotation = CARD_ROTATIONS[i % CARD_ROTATIONS.length]
-          return (
-            <article
-              key={business.id}
-              className="group flex flex-col rounded-[var(--lt-radius-md)] border-[2.2px] border-[var(--lt-ink)] overflow-hidden transition-all duration-200 hover:-translate-y-1"
-              style={{
-                background: 'var(--lt-paper)',
-                boxShadow: 'var(--lt-shadow-sticker-lg)',
-                transform: `rotate(${rotation}deg)`,
-              }}
-              data-lt-rotate="true"
-            >
-              {/* Imagen / Placeholder */}
-              <div className="relative h-48 overflow-hidden border-b-[2px] border-[var(--lt-ink)]">
-                {business.images && business.images.length > 0 ? (
-                  <Image
-                    src={business.images[0]}
-                    alt={business.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center"
-                    style={{ background: 'var(--lt-bg)' }}
-                    aria-hidden="true"
-                  >
-                    <Building2
-                      className="w-16 h-16 group-hover:scale-110 transition-transform duration-500"
-                      style={{ color: 'var(--lt-ink)', opacity: 0.15 }}
-                    />
-                  </div>
-                )}
-
-                {/* Badge verificado */}
-                {business.isVerified && (
-                  <div className="absolute top-3 right-3 z-10">
-                    <LtBadge tone="verde" rotate={-1}>✓ Oficial</LtBadge>
-                  </div>
-                )}
-
-                {/* Badge categoría */}
-                <div className="absolute bottom-3 left-3 z-10">
-                  <LtBadge tone="paper" rotate={1}>{categoryLabel(BUSINESS_CATEGORIES, business.category)}</LtBadge>
-                </div>
-              </div>
-
-              {/* Contenido */}
-              <div className="p-5 flex-1 flex flex-col gap-3">
-                <div>
-                  <h2
-                    className="text-xl font-bold mb-1 group-hover:text-[var(--lt-terracota)] transition-colors line-clamp-1"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    {business.name}
-                  </h2>
-                  <div
-                    className="flex items-center gap-1 text-sm"
-                    style={{ color: 'var(--lt-ink-soft)' }}
-                  >
-                    <MapPin className="h-4 w-4 shrink-0" style={{ color: 'var(--lt-terracota)' }} aria-hidden="true" />
-                    {business.city || 'Australia'}{business.state ? `, ${business.state}` : ''}
-                  </div>
-                </div>
-
-                <p
-                  className="text-sm leading-relaxed flex-1 line-clamp-3"
-                  style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-                >
-                  {business.description}
-                </p>
-
-                {/* Acciones */}
-                <div className={cn('grid gap-2 mt-auto', business.whatsapp || business.phone || business.instagram ? 'grid-cols-2' : 'grid-cols-1')}>
-                  {business.whatsapp && (
-                    <a
-                      href={`https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
-                      style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                      aria-label={`Contactar a ${business.name} por WhatsApp`}
-                    >
-                      <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                      WhatsApp
-                    </a>
-                  )}
-                  {!business.whatsapp && business.phone && (
-                    <a
-                      href={`tel:${business.phone}`}
-                      className="flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
-                      style={{ background: 'var(--lt-paper)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                      aria-label={`Llamar a ${business.name}`}
-                    >
-                      <Phone className="h-4 w-4" aria-hidden="true" />
-                      Llamar
-                    </a>
-                  )}
-                  {!business.whatsapp && !business.phone && business.instagram && (
-                    <a
-                      href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-2 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
-                      style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                      aria-label={`Ver Instagram de ${business.name}`}
-                    >
-                      <Instagram className="h-4 w-4" aria-hidden="true" />
-                      Instagram
-                    </a>
-                  )}
-                  <Link
-                    href={`/negocio/${business.slug}`}
-                    className="flex items-center justify-center gap-1 px-3 py-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-sm font-semibold transition-all hover:-translate-y-0.5"
-                    style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                  >
-                    Ver perfil →
-                  </Link>
-                </div>
-              </div>
-            </article>
-          )
-        })}
-      </div>
+      {filteredBusinesses.length > 0 && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredBusinesses.map((business, i) => (
+            <Reveal key={business.id} delay={Math.min(i * 40, 240)}>
+              <BusinessCard business={business} />
+            </Reveal>
+          ))}
+        </div>
+      )}
 
       {/* ── Estado vacío ── */}
       {filteredBusinesses.length === 0 && (
-        <div
-          className="text-center py-16 rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
-          style={{ background: 'var(--lt-paper)' }}
-        >
-          <div aria-hidden="true" className="flex justify-center mb-4">
-            <SunMotif size={72} className="opacity-30" />
-          </div>
-          <h3
-            className="text-xl font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            No encontramos negocios con esa búsqueda
-          </h3>
-          <p
-            className="text-sm max-w-md mx-auto mb-6"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-          >
-            Intenta cambiar los filtros o sé el primero en registrar un negocio en esta categoría.
-          </p>
-          <Link href="/registrar-negocio">
-            <LtButton variant="sticker" tone="terracota" size="md" rotate={-1}>
-              ¡Registra tu negocio gratis!
-            </LtButton>
-          </Link>
-        </div>
+        <EmptyState
+          icon={<Building2 size={26} />}
+          title="No encontramos negocios con esa búsqueda"
+          description="Intenta cambiar los filtros o sé el primero en registrar un negocio en esta categoría."
+          action={
+            <Button href="/registrar-negocio" variant="primary" size="md">
+              Registra tu negocio gratis
+            </Button>
+          }
+        />
       )}
     </div>
+  )
+}
+
+/* ─── Chip de filtro activo (removible) ─── */
+function ActiveChip({ label, color, onRemove }: { label: string; color: string; onRemove: () => void }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 8px 6px 12px', borderRadius: 99, background: tint(color), color, fontSize: 13, fontWeight: 600 }}>
+      {label}
+      <button
+        onClick={onRemove}
+        aria-label={`Quitar filtro ${label}`}
+        style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: 0, background: 'transparent', color: 'inherit', cursor: 'pointer', padding: 0, width: 18, height: 18, borderRadius: 99 }}
+      >
+        <X size={13} />
+      </button>
+    </span>
+  )
+}
+
+/* ─── Tarjeta de negocio ─── */
+function BusinessCard({ business }: { business: Business }) {
+  const hasImage = business.images && business.images.length > 0
+  const whatsappHref = business.whatsapp ? `https://wa.me/${business.whatsapp.replace(/[^0-9]/g, '')}` : null
+
+  return (
+    <Card interactive style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Imagen / placeholder */}
+      <div style={{ position: 'relative', height: 168, overflow: 'hidden', background: 'var(--lh-surface2)' }}>
+        {hasImage ? (
+          <Image src={business.images[0]} alt={business.name} fill style={{ objectFit: 'cover' }} sizes="(max-width: 1024px) 100vw, 33vw" />
+        ) : (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }} aria-hidden="true">
+            <Building2 size={56} style={{ color: 'var(--lh-fg3)', opacity: 0.4 }} />
+          </div>
+        )}
+
+        {/* Badge verificado */}
+        {business.isVerified && (
+          <span style={{ position: 'absolute', top: 12, right: 12, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 99, background: 'rgba(255,255,255,.9)', backdropFilter: 'blur(8px)', fontSize: 12, fontWeight: 600, color: '#1f6b3a' }}>
+            ✓ Oficial
+          </span>
+        )}
+      </div>
+
+      {/* Contenido */}
+      <div style={{ padding: '18px 18px 20px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+        <div>
+          <span style={{ display: 'inline-block', fontSize: 11.5, fontWeight: 600, color: 'var(--lh-accent)', background: tint('var(--lh-accent)'), padding: '3px 9px', borderRadius: 99, marginBottom: 10 }}>
+            {categoryLabel(BUSINESS_CATEGORIES, business.category)}
+          </span>
+          <h2 className="line-clamp-1" style={{ fontFamily: 'var(--lh-font)', fontSize: 17.5, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 6px' }}>
+            {business.name}
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: 'var(--lh-fg2)' }}>
+            <MapPin size={14} style={{ flexShrink: 0 }} aria-hidden="true" />
+            {business.city || 'Australia'}{business.state ? `, ${business.state}` : ''}
+          </div>
+        </div>
+
+        <p className="line-clamp-3" style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0, flex: 1 }}>
+          {business.description}
+        </p>
+
+        {/* Acciones */}
+        <div style={{ display: 'grid', gridTemplateColumns: (whatsappHref || business.phone || business.instagram) ? '1fr 1fr' : '1fr', gap: 8, marginTop: 'auto' }}>
+          {whatsappHref && (
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lh-btn lh-btn--sm"
+              style={{ background: 'var(--lh-green)', color: '#fff' }}
+              aria-label={`Contactar a ${business.name} por WhatsApp`}
+            >
+              <MessageCircle size={15} aria-hidden="true" /> WhatsApp
+            </a>
+          )}
+          {!whatsappHref && business.phone && (
+            <a
+              href={`tel:${business.phone}`}
+              className="lh-btn lh-btn--sm lh-btn--secondary"
+              aria-label={`Llamar a ${business.name}`}
+            >
+              <Phone size={15} aria-hidden="true" /> Llamar
+            </a>
+          )}
+          {!whatsappHref && !business.phone && business.instagram && (
+            <a
+              href={`https://instagram.com/${business.instagram.replace(/^@/, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lh-btn lh-btn--sm"
+              style={{ background: 'var(--lh-terra)', color: '#fff' }}
+              aria-label={`Ver Instagram de ${business.name}`}
+            >
+              <Instagram size={15} aria-hidden="true" /> Instagram
+            </a>
+          )}
+          <Link href={`/negocio/${business.slug}`} className="lh-btn lh-btn--sm lh-btn--secondary">
+            Ver perfil →
+          </Link>
+        </div>
+      </div>
+    </Card>
   )
 }

@@ -1,365 +1,359 @@
 'use client'
 
-import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X, User, LogOut, UserCircle, Settings, Building2, PlusCircle, Shield } from 'lucide-react'
+import {
+  Menu, X, User, LogOut, UserCircle, Settings,
+  Building2, PlusCircle, Shield, Sun, Moon, Globe,
+} from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { LanguageToggle } from '@/components/ui/language-toggle'
+import { useTheme } from 'next-themes'
 import { ScreenReader } from '@/lib/accessibility'
 import { useTranslations } from '@/components/providers/language-provider'
-import { SunMotif } from '@/components/lt/SunMotif'
-import { LtButton } from '@/components/lt/Button'
 import { cn } from '@/lib/utils'
-
-function useScrolled(threshold = 8) {
-  const [scrolled, setScrolled] = useState(false)
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > threshold)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [threshold])
-  return scrolled
-}
 
 const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
 
 const NAV_LINKS = [
-  { href: '/',          labelKey: 'nav.home' },
-  { href: '/directorio', labelKey: 'nav.directory' },
-  { href: '/empleos',   labelKey: 'nav.jobs' },
-  { href: '/eventos',   labelKey: 'nav.events' },
-  { href: '/foros',     labelKey: 'nav.forums' },
-  { href: '/deportes',  labelKey: 'nav.sports' },
-  { href: '/clima',     labelKey: 'nav.weather' },
-  { href: '/tasas',     labelKey: 'nav.rates' },
+  { href: '#categorias', label: 'Explorar',   page: '/'         },
+  { href: '/directorio', label: 'Negocios',   page: '/directorio' },
+  { href: '/empleos',    label: 'Empleos',    page: '/empleos'  },
+  { href: '/eventos',    label: 'Eventos',    page: '/eventos'  },
+  { href: '/foros',      label: 'Comunidad',  page: '/foros'    },
 ]
+
+function useScrolled(threshold = 8) {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > threshold)
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [threshold])
+  return scrolled
+}
 
 export function Header() {
   const { t } = useTranslations()
   const { data: session, status } = useSession()
   const pathname = usePathname()
   const scrolled = useScrolled()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const menuButtonRef = useRef<HTMLButtonElement>(null)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const { resolvedTheme, setTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
+
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const menuBtnRef = useRef<HTMLButtonElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
-  const userMenuButtonRef = useRef<HTMLButtonElement>(null)
+  const userMenuBtnRef = useRef<HTMLButtonElement>(null)
 
   const userEmail = session?.user?.email || ''
   const hasAdminRole = session?.user?.role === 'ADMIN' || session?.user?.role === 'MODERATOR'
-  const hasCorporateEmail = ALLOWED_ADMIN_DOMAINS.some(domain => userEmail.endsWith(domain))
-  const showAdminPanel = hasAdminRole && hasCorporateEmail
+  const hasCorporateEmail = ALLOWED_ADMIN_DOMAINS.some(d => userEmail.endsWith(d))
+  const showAdmin = hasAdminRole && hasCorporateEmail
 
-  const toggleMobileMenu = () => {
-    const next = !isMenuOpen
-    setIsMenuOpen(next)
-    ScreenReader.announce(next ? t('sr.menu.open') : t('sr.menu.closed'), 'polite')
-  }
-
-  const toggleUserMenu = () => setIsUserMenuOpen(prev => !prev)
-
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' })
-  }
+  const isHome = pathname === '/'
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const fn = (e: MouseEvent) => {
       if (
         userMenuRef.current && !userMenuRef.current.contains(e.target as Node) &&
-        userMenuButtonRef.current && !userMenuButtonRef.current.contains(e.target as Node)
-      ) setIsUserMenuOpen(false)
+        userMenuBtnRef.current && !userMenuBtnRef.current.contains(e.target as Node)
+      ) setUserMenuOpen(false)
     }
-    if (isUserMenuOpen) document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [isUserMenuOpen])
+    if (userMenuOpen) document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [userMenuOpen])
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!isMenuOpen) return
-      if (e.key === 'Escape') {
-        setIsMenuOpen(false)
-        menuButtonRef.current?.focus()
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && menuOpen) {
+        setMenuOpen(false)
+        menuBtnRef.current?.focus()
         ScreenReader.announce(t('sr.menu.closed.short'), 'polite')
       }
     }
-    if (isMenuOpen) document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [isMenuOpen, t])
+    document.addEventListener('keydown', fn)
+    return () => document.removeEventListener('keydown', fn)
+  }, [menuOpen, t])
 
-  function isActive(href: string) {
-    if (href === '/') return pathname === '/'
-    return pathname.startsWith(href)
+  const navHref = (link: typeof NAV_LINKS[0]) =>
+    link.href.startsWith('#') && !isHome ? '/' + link.href : link.href
+
+  const isActive = (page: string) => {
+    if (page === '/') return pathname === '/'
+    return pathname.startsWith(page)
+  }
+
+  const btnBase: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 40, height: 40, borderRadius: 11,
+    border: '1px solid var(--lh-border)',
+    background: 'var(--lh-surface)',
+    color: 'var(--lh-fg)', cursor: 'pointer',
+    transition: '.2s', fontFamily: 'var(--lh-font)',
   }
 
   return (
     <header
-      className={cn('transition-shadow duration-200', scrolled && 'shadow-[0_2px_0_rgba(34,21,15,0.10)]')}
-      style={{ background: 'var(--lt-bg)' }}
       role="banner"
+      style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: scrolled ? 'var(--lh-glass)' : 'var(--lh-glass)',
+        backdropFilter: 'blur(22px) saturate(1.5)',
+        WebkitBackdropFilter: 'blur(22px) saturate(1.5)',
+        borderBottom: '1px solid var(--lh-border2)',
+        transition: 'box-shadow .2s',
+        boxShadow: scrolled ? 'var(--lh-shadow)' : 'none',
+      }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div style={{ maxWidth: 1220, margin: '0 auto', padding: '0 24px', height: 66, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24 }}>
 
-          {/* ── Logo ── */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2 rounded-lg p-1 group"
-            aria-label={`${t('app.name')} - ${t('nav.home')}`}
-          >
-            <div className="shrink-0 transition-transform group-hover:scale-105">
-              <SunMotif size={44} />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span
-                className="text-lg font-bold tracking-tight"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
-                Latin <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>Territory</em>
-              </span>
-              <span
-                className="text-[10px] font-medium tracking-wide"
-                style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-              >
-                ¡Australia, esto es nuestro! ✦
-              </span>
-            </div>
-          </Link>
+        {/* ── Logo ── */}
+        <Link
+          href="/"
+          style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}
+          aria-label="Latin Territory — Inicio"
+        >
+          <Image
+            src="/latin-territory-logo.png"
+            alt="Latin Territory"
+            width={40}
+            height={40}
+            style={{ display: 'block', width: 40, height: 40, objectFit: 'contain', borderRadius: 8 }}
+          />
+          <span style={{ fontWeight: 600, fontSize: 16.5, letterSpacing: '-.02em', color: 'var(--lh-fg)', fontFamily: 'var(--lh-font)' }}>
+            Latin<span style={{ color: 'var(--lh-fg3)', fontWeight: 500 }}> Territory</span>
+          </span>
+        </Link>
 
-          {/* ── Desktop Nav ── */}
-          <nav
-            className="hidden md:flex items-center gap-1"
-            role="navigation"
-            aria-label={t('app.name')}
-          >
-            {NAV_LINKS.map(({ href, labelKey }) => (
-              <Link
-                key={href}
-                href={href}
-                className="px-3 py-1.5 text-sm font-medium rounded-[var(--lt-radius-pill)] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
-                style={isActive(href)
-                  ? { background: 'var(--lt-ink)', color: 'var(--lt-paper)' }
-                  : { color: 'var(--lt-ink)' }
-                }
-                aria-current={isActive(href) ? 'page' : undefined}
-              >
-                {t(labelKey)}
-              </Link>
-            ))}
-          </nav>
-
-          {/* ── Right controls ── */}
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <LanguageToggle />
-
-            {/* User menu */}
-            <div className="relative">
-              {status === 'loading' ? (
-                <div className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
-                  <div
-                    className="animate-spin h-5 w-5 rounded-full border-2"
-                    style={{ borderColor: 'var(--lt-ink-soft)', borderTopColor: 'var(--lt-terracota)' }}
-                  />
-                </div>
-              ) : session ? (
-                <>
-                  <button
-                    ref={userMenuButtonRef}
-                    onClick={toggleUserMenu}
-                    className="p-2 rounded-[var(--lt-radius-sm)] min-h-[44px] min-w-[44px] flex items-center justify-center border-[1.6px] border-[var(--lt-ink)] hover:bg-[var(--lt-paper)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
-                    style={{ color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                    aria-label={t('header.userMenu')}
-                    aria-expanded={isUserMenuOpen}
-                  >
-                    <User className="h-5 w-5" aria-hidden="true" />
-                  </button>
-
-                  {isUserMenuOpen && (
-                    <div
-                      ref={userMenuRef}
-                      className="absolute right-0 mt-2 w-56 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)] py-2 z-50"
-                      style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-                      role="menu"
-                    >
-                      <div
-                        className="px-4 py-3 border-b-[2px] border-[var(--lt-ink)]"
-                        style={{ borderColor: 'var(--lt-ink)' }}
-                      >
-                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-serif)' }}>
-                          {session.user?.name}
-                        </p>
-                        <p className="text-xs truncate" style={{ color: 'var(--lt-ink-soft)' }}>
-                          {session.user?.email}
-                        </p>
-                      </div>
-
-                      {showAdminPanel && (
-                        <>
-                          <Link
-                            href="/admin"
-                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold transition-colors hover:opacity-80"
-                            style={{ color: 'var(--lt-terracota)' }}
-                            onClick={() => setIsUserMenuOpen(false)}
-                            role="menuitem"
-                          >
-                            <Shield className="h-4 w-4" aria-hidden="true" />
-                            Panel de Control
-                          </Link>
-                          <div className="border-t border-[var(--lt-ink)]/20 my-1" />
-                        </>
-                      )}
-
-                      {[
-                        { href: '/perfil', icon: UserCircle, label: t('auth.profile') },
-                        { href: '/perfil/configuracion', icon: Settings, label: t('profile.settings.title') },
-                        { href: '/registrar-negocio', icon: PlusCircle, label: 'Registrar mi Negocio' },
-                      ].map(({ href, icon: Icon, label }) => (
-                        <Link
-                          key={href}
-                          href={href}
-                          className="flex items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-[var(--lt-bg)]"
-                          style={{ color: 'var(--lt-ink)' }}
-                          onClick={() => setIsUserMenuOpen(false)}
-                          role="menuitem"
-                        >
-                          <Icon className="h-4 w-4" aria-hidden="true" />
-                          {label}
-                        </Link>
-                      ))}
-
-                      <div className="border-t border-[var(--lt-ink)]/20 my-1" />
-
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-2 text-sm transition-colors hover:bg-[var(--lt-bg)]"
-                        style={{ color: 'var(--lt-terracota)' }}
-                        role="menuitem"
-                      >
-                        <LogOut className="h-4 w-4" aria-hidden="true" />
-                        {t('auth.logout')}
-                      </button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <LtButton
-                  variant="sticker"
-                  tone="terracota"
-                  size="sm"
-                  rotate={-1.2}
-                  iconLeft={<User className="h-4 w-4" aria-hidden="true" />}
-                  className="hidden md:inline-flex"
-                  onClick={() => { window.location.href = '/auth/signin' }}
-                  aria-label={t('auth.login.title')}
-                >
-                  {t('auth.login.title')}
-                </LtButton>
-              )}
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              ref={menuButtonRef}
-              onClick={toggleMobileMenu}
-              className="md:hidden p-2 rounded-[var(--lt-radius-sm)] min-h-[44px] min-w-[44px] flex items-center justify-center border-[1.6px] border-[var(--lt-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2"
-              style={{ color: 'var(--lt-ink)', boxShadow: 'var(--lt-shadow-sticker)' }}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
-              aria-label={isMenuOpen ? t('sr.menu.closed') : t('sr.menu.open')}
+        {/* ── Desktop nav ── */}
+        <nav
+          className="hidden md:flex"
+          style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+          role="navigation"
+          aria-label="Navegación principal"
+        >
+          {NAV_LINKS.map(link => (
+            <Link
+              key={link.label}
+              href={navHref(link)}
+              style={{
+                padding: '9px 14px', borderRadius: 10,
+                fontSize: 14.5, fontWeight: 500,
+                color: isActive(link.page) ? 'var(--lh-fg)' : 'var(--lh-fg2)',
+                background: isActive(link.page) ? 'var(--lh-surface2)' : 'transparent',
+                transition: '.2s', fontFamily: 'var(--lh-font)', textDecoration: 'none',
+              }}
+              aria-current={isActive(link.page) ? 'page' : undefined}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLElement
+                if (!isActive(link.page)) { el.style.color = 'var(--lh-fg)'; el.style.background = 'var(--lh-surface2)' }
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLElement
+                if (!isActive(link.page)) { el.style.color = 'var(--lh-fg2)'; el.style.background = 'transparent' }
+              }}
             >
-              {isMenuOpen
-                ? <X className="h-6 w-6" aria-hidden="true" />
-                : <Menu className="h-6 w-6" aria-hidden="true" />
-              }
-            </button>
-          </div>
-        </div>
+              {link.label}
+            </Link>
+          ))}
+        </nav>
 
-        {/* ── Mobile Nav ── */}
-        {isMenuOpen && (
-          <div
-            id="mobile-menu"
-            role="navigation"
-            aria-label="Menú de navegación móvil"
-            className="md:hidden"
+        {/* ── Controles derecha ── */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+          {/* Theme toggle */}
+          <button
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            style={btnBase}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'var(--lh-surface2)'; el.style.transform = 'translateY(-1px)' }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'var(--lh-surface)'; el.style.transform = '' }}
           >
-            <div
-              ref={mobileMenuRef}
-              className="px-2 pt-2 pb-4 space-y-1 rounded-[var(--lt-radius-lg)] mt-2 mb-2 border-[2px] border-[var(--lt-ink)]"
-              style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-            >
-              {NAV_LINKS.map(({ href, labelKey }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center px-4 py-3 text-base font-medium rounded-[var(--lt-radius-sm)] min-h-[48px] focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)] focus:ring-offset-2 transition-colors"
-                  style={isActive(href) ? { background: 'var(--lt-ink)', color: 'var(--lt-paper)' } : { color: 'var(--lt-ink)' }}
-                  aria-current={isActive(href) ? 'page' : undefined}
-                  onClick={() => {
-                    setIsMenuOpen(false)
-                    ScreenReader.announce(t(`sr.nav.to.${labelKey.split('.')[1]}`), 'polite')
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+
+          {/* User / Auth */}
+          {status === 'loading' ? (
+            <div style={{ ...btnBase, cursor: 'default' }}>
+              <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid var(--lh-border)', borderTopColor: 'var(--lh-accent)', animation: 'spin 1s linear infinite' }} />
+            </div>
+          ) : session ? (
+            <div style={{ position: 'relative' }}>
+              <button
+                ref={userMenuBtnRef}
+                onClick={() => setUserMenuOpen(p => !p)}
+                style={btnBase}
+                aria-label="Menú de usuario"
+                aria-expanded={userMenuOpen}
+              >
+                <User size={17} />
+              </button>
+              {userMenuOpen && (
+                <div
+                  ref={userMenuRef}
+                  role="menu"
+                  style={{
+                    position: 'absolute', right: 0, top: 'calc(100% + 8px)',
+                    width: 220, borderRadius: 16,
+                    background: 'var(--lh-surface)',
+                    border: '1px solid var(--lh-border)',
+                    boxShadow: 'var(--lh-shadow-lg)',
+                    padding: '6px',
+                    zIndex: 60,
+                    fontFamily: 'var(--lh-font)',
                   }}
                 >
-                  {t(labelKey)}
-                </Link>
-              ))}
-
-              <div className="border-t-[2px] border-[var(--lt-ink)] my-2 mx-2" />
-
-              {status === 'loading' ? (
-                <div className="px-4 py-3 flex items-center justify-center">
-                  <div className="animate-spin h-5 w-5 rounded-full border-2" style={{ borderColor: 'var(--lt-ink-soft)', borderTopColor: 'var(--lt-terracota)' }} />
-                </div>
-              ) : session ? (
-                <>
-                  <div className="px-4 py-2 text-sm" style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}>
-                    {session.user?.name}
+                  <div style={{ padding: '10px 12px 12px', borderBottom: '1px solid var(--lh-border2)', marginBottom: 4 }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>{session.user?.name}</p>
+                    <p style={{ fontSize: 12, color: 'var(--lh-fg2)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.user?.email}</p>
                   </div>
-
-                  {showAdminPanel && (
-                    <Link
-                      href="/admin"
-                      className="flex items-center gap-3 px-4 py-3 font-semibold rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:opacity-80"
-                      style={{ color: 'var(--lt-terracota)' }}
-                      onClick={() => setIsMenuOpen(false)}
+                  {showAdmin && (
+                    <Link href="/admin" onClick={() => setUserMenuOpen(false)} role="menuitem"
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'var(--lh-accent)', textDecoration: 'none', transition: '.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--lh-surface2)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
-                      <Shield className="h-5 w-5" aria-hidden="true" />
-                      Panel de Control
+                      <Shield size={15} /> Panel de Control
                     </Link>
                   )}
-
-                  <Link href="/perfil" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-ink)' }} onClick={() => setIsMenuOpen(false)}>
-                    <UserCircle className="h-5 w-5" aria-hidden="true" />
-                    {t('auth.profile')}
-                  </Link>
-                  <Link href="/registrar-negocio" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-ink)' }} onClick={() => setIsMenuOpen(false)}>
-                    <Building2 className="h-5 w-5" aria-hidden="true" />
-                    Registrar Negocio
-                  </Link>
-                  <button onClick={() => { setIsMenuOpen(false); handleLogout() }} className="flex items-center gap-3 w-full px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-terracota)' }}>
-                    <LogOut className="h-5 w-5" aria-hidden="true" />
-                    {t('auth.logout')}
+                  {[
+                    { href: '/perfil',                  Icon: UserCircle, label: t('auth.profile') },
+                    { href: '/perfil/configuracion',    Icon: Settings,   label: t('profile.settings.title') },
+                    { href: '/registrar-negocio',       Icon: PlusCircle, label: 'Registrar negocio' },
+                  ].map(({ href, Icon, label }) => (
+                    <Link key={href} href={href} onClick={() => setUserMenuOpen(false)} role="menuitem"
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 10, fontSize: 14, color: 'var(--lh-fg)', textDecoration: 'none', transition: '.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--lh-surface2)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '' }}
+                    >
+                      <Icon size={15} style={{ color: 'var(--lh-fg2)' }} /> {label}
+                    </Link>
+                  ))}
+                  <div style={{ height: 1, background: 'var(--lh-border2)', margin: '4px 4px' }} />
+                  <button
+                    onClick={() => { setUserMenuOpen(false); signOut({ callbackUrl: '/' }) }}
+                    role="menuitem"
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 12px', borderRadius: 10, fontSize: 14, color: 'var(--lh-terra)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.15s', textAlign: 'left' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--lh-surface2)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '' }}
+                  >
+                    <LogOut size={15} /> {t('auth.logout')}
                   </button>
-                </>
-              ) : (
-                <>
-                  <Link href="/auth/signin" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] transition-colors hover:bg-[var(--lt-bg)]" style={{ color: 'var(--lt-ink)' }} onClick={() => setIsMenuOpen(false)}>
-                    <User className="h-5 w-5" aria-hidden="true" />
-                    {t('auth.login.title')}
-                  </Link>
-                  <Link href="/auth/signup" className="flex items-center gap-3 px-4 py-3 rounded-[var(--lt-radius-sm)] min-h-[48px] font-semibold" style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)' }} onClick={() => setIsMenuOpen(false)}>
-                    <User className="h-5 w-5" aria-hidden="true" />
-                    {t('auth.signup.title')}
-                  </Link>
-                </>
+                </div>
               )}
             </div>
-          </div>
-        )}
+          ) : null}
+
+          {/* Registrar negocio CTA — solo desktop */}
+          <Link
+            href="/registrar-negocio"
+            className="hidden md:inline-flex"
+            style={{
+              display: 'inline-flex', alignItems: 'center', padding: '10px 18px',
+              borderRadius: 11, background: 'var(--lh-accent)', color: '#fff',
+              fontSize: 14.5, fontWeight: 600, letterSpacing: '-.01em',
+              boxShadow: '0 8px 20px -10px var(--lh-accent)', transition: '.22s',
+              textDecoration: 'none', fontFamily: 'var(--lh-font)',
+            }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-1px)'; el.style.boxShadow = '0 12px 26px -10px var(--lh-accent)' }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = '0 8px 20px -10px var(--lh-accent)' }}
+          >
+            Registrar negocio
+          </Link>
+
+          {/* Mobile menu button */}
+          <button
+            ref={menuBtnRef}
+            className="md:hidden"
+            onClick={() => {
+              const next = !menuOpen
+              setMenuOpen(next)
+              ScreenReader.announce(next ? t('sr.menu.open') : t('sr.menu.closed'), 'polite')
+            }}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            aria-label={menuOpen ? t('sr.menu.closed') : t('sr.menu.open')}
+            style={btnBase}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
+
+      {/* ── Mobile menu ── */}
+      {menuOpen && (
+        <div
+          id="mobile-menu"
+          role="navigation"
+          aria-label="Menú móvil"
+          style={{
+            borderTop: '1px solid var(--lh-border2)',
+            background: 'var(--lh-glass)',
+            backdropFilter: 'blur(22px)',
+            WebkitBackdropFilter: 'blur(22px)',
+          }}
+        >
+          <div style={{ maxWidth: 1220, margin: '0 auto', padding: '12px 16px 16px', display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'var(--lh-font)' }}>
+            {NAV_LINKS.map(link => (
+              <Link
+                key={link.label}
+                href={navHref(link)}
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', padding: '13px 16px',
+                  borderRadius: 12, fontSize: 15, fontWeight: 500,
+                  color: isActive(link.page) ? '#fff' : 'var(--lh-fg)',
+                  background: isActive(link.page) ? 'var(--lh-accent)' : 'transparent',
+                  textDecoration: 'none', minHeight: 48, transition: '.15s',
+                }}
+                aria-current={isActive(link.page) ? 'page' : undefined}
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            <div style={{ height: 1, background: 'var(--lh-border2)', margin: '8px 0' }} />
+
+            {!session ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <Link href="/auth/signin" onClick={() => setMenuOpen(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderRadius: 12, fontSize: 15, color: 'var(--lh-fg)', textDecoration: 'none', minHeight: 48 }}>
+                  <User size={18} style={{ color: 'var(--lh-fg2)' }} /> {t('auth.login.title')}
+                </Link>
+                <Link href="/auth/signup" onClick={() => setMenuOpen(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderRadius: 12, fontSize: 15, fontWeight: 600, background: 'var(--lh-accent)', color: '#fff', textDecoration: 'none', minHeight: 48 }}>
+                  <PlusCircle size={18} /> {t('auth.signup.title')}
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ padding: '8px 16px', fontSize: 13, color: 'var(--lh-fg2)' }}>{session.user?.name}</div>
+                {showAdmin && (
+                  <Link href="/admin" onClick={() => setMenuOpen(false)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderRadius: 12, fontSize: 15, fontWeight: 600, color: 'var(--lh-accent)', textDecoration: 'none', minHeight: 48 }}>
+                    <Shield size={18} /> Panel de Control
+                  </Link>
+                )}
+                <Link href="/perfil" onClick={() => setMenuOpen(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderRadius: 12, fontSize: 15, color: 'var(--lh-fg)', textDecoration: 'none', minHeight: 48 }}>
+                  <UserCircle size={18} style={{ color: 'var(--lh-fg2)' }} /> {t('auth.profile')}
+                </Link>
+                <Link href="/registrar-negocio" onClick={() => setMenuOpen(false)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderRadius: 12, fontSize: 15, color: 'var(--lh-fg)', textDecoration: 'none', minHeight: 48 }}>
+                  <Building2 size={18} style={{ color: 'var(--lh-fg2)' }} /> Registrar Negocio
+                </Link>
+                <button onClick={() => { setMenuOpen(false); signOut({ callbackUrl: '/' }) }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '13px 16px', borderRadius: 12, fontSize: 15, color: 'var(--lh-terra)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--lh-font)', minHeight: 48, textAlign: 'left' }}>
+                  <LogOut size={18} /> {t('auth.logout')}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   )
 }

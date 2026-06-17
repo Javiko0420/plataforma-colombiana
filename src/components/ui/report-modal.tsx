@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AccessibleModal } from '@/components/ui/accessible-modal'
-import { LtButton } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 const REPORT_REASONS = [
   { value: 'SPAM', label: 'Es spam o publicidad no deseada' },
@@ -80,97 +80,81 @@ export function ReportModal({
     <AccessibleModal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Reportar Contenido"
+      title="Reportar contenido"
       description="Ayúdanos a mantener la comunidad segura. Este reporte es anónimo."
       size="sm"
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="lt-label">¿Cuál es el problema?</label>
-          <div className="grid gap-2">
-            {REPORT_REASONS.map((r) => (
-              <div
-                key={r.value}
-                onClick={() => setReason(r.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    setReason(r.value)
-                  }
-                }}
-                role="radio"
-                aria-checked={reason === r.value}
-                tabIndex={0}
-                className={`p-3 rounded-[var(--lt-radius-sm)] border-[2px] cursor-pointer text-sm transition-all ${
-                  reason === r.value
-                    ? 'border-[var(--lt-terracota)] font-medium shadow-[var(--lt-shadow-sticker)]'
-                    : 'border-[var(--lt-ink)] hover:opacity-90'
-                }`}
-                style={{
-                  background: reason === r.value ? 'var(--lt-bg)' : 'var(--lt-paper)',
-                  color: reason === r.value ? 'var(--lt-terracota)' : 'var(--lt-ink-soft)',
-                  fontFamily: 'var(--lt-font-sans)',
-                }}
-              >
-                {r.label}
-              </div>
-            ))}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <label className="lh-label">¿Cuál es el problema?</label>
+          <div style={{ display: 'grid', gap: 8 }}>
+            {REPORT_REASONS.map((r) => {
+              const active = reason === r.value
+              return (
+                <div
+                  key={r.value}
+                  onClick={() => setReason(r.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setReason(r.value)
+                    }
+                  }}
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={0}
+                  style={{
+                    padding: '11px 14px', borderRadius: 12, cursor: 'pointer', fontSize: 14,
+                    border: '1px solid', transition: 'background .18s, border-color .18s, color .18s',
+                    borderColor: active ? 'var(--lh-accent)' : 'var(--lh-border)',
+                    background: active ? 'color-mix(in oklch, var(--lh-accent) 10%, transparent)' : 'var(--lh-surface)',
+                    color: active ? 'var(--lh-accent)' : 'var(--lh-fg2)',
+                    fontWeight: active ? 600 : 400,
+                  }}
+                >
+                  {r.label}
+                </div>
+              )
+            })}
           </div>
         </div>
 
         {reason === 'OTHER' && (
           <div>
-            <label htmlFor="report-details" className="lt-label">
-              Describe el problema
-            </label>
+            <label htmlFor="report-details" className="lh-label">Describe el problema</label>
             <textarea
               id="report-details"
-              className="lt-input resize-none"
-              placeholder="Proporciona detalles adicionales..."
+              className="lh-input"
+              style={{ resize: 'none' }}
+              placeholder="Proporciona detalles adicionales…"
               rows={3}
               maxLength={500}
               value={details}
               onChange={(e) => setDetails(e.target.value)}
             />
-            <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
-              {500 - details.length} caracteres restantes
-            </p>
+            <p style={{ fontSize: 12.5, marginTop: 6, color: 'var(--lh-fg3)' }}>{500 - details.length} caracteres restantes</p>
           </div>
         )}
 
         {error && (
-          <div
-            className="p-3 rounded-[var(--lt-radius-sm)] border-[2px] text-sm"
-            style={{ background: 'var(--lt-bg)', borderColor: 'var(--lt-accent)', color: 'var(--lt-accent)' }}
-          >
+          <div style={{ padding: '12px 14px', borderRadius: 12, fontSize: 14, background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)', color: 'var(--lh-terra)' }}>
             {error}
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-4 border-t-[2px] border-[var(--lt-ink)]">
-          <LtButton
-            type="button"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            variant="outline"
-            tone="paper"
-            size="sm"
-          >
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: '1px solid var(--lh-border2)' }}>
+          <Button type="button" onClick={handleClose} disabled={isSubmitting} variant="secondary" size="sm">
             Cancelar
-          </LtButton>
-          <LtButton
+          </Button>
+          <button
             type="button"
             onClick={handleSubmit}
             disabled={!reason || isSubmitting}
-            variant="sticker"
-            tone="accent"
-            size="sm"
-            rotate={-1}
-            loading={isSubmitting}
-            loadingText="Enviando..."
+            className="lh-btn lh-btn--sm"
+            style={{ background: 'var(--lh-terra)', color: '#fff', opacity: (!reason || isSubmitting) ? 0.5 : 1 }}
           >
-            Enviar Reporte
-          </LtButton>
+            {isSubmitting ? 'Enviando…' : 'Enviar reporte'}
+          </button>
         </div>
       </div>
     </AccessibleModal>

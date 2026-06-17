@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LtPageShell, LtPanel, LtButton } from '@/components/lt';
+import { Button } from '@/components/lh/Button';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -39,80 +39,46 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <LtPageShell maxWidth="md" className="flex items-center">
-      <LtPanel className="p-8">
-        <div className="text-center">
-          <h2
-            className="text-3xl font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Recuperar contraseña
-          </h2>
-          <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>
-            Ingresa tu correo y te enviaremos un enlace para restablecerla.
-          </p>
-        </div>
-
-        {error && (
-          <div
-            className="mt-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500 text-sm"
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-            role="alert"
-          >
-            {error}
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'var(--lh-font)' }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
+        <div className="lh-card" style={{ padding: 'clamp(24px,5vw,36px)' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 className="lh-h2" style={{ fontSize: 'clamp(24px,4vw,30px)', margin: '0 0 8px' }}>Recuperar contraseña</h2>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)' }}>
+              Ingresa tu correo y te enviaremos un enlace para restablecerla.
+            </p>
           </div>
-        )}
 
-        {success ? (
-          <div
-            className="mt-6 p-4 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-verde)] text-sm text-center"
-            style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-          >
-            Si el correo está registrado, recibirás un enlace de recuperación en breve.
-          </div>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="lt-label">
-                Correo electrónico
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="lt-input"
-                placeholder="tu@correo.com"
-              />
+          {error && (
+            <div role="alert" style={{ marginTop: 22, padding: '12px 16px', borderRadius: 13, fontSize: 14, background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)', color: 'var(--lh-terra)' }}>
+              {error}
             </div>
+          )}
 
-            <LtButton
-              type="submit"
-              variant="sticker"
-              tone="terracota"
-              size="md"
-              className="w-full"
-              disabled={isLoading}
-              loading={isLoading}
-              loadingText="Enviando..."
-            >
-              Enviar enlace
-            </LtButton>
-          </form>
-        )}
+          {success ? (
+            <div style={{ marginTop: 22, padding: '14px 16px', borderRadius: 13, fontSize: 14, textAlign: 'center', background: 'color-mix(in oklch, var(--lh-green) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-green) 30%, transparent)', color: 'var(--lh-fg)' }}>
+              Si el correo está registrado, recibirás un enlace de recuperación en breve.
+            </div>
+          ) : (
+            <form style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 18 }} onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email" className="lh-label">Correo electrónico</label>
+                <input id="email" name="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="lh-input" placeholder="tu@correo.com" />
+              </div>
 
-        <div className="text-center mt-6">
-          <Link
-            href="/auth/signin"
-            className="text-sm font-medium hover:underline"
-            style={{ color: 'var(--lt-terracota)' }}
-          >
-            Volver al inicio de sesión
-          </Link>
+              <Button type="submit" variant="primary" size="md" disabled={isLoading} style={{ width: '100%' }}>
+                {isLoading ? 'Enviando…' : 'Enviar enlace'}
+              </Button>
+            </form>
+          )}
+
+          <div style={{ textAlign: 'center', marginTop: 22 }}>
+            <Link href="/auth/signin" style={{ fontSize: 14, fontWeight: 500, color: 'var(--lh-accent)' }}>
+              Volver al inicio de sesión
+            </Link>
+          </div>
         </div>
-      </LtPanel>
-    </LtPageShell>
+      </div>
+    </div>
   );
 }

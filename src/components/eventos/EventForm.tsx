@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CldUploadWidget } from 'next-cloudinary'
 import Image from 'next/image'
-import Link from 'next/link'
 import { AlertCircle, ImagePlus, Trash } from 'lucide-react'
 import { createEvent, updateEvent } from '@/app/(main)/eventos/actions'
-import { LtButton, LtPanel } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 import { EVENT_CATEGORIES } from '@/lib/constants/categories'
 
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
@@ -38,9 +37,7 @@ export default function EventForm({
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(mode === 'edit')
-  const [imageUrl, setImageUrl] = useState<string | null>(
-    initialData?.imageUrl ?? null
-  )
+  const [imageUrl, setImageUrl] = useState<string | null>(initialData?.imageUrl ?? null)
   const [isMounted, setIsMounted] = useState(false)
 
   const isEdit = mode === 'edit'
@@ -117,47 +114,30 @@ export default function EventForm({
     }
   }
 
+  const help: React.CSSProperties = { fontSize: 12.5, color: 'var(--lh-fg3)', margin: '7px 0 0' }
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="mb-8 border-b-[2px] border-[var(--lt-ink)] pb-4">
-        <h2
-          className="text-2xl font-bold"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
+    <div>
+      <div style={{ marginBottom: 28, paddingBottom: 18, borderBottom: '1px solid var(--lh-border)' }}>
+        <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 24, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: 0 }}>
           {isEdit ? 'Editar evento' : 'Publicar nuevo evento'}
         </h2>
-        <p
-          className="text-sm mt-1"
-          style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-        >
+        <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '6px 0 0' }}>
           {isEdit
             ? 'Modifica los campos que necesites actualizar.'
             : 'Completa los campos para que tu evento sea visible en el muro de eventos.'}
         </p>
       </div>
 
-      <form action={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor="title" className="lt-label">Título del evento</label>
-            <input
-              id="title"
-              name="title"
-              required
-              defaultValue={initialData?.title}
-              className="lt-input"
-              placeholder="Ej: Noche de Salsa en Vivo"
-            />
+      <form action={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="title" className="lh-label">Título del evento</label>
+            <input id="title" name="title" required defaultValue={initialData?.title} className="lh-input" placeholder="Ej: Noche de Salsa en Vivo" />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="category" className="lt-label">Categoría</label>
-            <select
-              id="category"
-              name="category"
-              required
-              defaultValue={initialData?.category || ''}
-              className="lt-input appearance-none cursor-pointer"
-            >
+          <div>
+            <label htmlFor="category" className="lh-label">Categoría</label>
+            <select id="category" name="category" required defaultValue={initialData?.category || ''} className="lh-input">
               <option value="" disabled>Selecciona una categoría</option>
               {EVENT_CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -166,103 +146,61 @@ export default function EventForm({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="description" className="lt-label">Descripción</label>
-          <textarea
-            id="description"
-            name="description"
-            required
-            rows={5}
-            defaultValue={initialData?.description}
-            className="lt-input resize-none"
-            placeholder="Describe tu evento: qué van a encontrar los asistentes, artistas, horarios..."
-          />
+        <div>
+          <label htmlFor="description" className="lh-label">Descripción</label>
+          <textarea id="description" name="description" required rows={5} defaultValue={initialData?.description} className="lh-input" style={{ resize: 'none' }} placeholder="Describe tu evento: qué van a encontrar los asistentes, artistas, horarios..." />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor="eventDate" className="lt-label">Fecha y hora</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="eventDate" className="lh-label">Fecha y hora</label>
             <input
               id="eventDate"
               name="eventDate"
               type="datetime-local"
               required
-              defaultValue={
-                initialData?.eventDate
-                  ? new Date(initialData.eventDate).toISOString().slice(0, 16)
-                  : ''
-              }
-              className="lt-input"
+              defaultValue={initialData?.eventDate ? new Date(initialData.eventDate).toISOString().slice(0, 16) : ''}
+              className="lh-input"
             />
           </div>
-          <div className="space-y-2">
-            <label htmlFor="location" className="lt-label">Ubicación</label>
-            <input
-              id="location"
-              name="location"
-              required
-              defaultValue={initialData?.location}
-              className="lt-input"
-              placeholder="Ej: Cultural Center, Brisbane"
-            />
+          <div>
+            <label htmlFor="location" className="lh-label">Ubicación</label>
+            <input id="location" name="location" required defaultValue={initialData?.location} className="lh-input" placeholder="Ej: Cultural Center, Brisbane" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label htmlFor="ticketPrice" className="lt-label">
-              Precio del ticket (AUD){' '}
-              <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(opcional)</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label htmlFor="ticketPrice" className="lh-label">
+              Precio del ticket (AUD) <span style={{ fontWeight: 400, color: 'var(--lh-fg3)' }}>(opcional)</span>
             </label>
-            <input
-              id="ticketPrice"
-              name="ticketPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue={initialData?.ticketPrice ?? ''}
-              className="lt-input"
-              placeholder="0.00 = Gratis"
-            />
-            <p className="text-xs" style={{ color: 'var(--lt-ink-soft)' }}>
-              Déjalo vacío o en 0 si el evento es gratuito.
-            </p>
+            <input id="ticketPrice" name="ticketPrice" type="number" min="0" step="0.01" defaultValue={initialData?.ticketPrice ?? ''} className="lh-input" placeholder="0.00 = Gratis" />
+            <p style={help}>Déjalo vacío o en 0 si el evento es gratuito.</p>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="ticketLink" className="lt-label">
-              Link para comprar entradas{' '}
-              <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(opcional)</span>
+          <div>
+            <label htmlFor="ticketLink" className="lh-label">
+              Link para comprar entradas <span style={{ fontWeight: 400, color: 'var(--lh-fg3)' }}>(opcional)</span>
             </label>
-            <input
-              id="ticketLink"
-              name="ticketLink"
-              type="url"
-              defaultValue={initialData?.ticketLink ?? ''}
-              className="lt-input"
-              placeholder="https://tuevento.com/entradas"
-            />
+            <input id="ticketLink" name="ticketLink" type="url" defaultValue={initialData?.ticketLink ?? ''} className="lh-input" placeholder="https://tuevento.com/entradas" />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="lt-label">
-            Imagen del evento{' '}
-            <span className="font-normal" style={{ color: 'var(--lt-ink-soft)' }}>(opcional)</span>
+        <div>
+          <label className="lh-label">
+            Imagen del evento <span style={{ fontWeight: 400, color: 'var(--lh-fg3)' }}>(opcional)</span>
           </label>
 
           {imageUrl && (
-            <div className="relative w-full h-48 rounded-[var(--lt-radius-sm)] overflow-hidden border-[2px] border-[var(--lt-ink)] mb-3">
-              <div className="z-10 absolute top-2 right-2">
-                <button
-                  type="button"
-                  onClick={() => setImageUrl(null)}
-                  className="p-1.5 rounded-full transition-colors border-[2px] border-[var(--lt-ink)]"
-                  style={{ background: 'var(--lt-accent)', color: 'var(--lt-paper)' }}
-                >
-                  <Trash className="w-4 h-4" />
-                </button>
-              </div>
-              <Image fill className="object-cover" alt="Imagen del evento" src={imageUrl} />
+            <div style={{ position: 'relative', width: '100%', height: 192, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--lh-border)', marginBottom: 12 }}>
+              <button
+                type="button"
+                onClick={() => setImageUrl(null)}
+                aria-label="Quitar imagen"
+                style={{ position: 'absolute', zIndex: 10, top: 8, right: 8, width: 32, height: 32, borderRadius: '50%', border: 0, background: 'rgba(0,0,0,.6)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <Trash size={15} />
+              </button>
+              <Image fill style={{ objectFit: 'cover' }} alt="Imagen del evento" src={imageUrl} />
             </div>
           )}
 
@@ -280,19 +218,19 @@ export default function EventForm({
                 sources: ['local', 'url', 'camera'],
                 styles: {
                   palette: {
-                    window: '#fff3d8',
-                    sourceBg: '#fffaee',
-                    windowBorder: '#22150f',
-                    tabIcon: '#b34020',
-                    inactiveTabIcon: '#7a4f3b',
-                    menuIcons: '#7a4f3b',
-                    link: '#b34020',
-                    action: '#b34020',
-                    inProgress: '#f0a932',
-                    complete: '#336940',
-                    error: '#b33868',
-                    textDark: '#22150f',
-                    textLight: '#fffaee',
+                    window: '#FFFFFF',
+                    sourceBg: '#FAF6EF',
+                    windowBorder: '#181B21',
+                    tabIcon: '#2E5E8C',
+                    inactiveTabIcon: '#5C616D',
+                    menuIcons: '#5C616D',
+                    link: '#2E5E8C',
+                    action: '#2E5E8C',
+                    inProgress: '#D4A24C',
+                    complete: '#5C8A6B',
+                    error: '#D8775F',
+                    textDark: '#181B21',
+                    textLight: '#FFFFFF',
                   },
                 },
               }}
@@ -302,67 +240,50 @@ export default function EventForm({
                   type="button"
                   disabled={loading}
                   onClick={() => open()}
-                  className="flex items-center gap-2 px-4 py-3 rounded-[var(--lt-radius-sm)] border-[2px] border-dashed border-[var(--lt-ink)] transition-all w-full justify-center"
-                  style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '14px 16px', borderRadius: 14, border: '1.5px dashed var(--lh-border)', background: 'var(--lh-surface2)', color: 'var(--lh-fg2)', fontFamily: 'var(--lh-font)', fontSize: 14.5, fontWeight: 500, cursor: 'pointer' }}
                 >
-                  <ImagePlus className="w-5 h-5" />
+                  <ImagePlus size={18} />
                   Subir imagen del evento
                 </button>
               )}
             </CldUploadWidget>
           )}
 
-          <p className="text-xs mt-1" style={{ color: 'var(--lt-ink-soft)' }}>
-            Máximo 2MB. Formatos: JPG, PNG, WEBP.
-          </p>
+          <p style={help}>Máximo 2MB. Formatos: JPG, PNG, WEBP.</p>
         </div>
 
         {error && (
-          <LtPanel tone="bg" shadow="sm" className="px-4 py-3 flex items-center gap-2 text-sm border-[var(--lt-accent)]">
-            <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--lt-accent)' }} />
-            <span style={{ color: 'var(--lt-accent)' }}>{error}</span>
-          </LtPanel>
+          <div role="alert" style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 16px', borderRadius: 13, background: 'color-mix(in oklch, var(--lh-terra) 10%, var(--lh-surface))', border: '1px solid color-mix(in oklch, var(--lh-terra) 30%, transparent)' }}>
+            <AlertCircle size={16} style={{ color: 'var(--lh-terra)', flexShrink: 0 }} />
+            <span style={{ fontSize: 14, color: 'var(--lh-terra)' }}>{error}</span>
+          </div>
         )}
 
-        <div className="space-y-3 pt-4 border-t-[2px] border-[var(--lt-ink)]">
-          <label className="flex items-center space-x-3 cursor-pointer group">
+        <div style={{ paddingTop: 18, borderTop: '1px solid var(--lh-border)' }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 11, cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={agreedToTerms}
               onChange={(e) => setAgreedToTerms(e.target.checked)}
-              className="w-4 h-4 rounded border-[var(--lt-ink)] accent-[var(--lt-terracota)]"
+              style={{ marginTop: 2, width: 17, height: 17, flexShrink: 0, accentColor: 'var(--lh-accent)', cursor: 'pointer' }}
             />
-            <span
-              className="text-sm transition-colors"
-              style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-            >
-              Confirmo que la información publicada es verídica y acepto los
-              términos de la plataforma.
+            <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--lh-fg2)' }}>
+              Confirmo que la información publicada es verídica y acepto los términos de la plataforma.
             </span>
           </label>
         </div>
 
-        <div className={`flex gap-4 mt-6 ${isEdit ? 'flex-row' : ''}`}>
+        <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
           {isEdit && (
-            <Link href="/perfil/eventos" className="flex-1">
-              <LtButton variant="outline" tone="paper" size="lg" className="w-full">
-                Cancelar
-              </LtButton>
-            </Link>
+            <Button href="/perfil/eventos" variant="secondary" size="md" style={{ flex: 1 }}>
+              Cancelar
+            </Button>
           )}
-          <LtButton
-            type="submit"
-            variant="sticker"
-            tone="terracota"
-            size="lg"
-            rotate={-1}
-            disabled={loading}
-            loading={loading}
-            loadingText={isEdit ? 'Guardando cambios...' : 'Publicando...'}
-            className={isEdit ? 'flex-1' : 'w-full'}
-          >
-            {isEdit ? 'Guardar cambios' : 'Publicar evento'}
-          </LtButton>
+          <Button type="submit" variant="primary" size="md" disabled={loading} style={{ flex: 1 }}>
+            {loading
+              ? (isEdit ? 'Guardando cambios…' : 'Publicando…')
+              : (isEdit ? 'Guardar cambios' : 'Publicar evento')}
+          </Button>
         </div>
       </form>
     </div>

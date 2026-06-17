@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma'
 import { ReviewModerationCard } from '@/components/admin/review-moderation-card'
-import { LtBadge, LtPanel } from '@/components/lt'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,36 +33,24 @@ export default async function ReviewsModerationPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-4">
         <div>
-          <h1
-            className="text-2xl font-bold text-[var(--lt-ink)]"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            Moderación de Reseñas
-          </h1>
-          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.4vw,28px)', margin: 0 }}>Moderación de reseñas</h1>
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
             Reseñas reportadas por usuarios que requieren revisión.
           </p>
         </div>
-        <LtBadge tone="accent">
+        <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', padding: '5px 11px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-accent) 14%, transparent)', color: 'var(--lh-accent)', fontSize: 12.5, fontWeight: 600 }}>
           Pendientes: {flaggedReviews.length}
-        </LtBadge>
+        </span>
       </div>
 
       {flaggedReviews.length === 0 ? (
-        <LtPanel className="text-center py-20 border-dashed" shadow="sm">
-          <div className="text-4xl mb-4">🎉</div>
-          <h3
-            className="text-lg font-medium text-[var(--lt-ink)]"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            ¡Todo limpio!
-          </h3>
-          <p className="text-[var(--lt-ink-soft)]">
-            No hay reseñas pendientes de moderación.
-          </p>
-        </LtPanel>
+        <div className="lh-card" style={{ textAlign: 'center', padding: '64px 24px' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
+          <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 4px' }}>¡Todo limpio!</h3>
+          <p style={{ color: 'var(--lh-fg2)', margin: 0 }}>No hay reseñas pendientes de moderación.</p>
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {flaggedReviews.map((review) => (

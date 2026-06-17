@@ -26,9 +26,9 @@ export function LanguageToggle() {
     <button
       onClick={toggleLanguage}
       aria-label="Cambiar idioma"
-      className="inline-flex items-center gap-1.5 px-2 h-10 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--lt-terracota)]"
-      style={{ color: 'var(--lt-ink)', fontFamily: 'var(--lt-font-sans)' }}
-      onMouseOver={e => (e.currentTarget.style.background = 'rgba(34,21,15,0.05)')}
+      className="inline-flex items-center gap-1.5 px-2 h-10 rounded-full transition-colors focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--lh-accent)]"
+      style={{ color: 'var(--lh-fg2)', fontFamily: 'var(--lh-font)' }}
+      onMouseOver={e => (e.currentTarget.style.background = 'var(--lh-surface2)')}
       onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
     >
       <Globe className="h-[1.1rem] w-[1.1rem]" aria-hidden="true" />

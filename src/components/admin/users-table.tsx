@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { updateUserRole, toggleUserBan } from '@/app/(main)/admin/usuarios/actions'
 import { UserRole } from '@prisma/client'
 import Image from 'next/image'
-import { LtPanel, LtBadge, LtButton } from '@/components/lt'
-import type { BadgeTone } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 interface UsersTableProps {
   users: {
@@ -20,20 +19,21 @@ interface UsersTableProps {
   }[]
   totalPages: number
   currentPage: number
-  currentUserId: string // Para deshabilitar acciones sobre uno mismo
+  currentUserId: string
 }
 
-export function UsersTable({
-  users,
-  totalPages,
-  currentPage,
-  currentUserId,
-}: UsersTableProps) {
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+
+const chip = (color: string): React.CSSProperties => ({
+  display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 99,
+  background: tint(color), color, fontSize: 12, fontWeight: 600,
+})
+
+export function UsersTable({ users, totalPages, currentPage, currentUserId }: UsersTableProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loadingId, setLoadingId] = useState<string | null>(null)
 
-  // Búsqueda
   const handleSearch = (term: string) => {
     const params = new URLSearchParams(searchParams)
     if (term) params.set('q', term)
@@ -42,129 +42,89 @@ export function UsersTable({
     router.replace(`/admin/usuarios?${params.toString()}`)
   }
 
-  // Cambio de Rol
   const handleRoleChange = async (userId: string, newRole: string) => {
-    if (
-      !confirm(
-        `¿Estás seguro de cambiar el rol de este usuario a ${newRole}? Esto cambiará sus permisos inmediatamente.`,
-      )
-    )
-      return
-
+    if (!confirm(`¿Estás seguro de cambiar el rol de este usuario a ${newRole}? Esto cambiará sus permisos inmediatamente.`)) return
     setLoadingId(userId)
     const res = await updateUserRole(userId, newRole as UserRole)
     if (!res.success && res.error) alert(res.error)
     setLoadingId(null)
   }
 
-  // Banear
   const handleBanToggle = async (userId: string, isBanned: boolean) => {
     const action = isBanned ? 'desbloquear' : 'BLOQUEAR'
-    if (
-      !confirm(
-        `¿Estás seguro de ${action} a este usuario? ${!isBanned ? 'No podrá iniciar sesión.' : ''}`,
-      )
-    )
-      return
-
+    if (!confirm(`¿Estás seguro de ${action} a este usuario? ${!isBanned ? 'No podrá iniciar sesión.' : ''}`)) return
     setLoadingId(userId)
     const res = await toggleUserBan(userId, isBanned)
     if (!res.success && res.error) alert(res.error)
     setLoadingId(null)
   }
 
-  const getRoleBadgeTone = (role: string): BadgeTone => {
+  const roleColor = (role: string): string => {
     switch (role) {
-      case 'ADMIN':
-        return 'terracota'
-      case 'MODERATOR':
-        return 'accent'
-      case 'BUSINESS_OWNER':
-        return 'sun'
-      default:
-        return 'neutral'
+      case 'ADMIN': return 'var(--lh-terra)'
+      case 'MODERATOR': return 'var(--lh-accent)'
+      case 'BUSINESS_OWNER': return 'var(--lh-warm)'
+      default: return 'var(--lh-fg3)'
     }
   }
 
   return (
     <div className="space-y-4">
       {/* Buscador */}
-      <LtPanel className="p-4" shadow="sm">
+      <div className="lh-card" style={{ padding: 16 }}>
         <input
           type="text"
-          placeholder="Buscar por nombre o email..."
-          className="lt-input w-full sm:w-80"
+          placeholder="Buscar por nombre o email…"
+          className="lh-input w-full sm:w-80"
           defaultValue={searchParams.get('q')?.toString()}
           onChange={(e) => handleSearch(e.target.value)}
         />
-      </LtPanel>
+      </div>
 
       {/* Tabla */}
-      <LtPanel className="overflow-hidden p-0" shadow="md">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-[var(--lt-bg)] text-[var(--lt-ink-soft)] font-medium border-b-[2.2px] border-[var(--lt-ink)]">
+      <div className="lh-card" style={{ overflow: 'hidden', padding: 0 }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="lh-table">
+            <thead>
               <tr>
-                <th className="px-6 py-3">Usuario</th>
-                <th className="px-6 py-3">Estado</th>
-                <th className="px-6 py-3">Rol (Permisos)</th>
-                <th className="px-6 py-3">Fecha Registro</th>
-                <th className="px-6 py-3 text-right">Acciones</th>
+                <th>Usuario</th>
+                <th>Estado</th>
+                <th>Rol (Permisos)</th>
+                <th>Registro</th>
+                <th style={{ textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y-[2px] divide-[var(--lt-ink)]/15">
+            <tbody>
               {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className={`hover:bg-[var(--lt-bg)] transition-colors ${
-                    user.isBanned ? 'bg-[var(--lt-bg)]' : ''
-                  }`}
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--lt-bg)] border-[2px] border-[var(--lt-ink)] flex items-center justify-center overflow-hidden">
+                <tr key={user.id} style={user.isBanned ? { background: 'var(--lh-surface2)' } : undefined}>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--lh-surface2)', border: '1px solid var(--lh-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                         {user.image ? (
-                          <Image
-                            src={user.image}
-                            alt=""
-                            width={32}
-                            height={32}
-                            className="w-full h-full object-cover"
-                          />
+                          <Image src={user.image} alt="" width={32} height={32} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                          <span className="text-xs font-bold text-[var(--lt-ink-soft)]">
-                            {user.name?.[0] || 'U'}
-                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--lh-fg3)' }}>{user.name?.[0] || 'U'}</span>
                         )}
                       </div>
                       <div>
-                        <p className="font-medium text-[var(--lt-ink)]">
-                          {user.name || 'Sin Nombre'}
-                        </p>
-                        <p className="text-xs text-[var(--lt-ink-soft)]">{user.email}</p>
+                        <p style={{ fontWeight: 500, color: 'var(--lh-fg)', margin: 0 }}>{user.name || 'Sin Nombre'}</p>
+                        <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>{user.email}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    {user.isBanned ? (
-                      <LtBadge tone="terracota">🚫 BANEADO</LtBadge>
-                    ) : (
-                      <LtBadge tone="verde">Activo</LtBadge>
-                    )}
+                  <td>
+                    {user.isBanned ? <span style={chip('var(--lh-terra)')}>🚫 Baneado</span> : <span style={chip('var(--lh-green)')}>Activo</span>}
                   </td>
-                  <td className="px-6 py-4">
+                  <td>
                     {user.id === currentUserId ? (
-                      <LtBadge tone={getRoleBadgeTone(user.role)}>
-                        {user.role} (Tú)
-                      </LtBadge>
+                      <span style={chip(roleColor(user.role))}>{user.role} (Tú)</span>
                     ) : (
                       <select
                         disabled={loadingId === user.id}
                         value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user.id, e.target.value)
-                        }
-                        className="lt-input text-xs font-medium py-1 pl-2 pr-6 cursor-pointer w-auto min-w-[140px]"
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        className="lh-input"
+                        style={{ fontSize: 12.5, fontWeight: 500, padding: '6px 30px 6px 10px', width: 'auto', minWidth: 150 }}
                       >
                         <option value="USER">USER</option>
                         <option value="BUSINESS_OWNER">BUSINESS_OWNER</option>
@@ -173,24 +133,18 @@ export function UsersTable({
                       </select>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-[var(--lt-ink-soft)]">
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
+                  <td style={{ color: 'var(--lh-fg3)' }}>{new Date(user.createdAt).toLocaleDateString()}</td>
+                  <td style={{ textAlign: 'right' }}>
                     {user.id !== currentUserId && (
-                      <LtButton
-                        variant="outline"
-                        size="sm"
-                        tone={user.isBanned ? 'verde' : 'terracota'}
-                        onClick={() =>
-                          handleBanToggle(user.id, user.isBanned)
-                        }
+                      <button
+                        type="button"
+                        onClick={() => handleBanToggle(user.id, user.isBanned)}
                         disabled={loadingId === user.id}
-                        loading={loadingId === user.id}
-                        loadingText="..."
+                        className="lh-btn lh-btn--sm lh-btn--secondary"
+                        style={{ color: user.isBanned ? 'var(--lh-green)' : 'var(--lh-terra)', borderColor: `color-mix(in oklch, ${user.isBanned ? 'var(--lh-green)' : 'var(--lh-terra)'} 35%, transparent)`, opacity: loadingId === user.id ? 0.5 : 1 }}
                       >
-                        {user.isBanned ? 'Desbloquear' : 'Bloquear'}
-                      </LtButton>
+                        {loadingId === user.id ? '…' : user.isBanned ? 'Desbloquear' : 'Bloquear'}
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -201,37 +155,17 @@ export function UsersTable({
 
         {/* Paginación */}
         {totalPages > 1 && (
-          <div className="px-6 py-4 border-t-[2.2px] border-[var(--lt-ink)] flex justify-center gap-2 items-center">
-            <LtButton
-              variant="outline"
-              size="sm"
-              disabled={currentPage <= 1}
-              onClick={() => {
-                const p = new URLSearchParams(searchParams)
-                p.set('page', String(currentPage - 1))
-                router.push(`/admin/usuarios?${p.toString()}`)
-              }}
-            >
+          <div style={{ padding: '16px 20px', borderTop: '1px solid var(--lh-border)', display: 'flex', justifyContent: 'center', gap: 8, alignItems: 'center' }}>
+            <Button variant="secondary" size="sm" disabled={currentPage <= 1} onClick={() => { const p = new URLSearchParams(searchParams); p.set('page', String(currentPage - 1)); router.push(`/admin/usuarios?${p.toString()}`) }}>
               Anterior
-            </LtButton>
-            <span className="text-sm py-1 text-[var(--lt-ink-soft)]">
-              Página {currentPage} de {totalPages}
-            </span>
-            <LtButton
-              variant="outline"
-              size="sm"
-              disabled={currentPage >= totalPages}
-              onClick={() => {
-                const p = new URLSearchParams(searchParams)
-                p.set('page', String(currentPage + 1))
-                router.push(`/admin/usuarios?${p.toString()}`)
-              }}
-            >
+            </Button>
+            <span style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>Página {currentPage} de {totalPages}</span>
+            <Button variant="secondary" size="sm" disabled={currentPage >= totalPages} onClick={() => { const p = new URLSearchParams(searchParams); p.set('page', String(currentPage + 1)); router.push(`/admin/usuarios?${p.toString()}`) }}>
               Siguiente
-            </LtButton>
+            </Button>
           </div>
         )}
-      </LtPanel>
+      </div>
     </div>
   )
 }

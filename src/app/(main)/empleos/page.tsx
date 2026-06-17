@@ -2,9 +2,7 @@ import { prisma } from '@/lib/prisma';
 import JobFilters from '@/components/jobs/JobFilters';
 import JobList from '@/components/jobs/JobList';
 import { HeartHandshake } from 'lucide-react';
-import { SunMotif } from '@/components/lt/SunMotif';
-import { LeafSprig } from '@/components/lt/LeafSprig';
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline';
+import { PageHeader } from '@/components/lh/PageHeader';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,62 +33,41 @@ export default async function EmpleosPage({
   });
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh', paddingBottom: '4rem' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', paddingBottom: '4rem', fontFamily: 'var(--lh-font)' }}>
 
-      {/* ── Hero ── */}
-      <div
-        className="relative overflow-hidden border-b-[2px] border-[var(--lt-ink)] py-16 px-4"
-        style={{ background: 'var(--lt-paper)' }}
-      >
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
-          <SunMotif size={300} className="absolute opacity-[0.07]" style={{ top: '-50px', right: '-30px' }} />
-          <LeafSprig size={100} className="absolute opacity-20" style={{ bottom: '10px', left: '16px', transform: 'rotate(-18deg)' }} />
-        </div>
+      <PageHeader
+        eyebrow="Oportunidades"
+        title="Muro de empleos"
+        subtitle="Encuentra tu próxima oportunidad profesional en Australia o publica vacantes para hacer crecer tu equipo."
+        accent="var(--lh-green)"
+      />
 
-        <div className="relative max-w-7xl mx-auto text-center space-y-4">
-          <h1
-            className="text-4xl md:text-5xl font-black tracking-tight"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Muro de <em style={{ color: 'var(--lt-terracota)', fontStyle: 'italic' }}>Empleos</em>
-          </h1>
-          <div className="flex justify-center" aria-hidden="true">
-            <HandDrawnUnderline width={220} color="var(--lt-sun-core)" thickness={3} />
-          </div>
-          <p
-            className="text-lg max-w-2xl mx-auto"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-          >
-            Encuentra tu próxima oportunidad profesional en Australia o publica vacantes para hacer crecer tu equipo.
-          </p>
-        </div>
-      </div>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
+      <main className="lh-container" style={{ paddingTop: 40 }}>
 
         {/* ── Banner de seguridad ── */}
         <div
-          className="mb-8 flex items-start sm:items-center gap-4 p-5 rounded-[var(--lt-radius-md)] border-[2px] border-[var(--lt-ink)]"
-          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
           role="note"
           aria-label="Aviso de seguridad de la comunidad"
+          style={{
+            display: 'flex', alignItems: 'flex-start', gap: 14,
+            padding: '16px 18px', marginBottom: 28,
+            borderRadius: 16,
+            background: 'color-mix(in oklch, var(--lh-green) 8%, var(--lh-surface))',
+            border: '1px solid color-mix(in oklch, var(--lh-green) 22%, transparent)',
+          }}
         >
-          <div
-            className="p-2 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0"
-            style={{ background: 'var(--lt-verde)', color: 'var(--lt-paper)', boxShadow: '2px 2px 0 var(--lt-ink)' }}
+          <span
             aria-hidden="true"
+            style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'var(--lh-green)', color: '#fff' }}
           >
-            <HeartHandshake className="w-6 h-6" />
-          </div>
+            <HeartHandshake size={20} />
+          </span>
           <div>
-            <h3
-              className="font-bold text-sm md:text-base mb-1"
-              style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-            >
-              ¡Nuestra comunidad es un espacio seguro!
+            <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 15, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 3px' }}>
+              Nuestra comunidad es un espacio seguro
             </h3>
-            <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-              Recuerda que todas las postulaciones a través de la plataforma son 100% gratuitas. Si alguien te solicita un pago para participar en un proceso de selección, por favor repórtalo inmediatamente.
+            <p style={{ fontSize: 13.5, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
+              Todas las postulaciones a través de la plataforma son 100% gratuitas. Si alguien te solicita un pago para participar en un proceso de selección, repórtalo de inmediato.
             </p>
           </div>
         </div>
@@ -99,7 +76,7 @@ export default async function EmpleosPage({
         <JobFilters />
 
         {/* Resultados */}
-        <div className="mt-10">
+        <div style={{ marginTop: 32 }}>
           <JobList jobs={activeJobs} />
         </div>
       </main>

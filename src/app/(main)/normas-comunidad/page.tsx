@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { LtPageShell, LtPanel } from "@/components/lt";
+import { LegalLayout } from "@/components/lh/LegalLayout";
 
 export const metadata: Metadata = {
   title: "Normas de la Comunidad | Latinterritory",
@@ -9,24 +9,10 @@ export const metadata: Metadata = {
 
 export default function CommunityGuidelinesPage() {
   return (
-    <LtPageShell maxWidth="5xl">
-      <LtPanel className="p-8 md:p-12">
-        <div className="border-b-[2px] border-[var(--lt-ink)] pb-8 mb-8">
-          <h1
-            className="text-3xl md:text-4xl font-bold mb-4"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Community Guidelines (Normas de la Comunidad)
-          </h1>
-          <p style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-            Última actualización: 03 de febrero de 2026
-          </p>
-        </div>
-
-        <article
-          className="max-w-none space-y-4 text-sm leading-relaxed [&_h2]:text-xl [&_h2]:font-bold [&_h2]:pt-4 [&_h2]:text-[var(--lt-ink)] [&_h3]:font-semibold [&_h3]:pt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_a]:text-[var(--lt-terracota)] [&_a]:underline [&_strong]:text-[var(--lt-ink)]"
-          style={{ color: 'var(--lt-ink-soft)', fontFamily: 'var(--lt-font-sans)' }}
-        >
+    <LegalLayout
+      title="Community Guidelines (Normas de la Comunidad)"
+      lastUpdated="Última actualización: 03 de febrero de 2026"
+    >
           <p>
             Bienvenido/a a la comunidad de Latinterritory.com (la
             &quot;Plataforma&quot;). Estas Community Guidelines
@@ -314,8 +300,6 @@ export default function CommunityGuidelinesPage() {
             Podemos actualizar estas Normas por seguridad, legalidad o mejoras
             del servicio. La versión vigente será la publicada.
           </p>
-        </article>
-      </LtPanel>
-    </LtPageShell>
+    </LegalLayout>
   );
 }

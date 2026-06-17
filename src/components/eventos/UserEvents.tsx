@@ -1,20 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
-import {
-  CalendarDays,
-  Trash2,
-  PlusCircle,
-  Edit,
-  MapPin,
-} from 'lucide-react'
+import { CalendarDays, Trash2, PlusCircle, Edit, MapPin } from 'lucide-react'
 import { deleteEvent } from '@/app/(main)/eventos/actions'
 import type { Event } from '@prisma/client'
-import { LtEmptyState, LtPanel, LtButton, LtBadge } from '@/components/lt'
+import { EmptyState } from '@/components/lh/EmptyState'
+import { Button } from '@/components/lh/Button'
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
 
 export default function UserEvents({
   initialEvents,
@@ -48,21 +44,20 @@ export default function UserEvents({
 
   if (events.length === 0) {
     return (
-      <LtEmptyState
+      <EmptyState
+        icon={<CalendarDays size={26} />}
         title="Aún no tienes eventos publicados"
         description="¿Tienes un evento próximo en tu ciudad? Publícalo y conecta con la comunidad."
-        icon={<CalendarDays className="w-12 h-12" style={{ color: 'var(--lt-ink-soft)' }} />}
         action={
-          <LtButton
-            variant="sticker"
-            tone="sun"
-            size="md"
-            rotate={-1}
-            iconLeft={<PlusCircle className="w-5 h-5" />}
-            onClick={onCreateClick}
-          >
-            Publicar mi primer evento
-          </LtButton>
+          onCreateClick ? (
+            <Button variant="primary" size="md" onClick={onCreateClick}>
+              <PlusCircle size={18} /> Publicar mi primer evento
+            </Button>
+          ) : (
+            <Button href="/perfil/eventos/crear" variant="primary" size="md">
+              <PlusCircle size={18} /> Publicar mi primer evento
+            </Button>
+          )
         }
       />
     )
@@ -76,53 +71,43 @@ export default function UserEvents({
         const isPast = new Date(evt.eventDate) < now
 
         return (
-          <LtPanel
-            key={evt.id}
-            tone="bg"
-            shadow="sm"
-            className={`p-5 flex flex-col ${isPast ? 'opacity-60' : ''}`}
-          >
-            <div className="flex justify-between items-start mb-3 gap-3">
-              <h4
-                className="font-bold line-clamp-2"
-                style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-              >
+          <div key={evt.id} className="lh-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', opacity: isPast ? 0.65 : 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 8 }}>
+              <h4 className="line-clamp-2" style={{ fontFamily: 'var(--lh-font)', fontSize: 16, fontWeight: 600, letterSpacing: '-.01em', color: 'var(--lh-fg)', margin: 0 }}>
                 {evt.title}
               </h4>
               {isPast ? (
-                <LtBadge tone="paper" rotate={0}>Finalizado</LtBadge>
+                <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', padding: '5px 10px', borderRadius: 99, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)', color: 'var(--lh-fg3)', fontSize: 12, fontWeight: 600 }}>
+                  Finalizado
+                </span>
               ) : (
-                <LtBadge tone="verde" rotate={1}>
-                  <CalendarDays className="w-3 h-3" aria-hidden="true" />
+                <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 99, background: tint('var(--lh-warm)'), color: 'var(--lh-warm)', fontSize: 12, fontWeight: 600 }}>
+                  <CalendarDays size={12} aria-hidden="true" />
                   {format(new Date(evt.eventDate), "d MMM, yyyy · HH:mm", { locale: es })}
-                </LtBadge>
+                </span>
               )}
             </div>
 
-            <p className="text-sm mb-4 line-clamp-2 flex-grow" style={{ color: 'var(--lt-ink-soft)' }}>
-              <MapPin className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />
+            <p className="line-clamp-2" style={{ fontSize: 13.5, color: 'var(--lh-fg2)', margin: '0 0 16px', flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <MapPin size={14} style={{ flexShrink: 0 }} aria-hidden="true" />
               {evt.location} · {categoryLabel(EVENT_CATEGORIES, evt.category)}
             </p>
 
-            <div className="pt-4 border-t-[1.6px] border-[var(--lt-ink)]/20 mt-auto flex justify-end gap-2">
-              <Link href={`/perfil/eventos/editar/${evt.id}`}>
-                <LtButton variant="outline" tone="paper" size="sm" iconLeft={<Edit className="w-4 h-4" />}>
-                  Editar
-                </LtButton>
-              </Link>
-              <LtButton
-                variant="outline"
-                tone="paper"
-                size="sm"
-                iconLeft={<Trash2 className="w-4 h-4" />}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 14, borderTop: '1px solid var(--lh-border2)' }}>
+              <Button href={`/perfil/eventos/editar/${evt.id}`} variant="secondary" size="sm">
+                <Edit size={15} /> Editar
+              </Button>
+              <button
+                type="button"
+                className="lh-btn lh-btn--sm lh-btn--secondary"
                 onClick={() => handleDelete(evt.id, evt.title)}
                 disabled={isDeleting === evt.id}
-                className="!text-[var(--lt-terracota)] !border-[var(--lt-terracota)]"
+                style={{ color: 'var(--lh-terra)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, transparent)' }}
               >
-                {isDeleting === evt.id ? 'Eliminando...' : 'Eliminar'}
-              </LtButton>
+                <Trash2 size={15} /> {isDeleting === evt.id ? 'Eliminando…' : 'Eliminar'}
+              </button>
             </div>
-          </LtPanel>
+          </div>
         )
       })}
     </div>

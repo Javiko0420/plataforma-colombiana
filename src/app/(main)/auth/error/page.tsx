@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
-import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
-import { LtPageShell, LtPanel, LtButton } from '@/components/lt'
+import { Button } from '@/components/lh/Button'
 
 export const metadata: Metadata = {
   title: 'Error de Autenticación | Latin Territory',
@@ -30,40 +29,29 @@ export default async function AuthErrorPage({
   const errorMessage = errorMessages[error] || errorMessages.Default
 
   return (
-    <LtPageShell maxWidth="md" className="flex items-center">
-      <LtPanel className="p-8 text-center">
-        <div
-          className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center border-2 border-red-500"
-          style={{ background: 'var(--lt-bg)' }}
-        >
-          <AlertTriangle className="h-10 w-10 text-red-600" />
-        </div>
-        
-        <h1
-          className="text-2xl font-bold mb-2"
-          style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-        >
-          {isAccountNotLinked ? 'Cuenta ya registrada' : 'Error de Autenticación'}
-        </h1>
-        
-        <p className="mb-6" style={{ color: 'var(--lt-ink-soft)' }}>
-          {errorMessage}
-        </p>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'var(--lh-font)' }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
+        <div className="lh-card" style={{ padding: 'clamp(24px,5vw,36px)', textAlign: 'center' }}>
+          <div style={{ margin: '0 auto 16px', width: 60, height: 60, borderRadius: 17, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)' }}>
+            <AlertTriangle size={28} style={{ color: 'var(--lh-terra)' }} />
+          </div>
 
-        <div className="space-y-3">
-          <Link href="/auth/signin" className="block">
-            <LtButton variant="sticker" tone="terracota" size="md" className="w-full">
+          <h1 className="lh-h2" style={{ fontSize: 24, margin: '0 0 8px' }}>
+            {isAccountNotLinked ? 'Cuenta ya registrada' : 'Error de autenticación'}
+          </h1>
+
+          <p style={{ color: 'var(--lh-fg2)', margin: '0 0 24px' }}>{errorMessage}</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Button href="/auth/signin" variant="primary" size="md" style={{ width: '100%' }}>
               {isAccountNotLinked ? 'Iniciar sesión con credenciales' : 'Intentar nuevamente'}
-            </LtButton>
-          </Link>
-          
-          <Link href="/" className="block">
-            <LtButton variant="outline" tone="paper" size="md" className="w-full">
+            </Button>
+            <Button href="/" variant="secondary" size="md" style={{ width: '100%' }}>
               Volver al inicio
-            </LtButton>
-          </Link>
+            </Button>
+          </div>
         </div>
-      </LtPanel>
-    </LtPageShell>
+      </div>
+    </div>
   )
 }

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { moderateForumContent } from '@/app/(main)/admin/foros/actions'
-import { LtPanel, LtBadge, LtButton } from '@/components/lt'
+import { CalendarDays, Pin, MessageSquare, Flag, Trash2, ShieldCheck } from 'lucide-react'
 
 interface FlaggedItem {
   id: string
@@ -21,6 +21,12 @@ interface ForumModerationViewProps {
   posts: FlaggedItem[]
   comments: FlaggedItem[]
 }
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
+const chip = (color: string): React.CSSProperties => ({
+  display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 99,
+  background: tint(color), color, fontSize: 11.5, fontWeight: 600, width: 'fit-content',
+})
 
 export function ForumModerationView({
   posts,
@@ -47,28 +53,23 @@ export function ForumModerationView({
     setProcessingId(null)
   }
 
+  const tabBtn = (active: boolean): React.CSSProperties => ({
+    padding: '7px 14px', borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
+    border: '1px solid transparent', transition: 'all .15s ease',
+    background: active ? 'var(--lh-surface)' : 'transparent',
+    color: active ? 'var(--lh-accent)' : 'var(--lh-fg3)',
+    borderColor: active ? 'var(--lh-border)' : 'transparent',
+    boxShadow: active ? 'var(--lh-shadow-sm)' : 'none',
+  })
+
   return (
     <div className="space-y-6">
       {/* Tabs de Navegación */}
-      <div className="flex space-x-1 bg-[var(--lt-bg)] border-[2.2px] border-[var(--lt-ink)] p-1 rounded-[var(--lt-radius-sm)] w-fit">
-        <button
-          onClick={() => setActiveTab('posts')}
-          className={`px-4 py-2 text-sm font-medium rounded-[var(--lt-radius-sm)] transition-all ${
-            activeTab === 'posts'
-              ? 'bg-[var(--lt-paper)] text-[var(--lt-accent)] shadow-[var(--lt-shadow-sticker)] border-[2px] border-[var(--lt-ink)]'
-              : 'text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)]'
-          }`}
-        >
+      <div style={{ display: 'inline-flex', gap: 4, padding: 4, borderRadius: 11, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border)' }}>
+        <button onClick={() => setActiveTab('posts')} style={tabBtn(activeTab === 'posts')}>
           Publicaciones ({posts.length})
         </button>
-        <button
-          onClick={() => setActiveTab('comments')}
-          className={`px-4 py-2 text-sm font-medium rounded-[var(--lt-radius-sm)] transition-all ${
-            activeTab === 'comments'
-              ? 'bg-[var(--lt-paper)] text-[var(--lt-accent)] shadow-[var(--lt-shadow-sticker)] border-[2px] border-[var(--lt-ink)]'
-              : 'text-[var(--lt-ink-soft)] hover:text-[var(--lt-ink)]'
-          }`}
-        >
+        <button onClick={() => setActiveTab('comments')} style={tabBtn(activeTab === 'comments')}>
           Comentarios ({comments.length})
         </button>
       </div>
@@ -76,100 +77,86 @@ export function ForumModerationView({
       {/* Lista de Contenido */}
       <div className="grid gap-4">
         {items.length === 0 ? (
-          <LtPanel className="text-center py-12 border-dashed" shadow="sm">
-            <span className="text-4xl">👍</span>
-            <p className="mt-2 text-[var(--lt-ink-soft)]">
-              No hay{' '}
-              {activeTab === 'posts' ? 'publicaciones' : 'comentarios'}{' '}
-              reportados.
+          <div className="lh-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <ShieldCheck size={44} style={{ color: 'var(--lh-green)', margin: '0 auto 12px' }} />
+            <p style={{ color: 'var(--lh-fg2)', fontWeight: 500, margin: 0 }}>
+              No hay {activeTab === 'posts' ? 'publicaciones' : 'comentarios'} reportados.
             </p>
-          </LtPanel>
+          </div>
         ) : (
           items.map((item) => (
-            <LtPanel
-              key={item.id}
-              className="p-6 flex flex-col md:flex-row gap-6"
-              shadow="md"
-            >
-              {/* Información del Autor y Contexto */}
-              <div className="md:w-1/4 space-y-3 border-b-[2px] md:border-b-0 md:border-r-[2px] border-[var(--lt-ink)]/20 pb-4 md:pb-0 md:pr-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[var(--lt-accent)] border-[2px] border-[var(--lt-ink)] flex items-center justify-center text-[var(--lt-paper)] font-bold shrink-0">
-                    {item.author.name?.[0] || '?'}
+            <div key={item.id} className="lh-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <div className="flex flex-col md:flex-row">
+                {/* Información del Autor y Contexto */}
+                <div className="md:w-1/4" style={{ padding: 20, background: 'var(--lh-surface2)', borderBottom: '1px solid var(--lh-border)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,var(--lh-accent),var(--lh-accent-ink))', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0 }}>
+                      {item.author.name?.[0] || '?'}
+                    </div>
+                    <div style={{ overflow: 'hidden' }}>
+                      <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>
+                        {item.author.name || 'Anónimo'}
+                      </p>
+                      <p className="truncate" style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>
+                        {item.author.email}
+                      </p>
+                    </div>
                   </div>
-                  <div className="overflow-hidden">
-                    <p className="text-sm font-medium truncate text-[var(--lt-ink)]">
-                      {item.author.name || 'Anónimo'}
-                    </p>
-                    <p className="text-xs text-[var(--lt-ink-soft)] truncate">
-                      {item.author.email}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="text-xs text-[var(--lt-ink-soft)] space-y-1">
-                  <p>
-                    📅{' '}
-                    {formatDistanceToNow(new Date(item.createdAt), {
-                      addSuffix: true,
-                      locale: es,
-                    })}
-                  </p>
-                  {item.forumName && (
-                    <p>
-                      📌 Foro:{' '}
-                      <span className="font-medium text-[var(--lt-ink)]">{item.forumName}</span>
-                    </p>
-                  )}
-                  {item.postTitle && (
-                    <p>
-                      💬 En:{' '}
-                      <span className="font-medium truncate block text-[var(--lt-ink)]">
-                        {item.postTitle}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--lh-fg3)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <CalendarDays size={13} />
+                      {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true, locale: es })}
+                    </span>
+                    {item.forumName && (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <Pin size={13} /> Foro: <span style={{ fontWeight: 500, color: 'var(--lh-fg)' }}>{item.forumName}</span>
                       </span>
+                    )}
+                    {item.postTitle && (
+                      <span style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 6 }}>
+                        <MessageSquare size={13} style={{ marginTop: 2, flexShrink: 0 }} />
+                        <span className="truncate" style={{ fontWeight: 500, color: 'var(--lh-fg)' }}>{item.postTitle}</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <span style={chip('var(--lh-terra)')}>
+                    <Flag size={13} /> {item.reportsCount} reportes
+                  </span>
+                </div>
+
+                {/* Contenido y Acciones */}
+                <div className="md:w-3/4" style={{ padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16 }}>
+                  <div style={{ background: 'var(--lh-surface2)', padding: 14, borderRadius: 12, border: '1px solid var(--lh-border)' }}>
+                    <p style={{ color: 'var(--lh-fg)', fontSize: 13.5, whiteSpace: 'pre-wrap', fontFamily: 'var(--lh-mono)', lineHeight: 1.6, margin: 0 }}>
+                      {item.content}
                     </p>
-                  )}
-                </div>
+                  </div>
 
-                <LtBadge tone="terracota">
-                  🚩 {item.reportsCount} Reportes
-                </LtBadge>
-              </div>
-
-              {/* Contenido y Acciones */}
-              <div className="md:w-3/4 flex flex-col justify-between">
-                <div className="bg-[var(--lt-bg)] p-4 rounded-[var(--lt-radius-sm)] border-[2px] border-[var(--lt-ink)]/20 mb-4">
-                  <p className="text-[var(--lt-ink)] text-sm whitespace-pre-wrap font-mono">
-                    {item.content}
-                  </p>
-                </div>
-
-                <div className="flex justify-end gap-3">
-                  <LtButton
-                    variant="outline"
-                    tone="paper"
-                    size="sm"
-                    onClick={() => handleDecision(item.id, 'delete')}
-                    disabled={processingId === item.id}
-                    loading={processingId === item.id}
-                    loadingText="..."
-                  >
-                    🗑️ Eliminar y Penalizar
-                  </LtButton>
-                  <LtButton
-                    variant="sticker"
-                    tone="verde"
-                    size="sm"
-                    onClick={() => handleDecision(item.id, 'approve')}
-                    disabled={processingId === item.id}
-                    loading={processingId === item.id}
-                    loadingText="..."
-                  >
-                    ✅ Mantener (Falso Reporte)
-                  </LtButton>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => handleDecision(item.id, 'delete')}
+                      disabled={processingId === item.id}
+                      className="lh-btn lh-btn--sm lh-btn--secondary"
+                      style={{ color: 'var(--lh-terra)', borderColor: 'color-mix(in oklch, var(--lh-terra) 35%, transparent)', opacity: processingId === item.id ? 0.6 : 1 }}
+                    >
+                      <Trash2 size={15} /> Eliminar y penalizar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDecision(item.id, 'approve')}
+                      disabled={processingId === item.id}
+                      className="lh-btn lh-btn--sm"
+                      style={{ background: 'var(--lh-green)', color: '#fff', opacity: processingId === item.id ? 0.6 : 1 }}
+                    >
+                      <ShieldCheck size={15} /> Mantener (falso reporte)
+                    </button>
+                  </div>
                 </div>
               </div>
-            </LtPanel>
+            </div>
           ))
         )}
       </div>

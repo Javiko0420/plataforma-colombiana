@@ -34,6 +34,13 @@ interface ForumCommentCardProps {
   userRole?: string;
 }
 
+const actionBtn: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 6,
+  padding: '4px 8px', borderRadius: 8, border: 0,
+  background: 'transparent', cursor: 'pointer', fontFamily: 'var(--lh-font)',
+  color: 'var(--lh-fg3)', fontSize: 12, transition: 'color .18s',
+};
+
 export function ForumCommentCard({
   comment,
   t,
@@ -46,7 +53,6 @@ export function ForumCommentCard({
 
   const handleLike = async () => {
     if (!currentUserId || !onLike || isLiking) return;
-    
     setIsLiking(true);
     try {
       await onLike(comment.id);
@@ -57,84 +63,58 @@ export function ForumCommentCard({
     }
   };
 
+  const canReport = currentUserId && (currentUserId !== comment.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR');
+
   if (comment.isDeleted) {
     return (
-      <div className="ml-12 p-3 bg-background/30 rounded-lg">
-        <p className="text-foreground/50 italic text-sm">{t('postDeleted')}</p>
+      <div style={{ marginLeft: 48, padding: 12, borderRadius: 10, background: 'var(--lh-surface2)' }}>
+        <p style={{ color: 'var(--lh-fg3)', fontStyle: 'italic', fontSize: 14, margin: 0 }}>{t('postDeleted')}</p>
       </div>
     );
   }
 
   return (
-    <div className="ml-12 border-l-2 border-primary/20 pl-4 py-2">
+    <div style={{ marginLeft: 48, borderLeft: '2px solid var(--lh-border)', paddingLeft: 16, paddingTop: 8, paddingBottom: 8 }}>
       {/* Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-semibold text-primary">
-              {comment.author.nickname.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm text-foreground">
-                {comment.author.nickname}
-              </span>
-              <span className="text-xs text-foreground/50">
-                {new Date(comment.createdAt).toLocaleString()}
-              </span>
-              {comment.isEdited && (
-                <span className="text-xs text-foreground/50 italic">
-                  ({t('postEdited')})
-                </span>
-              )}
-            </div>
-          </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <span aria-hidden="true" style={{ width: 32, height: 32, flexShrink: 0, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in oklch, var(--lh-accent) 14%, transparent)', color: 'var(--lh-accent)', fontWeight: 600, fontSize: 13 }}>
+          {comment.author.nickname.charAt(0).toUpperCase()}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 600, fontSize: 13.5, color: 'var(--lh-fg)' }}>{comment.author.nickname}</span>
+          <span style={{ fontSize: 12, color: 'var(--lh-fg3)' }}>{new Date(comment.createdAt).toLocaleString()}</span>
+          {comment.isEdited && (
+            <span style={{ fontSize: 12, color: 'var(--lh-fg3)', fontStyle: 'italic' }}>({t('postEdited')})</span>
+          )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="mb-2">
+      <div style={{ marginBottom: 8 }}>
         {comment.isFlagged && (
-          <div className="mb-2 p-1.5 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-600 dark:text-red-400">
+          <div style={{ marginBottom: 8, padding: '6px 8px', borderRadius: 8, fontSize: 12, background: 'color-mix(in oklch, var(--lh-terra) 10%, transparent)', border: '1px solid color-mix(in oklch, var(--lh-terra) 25%, transparent)', color: 'var(--lh-terra)' }}>
             ⚠️ {t('postFlagged')}
           </div>
         )}
-        <p className="text-sm text-foreground whitespace-pre-wrap break-words">
+        <p style={{ fontSize: 14, color: 'var(--lh-fg)', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>
           {comment.content}
         </p>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handleLike}
-          disabled={!currentUserId || isLiking}
-          className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-primary/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
-        >
-          <Heart
-            className={`w-4 h-4 transition-colors ${
-              isLiking ? 'text-primary' : 'text-foreground/50 group-hover:text-primary'
-            }`}
-          />
-          <span className="text-xs text-foreground/70">
-            {comment.likesCount}
-          </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <button onClick={handleLike} disabled={!currentUserId || isLiking} style={{ ...actionBtn, opacity: !currentUserId ? 0.5 : 1 }}>
+          <Heart size={14} style={{ color: isLiking ? 'var(--lh-terra)' : 'var(--lh-fg3)' }} aria-hidden="true" />
+          {comment.likesCount}
         </button>
 
-        {currentUserId && (currentUserId !== comment.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR') && (
-          <button
-            onClick={() => onReport?.(comment.id)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-red-500/10 transition-colors group"
-          >
-            <Flag className="w-4 h-4 text-foreground/50 group-hover:text-red-500" />
-            <span className="text-xs text-foreground/70 group-hover:text-red-500">
-              {t('postReport')}
-            </span>
+        {canReport && (
+          <button onClick={() => onReport?.(comment.id)} style={actionBtn}>
+            <Flag size={14} style={{ color: 'var(--lh-fg3)' }} aria-hidden="true" />
+            {t('postReport')}
           </button>
         )}
       </div>
     </div>
   );
 }
-

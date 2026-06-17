@@ -2,7 +2,14 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { LtPageShell, LtPanel, LtButton } from '@/components/lt';
+import { Button } from '@/components/lh/Button';
+
+const noticeBox = (tone: 'terra' | 'green'): React.CSSProperties => ({
+  padding: '14px 16px', borderRadius: 13, fontSize: 14, textAlign: 'center',
+  background: `color-mix(in oklch, var(--lh-${tone}) 10%, var(--lh-surface))`,
+  border: `1px solid color-mix(in oklch, var(--lh-${tone}) 30%, transparent)`,
+  color: tone === 'terra' ? 'var(--lh-terra)' : 'var(--lh-fg)',
+});
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -17,11 +24,7 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div
-        className="p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500 text-sm text-center"
-        style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-        role="alert"
-      >
+      <div role="alert" style={{ ...noticeBox('terra'), marginTop: 24 }}>
         Token no encontrado. Por favor, solicita un nuevo enlace de recuperación.
       </div>
     );
@@ -70,84 +73,43 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div
-        className="p-4 rounded-[var(--lt-radius-sm)] border-2 border-[var(--lt-verde)] text-sm text-center"
-        style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-      >
-        ¡Contraseña actualizada con éxito! Redirigiendo al inicio de sesión...
+      <div style={{ ...noticeBox('green'), marginTop: 24 }}>
+        ¡Contraseña actualizada con éxito! Redirigiendo al inicio de sesión…
       </div>
     );
   }
 
   return (
-    <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-      {error && (
-        <div
-          className="p-4 rounded-[var(--lt-radius-sm)] border-2 border-red-500 text-sm"
-          style={{ background: 'var(--lt-bg)', color: 'var(--lt-ink)' }}
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
+    <form style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 18 }} onSubmit={handleSubmit}>
+      {error && <div role="alert" style={noticeBox('terra')}>{error}</div>}
       <div>
-        <label className="lt-label">Nueva Contraseña</label>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="lt-input"
-        />
+        <label htmlFor="new-password" className="lh-label">Nueva contraseña</label>
+        <input id="new-password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="lh-input" />
       </div>
       <div>
-        <label className="lt-label">Confirmar Contraseña</label>
-        <input
-          type="password"
-          required
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="lt-input"
-        />
+        <label htmlFor="confirm-password" className="lh-label">Confirmar contraseña</label>
+        <input id="confirm-password" type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="lh-input" />
       </div>
-      <LtButton
-        type="submit"
-        variant="sticker"
-        tone="terracota"
-        size="md"
-        className="w-full"
-        disabled={isLoading}
-        loading={isLoading}
-        loadingText="Actualizando..."
-      >
-        Actualizar contraseña
-      </LtButton>
+      <Button type="submit" variant="primary" size="md" disabled={isLoading} style={{ width: '100%' }}>
+        {isLoading ? 'Actualizando…' : 'Actualizar contraseña'}
+      </Button>
     </form>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <LtPageShell maxWidth="md" className="flex items-center">
-      <LtPanel className="p-8">
-        <div className="text-center">
-          <h2
-            className="text-3xl font-bold"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            Establece tu nueva contraseña
-          </h2>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', fontFamily: 'var(--lh-font)' }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
+        <div className="lh-card" style={{ padding: 'clamp(24px,5vw,36px)' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2 className="lh-h2" style={{ fontSize: 'clamp(24px,4vw,30px)', margin: 0 }}>Establece tu nueva contraseña</h2>
+          </div>
+          <Suspense fallback={<div style={{ textAlign: 'center', marginTop: 28, color: 'var(--lh-fg3)' }}>Cargando…</div>}>
+            <ResetPasswordForm />
+          </Suspense>
         </div>
-        <Suspense
-          fallback={
-            <div className="text-center mt-8" style={{ color: 'var(--lt-ink-soft)' }}>
-              Cargando...
-            </div>
-          }
-        >
-          <ResetPasswordForm />
-        </Suspense>
-      </LtPanel>
-    </LtPageShell>
+      </div>
+    </div>
   );
 }

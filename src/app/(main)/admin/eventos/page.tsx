@@ -3,7 +3,6 @@ import EventsAdminTable from '@/components/admin/events-admin-table'
 import ReportedEventsTable from '@/components/admin/reported-events-table'
 import { CalendarDays, Flag } from 'lucide-react'
 import { redirect } from 'next/navigation'
-import { LtBadge, LtPanel } from '@/components/lt'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,97 +32,38 @@ export default async function AdminEventosPage() {
   return (
     <div className="space-y-8">
       {/* Cabecera */}
-      <div className="flex justify-between items-end">
+      <div className="flex justify-between items-end gap-4">
         <div>
-          <h1
-            className="text-2xl font-bold text-[var(--lt-ink)] flex items-center gap-2"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            <CalendarDays className="h-6 w-6 text-[var(--lt-terracota)]" />
-            Moderación de Eventos
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(22px,3.4vw,28px)', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CalendarDays size={24} style={{ color: 'var(--lh-warm)' }} />
+            Moderación de eventos
           </h1>
-          <p className="text-sm text-[var(--lt-ink-soft)] mt-1">
-            Revisa los eventos publicados por la comunidad y elimina contenido
-            inapropiado.
+          <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: '4px 0 0' }}>
+            Revisa los eventos publicados por la comunidad y elimina contenido inapropiado.
           </p>
         </div>
-        <div className="text-right text-xs text-[var(--lt-ink-soft)]">
-          Total:{' '}
-          <span className="font-bold text-[var(--lt-ink)]">
-            {totalEvents}
-          </span>{' '}
-          eventos registrados
+        <div style={{ textAlign: 'right', fontSize: 12.5, color: 'var(--lh-fg3)', whiteSpace: 'nowrap' }}>
+          Total: <span style={{ fontWeight: 700, color: 'var(--lh-fg)' }}>{totalEvents}</span> eventos
         </div>
       </div>
 
       {/* Tarjetas de Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <LtPanel className="p-6" shadow="sm">
-          <p className="text-sm font-medium text-[var(--lt-ink-soft)]">
-            Total de Eventos
-          </p>
-          <p
-            className="text-3xl font-bold text-[var(--lt-ink)] mt-2"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            {totalEvents}
-          </p>
-        </LtPanel>
-
-        <LtPanel className="p-6 relative overflow-hidden border-[var(--lt-verde)]" shadow="sm">
-          <div className="absolute right-0 top-0 h-full w-2 bg-[var(--lt-verde)]" />
-          <p className="text-sm font-medium text-[var(--lt-ink-soft)]">
-            Eventos Activos
-          </p>
-          <p
-            className="text-3xl font-bold text-[var(--lt-ink)] mt-2"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            {activeEvents}
-          </p>
-        </LtPanel>
-
-        <LtPanel className="p-6 relative overflow-hidden" shadow="sm">
-          <div className="absolute right-0 top-0 h-full w-2 bg-[var(--lt-ink-soft)]" />
-          <p className="text-sm font-medium text-[var(--lt-ink-soft)]">
-            Eventos Finalizados
-          </p>
-          <p
-            className="text-3xl font-bold text-[var(--lt-ink)] mt-2"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            {pastEvents}
-          </p>
-        </LtPanel>
-
-        <LtPanel className="p-6 relative overflow-hidden border-[var(--lt-terracota)]" shadow="sm">
-          <div className="absolute right-0 top-0 h-full w-2 bg-[var(--lt-terracota)]" />
-          <p className="text-sm font-medium text-[var(--lt-ink-soft)]">
-            Reportados
-          </p>
-          <p
-            className="text-3xl font-bold text-[var(--lt-ink)] mt-2"
-            style={{ fontFamily: 'var(--lt-font-serif)' }}
-          >
-            {reportedCount}
-          </p>
-        </LtPanel>
+        <StatPanel label="Total de eventos" value={totalEvents} />
+        <StatPanel label="Eventos activos" value={activeEvents} accent="var(--lh-green)" />
+        <StatPanel label="Eventos finalizados" value={pastEvents} />
+        <StatPanel label="Reportados" value={reportedCount} accent="var(--lh-terra)" />
       </div>
 
       {/* Cola de Moderación de Reportes */}
       {reportedCount > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Flag className="h-5 w-5 text-[var(--lt-terracota)]" />
-            <h2
-              className="text-lg font-bold text-[var(--lt-ink)]"
-              style={{ fontFamily: 'var(--lt-font-serif)' }}
-            >
-              Cola de Moderación
-            </h2>
-            <LtBadge tone="terracota">
+            <Flag size={18} style={{ color: 'var(--lh-terra)' }} />
+            <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>Cola de moderación</h2>
+            <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: 99, background: 'color-mix(in oklch, var(--lh-terra) 14%, transparent)', color: 'var(--lh-terra)', fontSize: 12, fontWeight: 600 }}>
               {reportedCount} pendiente{reportedCount !== 1 ? 's' : ''}
-            </LtBadge>
+            </span>
           </div>
           <ReportedEventsTable events={reportedEvents} />
         </div>
@@ -131,14 +71,18 @@ export default async function AdminEventosPage() {
 
       {/* Tabla de todos los Eventos */}
       <div className="space-y-4">
-        <h2
-          className="text-lg font-bold text-[var(--lt-ink)]"
-          style={{ fontFamily: 'var(--lt-font-serif)' }}
-        >
-          Todos los Eventos
-        </h2>
+        <h2 style={{ fontFamily: 'var(--lh-font)', fontSize: 18, fontWeight: 600, color: 'var(--lh-fg)', margin: 0 }}>Todos los eventos</h2>
         <EventsAdminTable events={events} />
       </div>
+    </div>
+  )
+}
+
+function StatPanel({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  return (
+    <div className="lh-card" style={{ padding: 22, borderColor: accent ? `color-mix(in oklch, ${accent} 40%, var(--lh-border))` : undefined }}>
+      <p style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--lh-fg2)', margin: 0 }}>{label}</p>
+      <p style={{ fontFamily: 'var(--lh-font)', fontSize: 28, fontWeight: 700, letterSpacing: '-.02em', color: accent ?? 'var(--lh-fg)', margin: '8px 0 0' }}>{value}</p>
     </div>
   )
 }

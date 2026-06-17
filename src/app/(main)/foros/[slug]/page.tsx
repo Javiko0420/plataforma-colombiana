@@ -12,9 +12,16 @@ import { prisma } from '@/lib/prisma';
 import { getServerLocale } from '@/lib/i18n-server';
 import { translate } from '@/lib/i18n';
 import ForumClient from './forum-client';
-import { LtBadge } from '@/components/lt/Badge';
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline';
 import { Users } from 'lucide-react';
+
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
+
+const neutralChip: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 5,
+  fontSize: 12.5, fontWeight: 600, color: 'var(--lh-fg2)',
+  background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)',
+  padding: '6px 11px', borderRadius: 99,
+};
 
 interface ForumPageProps {
   params: Promise<{ slug: string }>;
@@ -52,48 +59,32 @@ export default async function ForumPage({ params }: ForumPageProps) {
   });
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh', paddingBottom: '4rem' }}>
-      <div className="container mx-auto px-4 py-10 max-w-4xl">
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', paddingBottom: '4rem', fontFamily: 'var(--lh-font)' }}>
+      <div className="lh-container" style={{ maxWidth: 900, paddingTop: 40 }}>
 
         {/* ── Breadcrumb ── */}
-        <nav className="flex items-center gap-2 text-sm mb-6" aria-label="Miga de pan">
-          <Link
-            href="/foros"
-            className="font-medium transition-colors hover:text-[var(--lt-terracota)] focus:outline-none focus:underline"
-            style={{ color: 'var(--lt-ink-soft)' }}
-          >
+        <nav style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, marginBottom: 24 }} aria-label="Miga de pan">
+          <Link href="/foros" style={{ fontWeight: 500, color: 'var(--lh-fg2)' }}>
             {t('forums.title')}
           </Link>
-          <span style={{ color: 'var(--lt-ink-soft)' }}>/</span>
-          <span className="font-semibold" style={{ color: 'var(--lt-ink)' }}>{forum.name}</span>
+          <span style={{ color: 'var(--lh-fg3)' }}>/</span>
+          <span style={{ fontWeight: 600, color: 'var(--lh-fg)' }}>{forum.name}</span>
         </nav>
 
         {/* ── Header del foro ── */}
-        <div
-          className="rounded-[var(--lt-radius-lg)] border-[2.2px] border-[var(--lt-ink)] p-6 md:p-8 mb-8"
-          style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker-lg)' }}
-        >
-          <h1
-            className="text-3xl md:text-4xl font-black mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
+        <div className="lh-card" style={{ padding: 'clamp(22px,4vw,32px)', marginBottom: 28 }}>
+          <h1 className="lh-h2" style={{ fontSize: 'clamp(26px,3.6vw,36px)', margin: '0 0 10px' }}>
             {forum.name}
           </h1>
-          <HandDrawnUnderline width={160} color="var(--lt-sun-core)" thickness={2.5} className="mb-4" aria-hidden="true" />
-          <p
-            className="text-sm mb-4"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-          >
+          <p style={{ fontSize: 14.5, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: '0 0 16px' }}>
             {forum.description}
           </p>
-          <div className="flex flex-wrap gap-2">
-            <LtBadge tone="neutral" rotate={-1}>
-              {t('forums.activeUntil')}: {expiresAt}
-            </LtBadge>
-            <LtBadge tone="sun" rotate={1}>
-              <Users className="w-3 h-3" aria-hidden="true" />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <span style={neutralChip}>{t('forums.activeUntil')}: {expiresAt}</span>
+            <span style={{ ...neutralChip, color: 'var(--lh-accent)', background: tint('var(--lh-accent)'), border: 'none' }}>
+              <Users size={12} aria-hidden="true" />
               {forum._count.posts} {t('forums.postsCount')}
-            </LtBadge>
+            </span>
           </div>
         </div>
 

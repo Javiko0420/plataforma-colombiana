@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { Send, X } from 'lucide-react';
+import { Button } from '@/components/lh/Button';
 
 interface ForumPostFormProps {
   t: (key: string) => string;
@@ -31,7 +32,7 @@ export function ForumPostForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (content.trim().length === 0) {
       setError('El contenido no puede estar vacío');
       return;
@@ -59,56 +60,43 @@ export function ForumPostForm({
   const isOverLimit = remainingChars < 0;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="relative">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ position: 'relative' }}>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder={placeholder || t('postWrite')}
           disabled={disabled || isSubmitting}
-          maxLength={maxLength + 50} // Allow typing over limit to show error
-          className={`w-full min-h-[120px] px-4 py-3 rounded-lg border ${
-            isOverLimit ? 'border-red-500' : 'border-border'
-          } bg-background text-foreground placeholder:text-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed resize-none`}
+          maxLength={maxLength + 50}
+          className={`lh-input${isOverLimit ? ' lh-input--invalid' : ''}`}
+          style={{ minHeight: 120, resize: 'none', paddingBottom: 28 }}
         />
-        <div className={`absolute bottom-2 right-2 text-xs ${
-          isOverLimit ? 'text-red-500' : 'text-foreground/50'
-        }`}>
+        <div style={{ position: 'absolute', bottom: 10, right: 12, fontSize: 12, color: isOverLimit ? 'var(--lh-terra)' : 'var(--lh-fg3)' }}>
           {remainingChars} / {maxLength}
         </div>
       </div>
 
       {error && (
-        <div className="p-2 bg-red-500/10 border border-red-500/20 rounded text-sm text-red-600 dark:text-red-400">
+        <div style={{ padding: '8px 12px', borderRadius: 10, fontSize: 13.5, background: 'color-mix(in oklch, var(--lh-terra) 10%, transparent)', border: '1px solid color-mix(in oklch, var(--lh-terra) 25%, transparent)', color: 'var(--lh-terra)' }}>
           {error}
         </div>
       )}
 
-      <div className="flex items-center gap-2">
-        <button
-          type="submit"
-          disabled={disabled || isSubmitting || content.trim().length === 0 || isOverLimit}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <Send className="w-4 h-4" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Button type="submit" variant="primary" size="sm" disabled={disabled || isSubmitting || content.trim().length === 0 || isOverLimit}>
+          <Send size={15} />
           {isSubmitting ? t('loading') : t('postSubmit')}
-        </button>
-        
+        </Button>
+
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-background/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <X className="w-4 h-4" />
+          <Button type="button" variant="secondary" size="sm" onClick={onCancel} disabled={isSubmitting}>
+            <X size={15} />
             {t('postCancel')}
-          </button>
+          </Button>
         )}
       </div>
 
-      <p className="text-xs text-foreground/50">{t('postMaxChars')}</p>
+      <p style={{ fontSize: 12, color: 'var(--lh-fg3)', margin: 0 }}>{t('postMaxChars')}</p>
     </form>
   );
 }
-

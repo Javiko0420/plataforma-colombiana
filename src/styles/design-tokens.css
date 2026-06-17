@@ -1,123 +1,319 @@
 /* ============================================================
-   LATIN TERRITORY — Design Tokens "Sol"
-   Dirección visual: cálida, latinoamericana, sticker style
-   ============================================================
-
-   WCAG AA (4.5:1 norma texto normal) verificado:
-   --lt-terracota  (#b34020) vs paper (#fffaee) → 5.00:1 ✅
-   --lt-verde      (#336940) vs paper           → 6.07:1 ✅
-   --lt-accent     (#b33868) vs paper           → 5.27:1 ✅
-   --lt-ink        (#22150f) vs paper           → 16.6:1 ✅
-   --lt-ink-soft   (#7a4f3b) vs paper           → 5.57:1 ✅
-   --lt-sun        (#f0a932) vs ink  (#22150f)  → 7.96:1 ✅ (solo sobre fondos oscuros)
+   LATIN TERRITORY — Design Tokens "Geist Premium"
+   Dirección visual: minimalista, premium, light/dark.
+   Tema vía next-themes attribute="class" → .dark
    ============================================================ */
 
 :root {
-  /* === Colores base === */
-  --lt-bg:          #fff3d8;   /* crema soleada */
-  --lt-paper:       #fffaee;   /* superficies elevadas */
-  --lt-ink:         #22150f;   /* texto / borde principal */
-  --lt-ink-soft:    #7a4f3b;   /* texto secundario */
-
-  /* === Colores de acento (calibrados para 4.5:1 sobre --lt-paper) === */
-  --lt-terracota:   #b34020;   /* primario  — 5.00:1 */
-  --lt-sun:         #f0a932;   /* sol — SOLO usar como bg con ink arriba */
-  --lt-sun-core:    #e76d34;   /* núcleo del sol — decorativo */
-  --lt-verde:       #336940;   /* verde selva — 6.07:1 */
-  --lt-accent:      #b33868;   /* berry — 5.27:1 */
-
-  /* === Tipografía === */
-  --lt-font-serif: 'Playfair Display', 'DM Serif Display', Georgia, serif;
-  --lt-font-sans:  'Work Sans', 'Public Sans', system-ui, sans-serif;
-
-  /* === Radios === */
-  --lt-radius-sm:   12px;
-  --lt-radius-md:   18px;
-  --lt-radius-lg:   22px;
-  --lt-radius-pill: 999px;
-
-  /* === Sombras sticker === */
-  --lt-shadow-sticker:    3px 3px 0 var(--lt-ink);
-  --lt-shadow-sticker-lg: 6px 7px 0 var(--lt-ink);
-  --lt-shadow-sticker-xl: 8px 10px 0 var(--lt-ink);
-
-  /* === Bordes === */
-  --lt-border:      2px solid var(--lt-ink);
-  --lt-border-thin: 1.6px solid var(--lt-ink);
+  --lh-bg:       #FBF8F3;
+  --lh-bg2:      #F2EADD;
+  --lh-surface:  #FFFFFF;
+  --lh-surface2: #FAF6EF;
+  --lh-fg:       #181B21;
+  --lh-fg2:      #5C616D;
+  --lh-fg3:      #9499A5;
+  --lh-border:   rgba(24,27,33,.10);
+  --lh-border2:  rgba(24,27,33,.06);
+  --lh-accent:   #2E5E8C;
+  --lh-accent-ink: #244A6F;
+  --lh-warm:     #D4A24C;
+  --lh-terra:    #D8775F;
+  --lh-green:    #5C8A6B;
+  --lh-glass:    rgba(255,255,255,.62);
+  --lh-glassbrd: rgba(255,255,255,.7);
+  --lh-shadow:   0 1px 2px rgba(24,27,33,.04),0 14px 32px -16px rgba(24,27,33,.18);
+  --lh-shadow-lg:0 2px 6px rgba(24,27,33,.05),0 36px 70px -24px rgba(24,27,33,.28);
+  --lh-aurora1:  rgba(46,94,140,.20);
+  --lh-aurora2:  rgba(212,162,76,.18);
+  --lh-aurora3:  rgba(216,119,95,.14);
+  --lh-font:     var(--font-geist, 'Geist', 'SF Pro Display', -apple-system, system-ui, sans-serif);
+  --lh-mono:     var(--font-geist-mono, 'Geist Mono', 'SF Mono', monospace);
 }
 
-/* ============================================================
-   Dark mode — paleta tonal coherente
-   Usando .dark (next-themes attribute="class") y data-theme
-   ============================================================ */
-[data-theme="dark"],
 .dark {
-  --lt-bg:        #1a0f0a;
-  --lt-paper:     #261a12;
-  --lt-ink:       #fff3d8;
-  --lt-ink-soft:  #d4a87d;
+  --lh-bg:       #0B0F15;
+  --lh-bg2:      #10171F;
+  --lh-surface:  #141C26;
+  --lh-surface2: #101822;
+  --lh-fg:       #ECEEF2;
+  --lh-fg2:      #9AA1AE;
+  --lh-fg3:      #626975;
+  --lh-border:   rgba(255,255,255,.10);
+  --lh-border2:  rgba(255,255,255,.055);
+  --lh-accent:   #5E97CC;
+  --lh-accent-ink: #9CC0E4;
+  --lh-warm:     #E2B86A;
+  --lh-terra:    #E28C73;
+  --lh-green:    #7BAB8C;
+  --lh-glass:    rgba(17,24,33,.58);
+  --lh-glassbrd: rgba(255,255,255,.08);
+  --lh-shadow:   0 1px 2px rgba(0,0,0,.4),0 16px 36px -16px rgba(0,0,0,.65);
+  --lh-shadow-lg:0 2px 6px rgba(0,0,0,.5),0 40px 80px -24px rgba(0,0,0,.75);
+  --lh-aurora1:  rgba(94,151,204,.22);
+  --lh-aurora2:  rgba(226,184,106,.14);
+  --lh-aurora3:  rgba(226,140,115,.12);
+}
 
-  /* Colores calibrados para contraste sobre bg oscuro:
-     --lt-terracota (#df7048) vs #1a0f0a → 6.57:1 ✅
-     --lt-verde     (#4e9f5e) vs #1a0f0a → 6.45:1 ✅
-     --lt-accent    (#d45585) vs #1a0f0a → 5.17:1 ✅ */
-  --lt-terracota: #df7048;
-  --lt-sun:       #f0a932;
-  --lt-sun-core:  #e76d34;
-  --lt-verde:     #4e9f5e;
-  --lt-accent:    #d45585;
+/* Alias para que #lt-home siga funcionando igual */
+#lt-home { /* hereda de :root/.dark, no requiere redeclaración */ }
 
-  /* Sombras sobre fondo oscuro — cream ink */
-  --lt-shadow-sticker:    3px 3px 0 var(--lt-ink);
-  --lt-shadow-sticker-lg: 6px 7px 0 var(--lt-ink);
-  --lt-shadow-sticker-xl: 8px 10px 0 var(--lt-ink);
+/* ============================================================
+   lt-notrans — deshabilita transiciones durante cambio de tema
+   ============================================================ */
+html.lt-notrans *,
+html.lt-notrans *::before,
+html.lt-notrans *::after {
+  transition: none !important;
+  animation-duration: .001s !important;
 }
 
 /* ============================================================
-   Utilidades de clase auxiliares
+   SiteHeader / SiteFooter — variables locales (alias --lh-*)
+   Aisladas de los globals --border / --accent ya existentes
    ============================================================ */
-.lt-bg         { background-color: var(--lt-bg); }
-.lt-paper      { background-color: var(--lt-paper); }
-.lt-ink        { color: var(--lt-ink); }
-.lt-ink-soft   { color: var(--lt-ink-soft); }
-.lt-font-serif { font-family: var(--lt-font-serif); }
-.lt-font-sans  { font-family: var(--lt-font-sans); }
-.lt-shadow-sm  { box-shadow: var(--lt-shadow-sticker); }
-.lt-shadow-md  { box-shadow: var(--lt-shadow-sticker-lg); }
-.lt-shadow-xl  { box-shadow: var(--lt-shadow-sticker-xl); }
-
-/* ============================================================
-   Responsive — rotaciones en móvil (≤640px)
-   Los stickers rotan ±0.5° en lugar de ±1.5°
-   Los filtros SVG wobble se desactivan en móvil
-   para evitar repaint costoso en pantallas pequeñas
-   ============================================================ */
-@media (max-width: 640px) {
-  [data-lt-rotate] {
-    transform: rotate(0.5deg) !important;
-  }
-  [data-lt-wobble] {
-    filter: none !important;
-  }
+.lt-site-nav,
+.lt-site-footer {
+  --bg:         var(--lh-bg);
+  --bg2:        var(--lh-bg2);
+  --surface:    var(--lh-surface);
+  --surface2:   var(--lh-surface2);
+  --fg:         var(--lh-fg);
+  --fg2:        var(--lh-fg2);
+  --fg3:        var(--lh-fg3);
+  --border:     var(--lh-border);
+  --border2:    var(--lh-border2);
+  --accent:     var(--lh-accent);
+  --accent-ink: var(--lh-accent-ink);
+  --warm:       var(--lh-warm);
+  --terra:      var(--lh-terra);
+  --green:      var(--lh-green);
+  --glass:      var(--lh-glass);
+  --glassbrd:   var(--lh-glassbrd);
+  --shadow:     var(--lh-shadow);
+  --shadow-lg:  var(--lh-shadow-lg);
+  --font:       var(--lh-font);
+  --mono:       var(--lh-mono);
 }
 
 /* ============================================================
-   prefers-reduced-motion
-   Desactiva TODAS las transformaciones de rotación,
-   filtros SVG wobble y animaciones del sistema Sol
+   SiteHeader — hide-on-scroll + scroll-shadow
+   ============================================================ */
+.lt-site-nav {
+  transition: transform .35s cubic-bezier(.22,.61,.36,1), box-shadow .22s;
+}
+.lt-site-nav[data-hidden="true"]   { transform: translateY(-100%); }
+.lt-site-nav[data-scrolled="true"] {
+  box-shadow: 0 1px 0 var(--border2), 0 8px 24px -16px rgba(24,27,33,.18);
+}
+.dark .lt-site-nav[data-scrolled="true"] {
+  box-shadow: 0 1px 0 var(--border2), 0 8px 24px -16px rgba(0,0,0,.45);
+}
+
+/* ============================================================
+   Responsive — SiteHeader
+   ============================================================ */
+.lt-desk-links { display: flex; }
+.lt-desk-cta   { display: inline-flex; }
+.lt-mob-btn    { display: none; }
+
+@media (max-width: 880px) {
+  .lt-desk-links,
+  .lt-desk-cta { display: none !important; }
+  .lt-mob-btn  { display: flex !important; }
+}
+
+/* ============================================================
+   Responsive — SiteFooter
+   ============================================================ */
+.lt-foot-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+}
+
+@media (max-width: 720px) {
+  .lt-foot-grid { grid-template-columns: 1fr; }
+}
+
+@keyframes lh-float  { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(0,-26px,0) scale(1.06)} }
+@keyframes lh-float2 { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(22px,18px,0) scale(1.08)} }
+@keyframes lh-pulse  { 0%,100%{opacity:.55} 50%{opacity:1} }
+@keyframes lh-eq     { 0%,100%{height:30%} 50%{height:100%} }
+@keyframes lh-shimmer { 100% { transform: translateX(100%); } }
+
+/* ============================================================
+   SISTEMA V2 — Kit de primitivas reutilizables (.lh-*)
+   Valores 1:1 con la landing. Usadas por src/components/lh/*
+   ============================================================ */
+
+/* — Layout — */
+.lh-container { max-width: 1220px; margin: 0 auto; padding: 0 24px; }
+
+/* — Tipografía — */
+.lh-h1 {
+  font-family: var(--lh-font);
+  font-size: clamp(38px, 6vw, 64px);
+  line-height: 1.04; letter-spacing: -.035em; font-weight: 600;
+  color: var(--lh-fg);
+  text-wrap: pretty;
+}
+.lh-h2 {
+  font-family: var(--lh-font);
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.06; letter-spacing: -.03em; font-weight: 600;
+  color: var(--lh-fg);
+  text-wrap: pretty;
+}
+.lh-eyebrow {
+  font-family: var(--lh-mono);
+  font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+  font-weight: 500; color: var(--lh-accent);
+}
+.lh-seemore {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--lh-accent); font-weight: 600; font-size: 15px;
+  white-space: nowrap; transition: gap .22s cubic-bezier(.22,.61,.36,1);
+}
+.lh-seemore:hover { gap: 11px; }
+
+/* — Scroll reveal — */
+.lh-reveal {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, transform;
+}
+.lh-reveal.lh-in { opacity: 1; transform: none; }
+
+/* — Card — */
+.lh-card {
+  background: var(--lh-surface);
+  border: 1px solid var(--lh-border);
+  border-radius: 20px;
+  box-shadow: var(--lh-shadow);
+  transition: transform .26s cubic-bezier(.22,.61,.36,1),
+              box-shadow .26s cubic-bezier(.22,.61,.36,1),
+              border-color .26s cubic-bezier(.22,.61,.36,1);
+}
+.lh-card--interactive { cursor: pointer; }
+.lh-card--interactive:hover { transform: translateY(-4px); box-shadow: var(--lh-shadow-lg); }
+
+/* — Button — */
+.lh-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  font-family: var(--lh-font); font-weight: 600; letter-spacing: -.01em;
+  border-radius: 13px; border: 1px solid transparent; cursor: pointer;
+  text-decoration: none; white-space: nowrap;
+  transition: transform .22s cubic-bezier(.22,.61,.36,1), box-shadow .22s, background .22s, border-color .22s, color .22s;
+}
+.lh-btn--md { padding: 14px 24px; font-size: 15.5px; }
+.lh-btn--sm { padding: 10px 16px; font-size: 14px; border-radius: 11px; }
+.lh-btn--primary { background: var(--lh-accent); color: #fff; box-shadow: 0 14px 30px -12px var(--lh-accent); }
+.lh-btn--primary:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -12px var(--lh-accent); }
+.lh-btn--secondary { background: var(--lh-surface); color: var(--lh-fg); border-color: var(--lh-border); box-shadow: var(--lh-shadow); }
+.lh-btn--secondary:hover { transform: translateY(-2px); background: var(--lh-surface2); }
+.lh-btn--ghost { background: transparent; color: var(--lh-fg2); }
+.lh-btn--ghost:hover { background: var(--lh-surface2); color: var(--lh-fg); }
+.lh-btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; box-shadow: none; }
+
+/* — Input / Select / Textarea — */
+.lh-input {
+  width: 100%; font-family: var(--lh-font); font-size: 15px; color: var(--lh-fg);
+  background: var(--lh-surface2); border: 1px solid var(--lh-border);
+  border-radius: 15px; padding: 13px 16px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.lh-input::placeholder { color: var(--lh-fg3); }
+.lh-input:focus-visible {
+  border-color: var(--lh-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--lh-accent) 22%, transparent);
+}
+.lh-label {
+  display: block; font-family: var(--lh-font);
+  font-size: 13.5px; font-weight: 600; color: var(--lh-fg); margin-bottom: 7px;
+}
+.lh-input.lh-input--invalid {
+  border-color: var(--lh-terra);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--lh-terra) 20%, transparent);
+}
+select.lh-input { cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239499A5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+
+/* — Pill / filtro — */
+.lh-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--lh-font); font-size: 13.5px; font-weight: 500;
+  color: var(--lh-fg2); background: var(--lh-surface);
+  border: 1px solid var(--lh-border); border-radius: 99px;
+  padding: 8px 15px; cursor: pointer; white-space: nowrap;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.lh-pill:hover { border-color: var(--lh-accent); color: var(--lh-fg); }
+.lh-pill--active { background: var(--lh-accent); border-color: var(--lh-accent); color: #fff; }
+.lh-pill--active:hover { color: #fff; }
+
+/* — Autocomplete option hover — */
+.lh-autocomplete-opt:hover { background: var(--lh-surface2); }
+
+/* — Admin sidebar link hover — */
+.lh-admin-link:hover { background: var(--lh-surface2); color: var(--lh-fg) !important; }
+
+/* — Tabla del sistema (admin) — */
+.lh-table { width: 100%; font-size: 14px; text-align: left; border-collapse: collapse; }
+.lh-table thead { background: var(--lh-surface2); border-bottom: 1px solid var(--lh-border); }
+.lh-table th { padding: 12px 20px; font-weight: 600; font-size: 12.5px; color: var(--lh-fg3); white-space: nowrap; }
+.lh-table td { padding: 14px 20px; color: var(--lh-fg2); }
+.lh-table tbody tr + tr { border-top: 1px solid var(--lh-border2); }
+.lh-table tbody tr:hover { background: var(--lh-surface2); }
+
+/* — Páginas legales (estiliza el texto descendiente) — */
+.lh-legal { color: var(--lh-fg2); font-size: 14px; line-height: 1.65; }
+.lh-legal > * + * { margin-top: 14px; }
+.lh-legal h1 { font-family: var(--lh-font); font-size: clamp(24px,3.4vw,32px); font-weight: 600; letter-spacing: -.02em; color: var(--lh-fg); }
+.lh-legal h2 { font-family: var(--lh-font); font-size: 19px; font-weight: 600; letter-spacing: -.015em; color: var(--lh-fg); margin-top: 26px; padding-top: 4px; }
+.lh-legal h3 { font-family: var(--lh-font); font-size: 15.5px; font-weight: 600; color: var(--lh-fg); margin-top: 16px; }
+.lh-legal h4, .lh-legal h5, .lh-legal h6 { font-weight: 600; color: var(--lh-fg); }
+.lh-legal ul { list-style: disc; padding-left: 20px; }
+.lh-legal ol { list-style: decimal; padding-left: 20px; }
+.lh-legal li { margin-top: 4px; }
+.lh-legal a { color: var(--lh-accent); text-decoration: underline; }
+.lh-legal strong { color: var(--lh-fg); font-weight: 600; }
+.lh-legal code { background: var(--lh-surface2); padding: 1px 5px; border-radius: 5px; font-family: var(--lh-mono); font-size: 12.5px; }
+
+/* — Skeleton — */
+.lh-skeleton { position: relative; overflow: hidden; background: var(--lh-surface2); display: block; }
+.lh-skeleton::after {
+  content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--lh-fg) 7%, transparent), transparent);
+  animation: lh-shimmer 1.4s infinite;
+}
+
+/* — Focus visible del sistema — */
+.lh-btn:focus-visible,
+.lh-pill:focus-visible,
+.lh-seemore:focus-visible,
+.lh-card--interactive:focus-visible {
+  outline: 2px solid var(--lh-accent); outline-offset: 2px;
+}
+
+/* — Reduced motion del kit — */
+@media (prefers-reduced-motion: reduce) {
+  .lh-reveal { transition: none !important; opacity: 1 !important; transform: none !important; }
+  .lh-card, .lh-btn, .lh-pill, .lh-seemore { transition: none !important; }
+  .lh-card--interactive:hover,
+  .lh-btn--primary:hover,
+  .lh-btn--secondary:hover { transform: none !important; }
+  .lh-skeleton::after { animation: none !important; }
+  .lh-aurora-blob { animation: none !important; }
+}
+
+/* ============================================================
+   prefers-reduced-motion — refuerzo de utilidades concretas
+   (el reset base global está en globals.css)
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  /* Rotaciones sticker */
-  [data-lt-rotate] {
-    transform: none !important;
-  }
-
-  /* Filtros wobble (dibujado a mano) */
-  [data-lt-wobble] {
-    filter: none !important;
-  }
-
-  /* Animaciones de giro (SunMotif loading, etc.) */
+  /* Animaciones de giro (spinners de carga) */
   .animate-spin {
     animation: none !important;
   }
@@ -128,16 +324,10 @@
   .hover\:translate-y-0:hover {
     transform: none !important;
   }
-}
 
-/* ============================================================
-   prefers-contrast: more — refuerza bordes en modo alto contraste
-   ============================================================ */
-@media (prefers-contrast: more) {
-  :root {
-    --lt-border:      3px solid var(--lt-ink);
-    --lt-border-thin: 2px solid var(--lt-ink);
-    --lt-shadow-sticker:    4px 4px 0 var(--lt-ink);
-    --lt-shadow-sticker-lg: 7px 8px 0 var(--lt-ink);
+  /* SiteHeader — deshabilita slide hide/show */
+  .lt-site-nav {
+    transition: none !important;
+    transform: none !important;
   }
 }

@@ -9,39 +9,44 @@ import { authOptions } from '@/lib/auth';
 import { getActiveForums } from '@/lib/forum';
 import { getServerLocale } from '@/lib/i18n-server';
 import { translate } from '@/lib/i18n';
-import { MessageSquare, Calendar, Users } from 'lucide-react';
+import { MessageSquare, Calendar, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { RetryButton } from '@/components/ui/retry-button';
 import { DateDisplay } from '@/components/ui/date-display';
 import { ForumGuidelinesBanner } from '@/components/foros/forum-guidelines-banner';
-import { SunMotif } from '@/components/lt/SunMotif';
-import { LeafSprig } from '@/components/lt/LeafSprig';
-import { HandDrawnUnderline } from '@/components/lt/HandDrawnUnderline';
-import { LtCard, LtCardBody } from '@/components/lt/Card';
-import { LtBadge } from '@/components/lt/Badge';
-import { Squiggle } from '@/components/lt/Squiggle';
+import { PageHeader } from '@/components/lh/PageHeader';
+import { EmptyState } from '@/components/lh/EmptyState';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
+
+const neutralChip: React.CSSProperties = {
+  display: 'inline-flex', alignItems: 'center', gap: 5,
+  fontSize: 12, fontWeight: 600, color: 'var(--lh-fg2)',
+  background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)',
+  padding: '5px 10px', borderRadius: 99,
+};
+
 const INFO_CARDS = [
   {
     icon: MessageSquare,
-    title: 'Conversaciones Diarias',
+    title: 'Conversaciones diarias',
     desc: 'Los foros se renuevan cada día para mantener las conversaciones frescas y relevantes.',
-    tone: 'terracota' as const,
+    color: 'var(--lh-accent)',
   },
   {
     icon: Users,
-    title: 'Comunidad Moderada',
+    title: 'Comunidad moderada',
     desc: 'Sistema de moderación automática y reportes comunitarios para mantener un ambiente respetuoso.',
-    tone: 'verde' as const,
+    color: 'var(--lh-green)',
   },
   {
     icon: Calendar,
-    title: 'Sistema de Reputación',
+    title: 'Sistema de reputación',
     desc: 'Gana reputación participando activamente y recibiendo likes en tus publicaciones.',
-    tone: 'sun' as const,
+    color: 'var(--lh-warm)',
   },
 ];
 
@@ -54,81 +59,49 @@ async function ForumsList() {
 
     if (forums.length === 0) {
       return (
-        <div
-          className="flex flex-col items-center py-16 text-center rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
-          style={{ background: 'var(--lt-paper)' }}
-        >
-          <div aria-hidden="true" className="mb-4 opacity-30">
-            <SunMotif size={64} />
-          </div>
-          <h3
-            className="text-xl font-bold mb-2"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('forums.empty.posts')}
-          </h3>
-          <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-            {t('forums.subtitle')}
-          </p>
-        </div>
+        <EmptyState
+          icon={<MessageSquare size={26} />}
+          title={t('forums.empty.posts')}
+          description={t('forums.subtitle')}
+        />
       );
     }
 
     return (
-      <div className="grid gap-8 md:grid-cols-2">
-        {forums.map((forum, i) => (
+      <div className="grid gap-5 md:grid-cols-2">
+        {forums.map((forum) => (
           <ForumGuidelinesBanner key={forum.id} targetUrl={`/foros/${forum.slug}`}>
-            <LtCard index={i} shadow="md" className="h-full cursor-pointer group">
-              <LtCardBody className="p-6 flex flex-col h-full">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1 min-w-0">
-                    <h3
-                      className="text-2xl font-bold mb-2 group-hover:text-[var(--lt-terracota)] transition-colors"
-                      style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                    >
-                      {forum.name}
-                    </h3>
-                    <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-                      {forum.description}
-                    </p>
-                  </div>
-                  <div
-                    className="w-12 h-12 flex items-center justify-center rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] shrink-0 ml-3"
-                    style={{ background: 'var(--lt-terracota)', color: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-                    aria-hidden="true"
-                  >
-                    <MessageSquare className="w-6 h-6" />
-                  </div>
+            <div className="lh-card lh-card--interactive group" style={{ padding: 24, display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+                <div style={{ minWidth: 0 }}>
+                  <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 21, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: '0 0 6px' }}>
+                    {forum.name}
+                  </h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
+                    {forum.description}
+                  </p>
                 </div>
-
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <LtBadge tone="neutral" rotate={-1}>
-                    <Calendar className="w-3 h-3" aria-hidden="true" />
-                    {t('forums.activeUntil')}:{' '}
-                    <DateDisplay
-                      date={forum.endDate}
-                      locale={locale}
-                      options={{ hour: '2-digit', minute: '2-digit', timeZone: 'Australia/Brisbane' }}
-                    />
-                  </LtBadge>
-                  <LtBadge tone="sun" rotate={1}>
-                    <Users className="w-3 h-3" aria-hidden="true" />
-                    {forum.postsCount} {t('forums.postsCount')}
-                  </LtBadge>
-                </div>
-
-                <span
-                  className="mt-auto block w-full py-3 px-4 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] text-center font-semibold text-sm transition-all group-hover:-translate-y-0.5"
-                  style={{
-                    background: 'var(--lt-ink)',
-                    color: 'var(--lt-paper)',
-                    boxShadow: 'var(--lt-shadow-sticker)',
-                  }}
-                >
-                  {t('forums.enter')}
+                <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint('var(--lh-accent)'), color: 'var(--lh-accent)' }}>
+                  <MessageSquare size={22} />
                 </span>
-              </LtCardBody>
-            </LtCard>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+                <span style={neutralChip}>
+                  <Calendar size={12} aria-hidden="true" />
+                  {t('forums.activeUntil')}:{' '}
+                  <DateDisplay date={forum.endDate} locale={locale} options={{ hour: '2-digit', minute: '2-digit', timeZone: 'Australia/Brisbane' }} />
+                </span>
+                <span style={{ ...neutralChip, color: 'var(--lh-accent)', background: tint('var(--lh-accent)'), border: 'none' }}>
+                  <Users size={12} aria-hidden="true" />
+                  {forum.postsCount} {t('forums.postsCount')}
+                </span>
+              </div>
+
+              <span className="lh-btn lh-btn--sm lh-btn--primary" style={{ marginTop: 'auto', width: '100%' }}>
+                {t('forums.enter')} <ArrowRight size={15} />
+              </span>
+            </div>
           </ForumGuidelinesBanner>
         ))}
       </div>
@@ -138,14 +111,9 @@ async function ForumsList() {
     const locale = await getServerLocale();
     const t = (k: string) => translate(k, { locale });
     return (
-      <div
-        className="text-center py-12 rounded-[var(--lt-radius-lg)] border-[2px] border-dashed border-[var(--lt-ink)]"
-        style={{ background: 'var(--lt-paper)' }}
-      >
-        <p className="mb-4 font-medium" style={{ color: 'var(--lt-terracota)' }}>{t('forums.error')}</p>
-        <RetryButton
-          className="px-5 py-2.5 rounded-[var(--lt-radius-sm)] border-[1.6px] border-[var(--lt-ink)] font-semibold text-sm transition-all hover:-translate-y-0.5 [background:var(--lt-terracota)] [color:var(--lt-paper)] [box-shadow:var(--lt-shadow-sticker)]"
-        >
+      <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+        <p style={{ marginBottom: 16, fontWeight: 500, color: 'var(--lh-terra)' }}>{t('forums.error')}</p>
+        <RetryButton className="lh-btn lh-btn--md lh-btn--primary">
           {t('forums.retry')}
         </RetryButton>
       </div>
@@ -159,51 +127,23 @@ export default async function ForumsPage() {
   const session = await getServerSession(authOptions);
 
   return (
-    <div style={{ background: 'var(--lt-bg)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--lh-bg)', minHeight: '100vh', fontFamily: 'var(--lh-font)' }}>
 
-      {/* ── Hero ── */}
-      <div
-        className="relative overflow-hidden border-b-[2px] border-[var(--lt-ink)] py-16 px-4"
-        style={{ background: 'var(--lt-paper)' }}
-      >
-        <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
-          <SunMotif size={300} className="absolute opacity-[0.07]" style={{ top: '-50px', right: '-30px' }} />
-          <LeafSprig size={100} className="absolute opacity-20" style={{ bottom: '10px', left: '16px', transform: 'rotate(-18deg)' }} />
-        </div>
-        <div className="relative max-w-6xl mx-auto text-center space-y-4">
-          <h1
-            className="text-4xl md:text-5xl font-black tracking-tight"
-            style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-          >
-            {t('forums.title')}
-          </h1>
-          <div className="flex justify-center" aria-hidden="true">
-            <HandDrawnUnderline width={200} color="var(--lt-sun-core)" thickness={3} />
-          </div>
-          <p
-            className="text-lg max-w-2xl mx-auto"
-            style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}
-          >
-            {t('forums.subtitle')}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Foros & comunidad"
+        title={t('forums.title')}
+        subtitle={t('forums.subtitle')}
+        accent="var(--lh-accent)"
+      />
 
-      <main className="container mx-auto px-4 py-10 max-w-6xl">
+      <main className="lh-container" style={{ maxWidth: 1100, paddingTop: 40, paddingBottom: 64 }}>
 
         {/* Auth notice */}
         {!session && (
-          <div
-            className="mb-8 p-4 rounded-[var(--lt-radius-md)] border-[1.6px] border-[var(--lt-ink)] text-center"
-            style={{ background: 'var(--lt-paper)', boxShadow: 'var(--lt-shadow-sticker)' }}
-          >
-            <p className="text-sm" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
+          <div style={{ marginBottom: 28, padding: '14px 18px', borderRadius: 14, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: 0 }}>
               {t('forums.auth.required')}{' '}
-              <Link
-                href="/api/auth/signin"
-                className="font-semibold underline focus:outline-none focus:ring-2 focus:ring-[var(--lt-terracota)]"
-                style={{ color: 'var(--lt-terracota)' }}
-              >
+              <Link href="/api/auth/signin" style={{ fontWeight: 600, color: 'var(--lh-accent)', textDecoration: 'underline' }}>
                 {t('forums.auth.login')}
               </Link>
             </p>
@@ -213,9 +153,9 @@ export default async function ForumsPage() {
         {/* Lista de foros */}
         <Suspense
           fallback={
-            <div className="flex flex-col items-center py-12">
-              <SunMotif size={56} className="animate-spin mb-4 opacity-60" style={{ animationDuration: '1.4s' }} />
-              <p className="text-sm" style={{ color: 'var(--lt-ink-soft)' }}>{t('forums.loading')}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0' }}>
+              <span className="animate-spin" style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid var(--lh-border)', borderTopColor: 'var(--lh-accent)', marginBottom: 16 }} aria-hidden="true" />
+              <p style={{ fontSize: 14, color: 'var(--lh-fg3)' }}>{t('forums.loading')}</p>
             </div>
           }
         >
@@ -223,36 +163,20 @@ export default async function ForumsPage() {
         </Suspense>
 
         {/* Info cards */}
-        <div className="mt-14">
-          <div className="flex justify-center mb-8" aria-hidden="true">
-            <Squiggle width={160} color="var(--lt-terracota)" amplitude={4} />
-          </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {INFO_CARDS.map(({ icon: Icon, title, desc, tone }, i) => (
-              <LtCard key={title} index={i + 3} shadow="sm" noRotate>
-                <LtCardBody className="p-6">
-                  <div
-                    className="w-12 h-12 rounded-[var(--lt-radius-sm)] flex items-center justify-center border-[1.6px] border-[var(--lt-ink)] mb-4"
-                    style={{
-                      background: `var(--lt-${tone})`,
-                      color: tone === 'sun' ? 'var(--lt-ink)' : 'var(--lt-paper)',
-                      boxShadow: 'var(--lt-shadow-sticker)',
-                    }}
-                    aria-hidden="true"
-                  >
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <h3
-                    className="text-lg font-bold mb-2"
-                    style={{ fontFamily: 'var(--lt-font-serif)', color: 'var(--lt-ink)' }}
-                  >
-                    {title}
-                  </h3>
-                  <p className="text-sm leading-relaxed" style={{ fontFamily: 'var(--lt-font-sans)', color: 'var(--lt-ink-soft)' }}>
-                    {desc}
-                  </p>
-                </LtCardBody>
-              </LtCard>
+        <div style={{ marginTop: 56 }}>
+          <div className="grid gap-5 md:grid-cols-3">
+            {INFO_CARDS.map(({ icon: Icon, title, desc, color }) => (
+              <div key={title} className="lh-card" style={{ padding: 24 }}>
+                <span aria-hidden="true" style={{ width: 48, height: 48, borderRadius: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint(color), color, marginBottom: 16 }}>
+                  <Icon size={22} />
+                </span>
+                <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 8px' }}>
+                  {title}
+                </h3>
+                <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
+                  {desc}
+                </p>
+              </div>
             ))}
           </div>
         </div>
