@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import {
   verifyBusiness,
   toggleBusinessStatus,
+  setBusinessFeatured,
 } from '@/app/(main)/admin/negocios/actions'
 import Link from 'next/link'
 import { Button } from '@/components/lh/Button'
@@ -15,6 +16,7 @@ interface BusinessTableProps {
     name: string
     slug: string
     plan: string
+    ranking: number
     isActive: boolean
     isVerified: boolean
     city: string | null
@@ -25,6 +27,9 @@ interface BusinessTableProps {
   totalPages: number
   currentPage: number
 }
+
+const PLAN_OPTIONS = ['FREE', 'BASIC', 'PREMIUM', 'SPONSOR'] as const
+const MAX_SLOT = 8
 
 const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
 const chip = (color: string): React.CSSProperties => ({
@@ -72,6 +77,18 @@ export function BusinessTable({ businesses, totalPages, currentPage }: BusinessT
     setIsLoading(null)
   }
 
+  const handleSlotChange = async (id: string, ranking: number) => {
+    setIsLoading(id)
+    await setBusinessFeatured(id, { ranking })
+    setIsLoading(null)
+  }
+
+  const handlePlanChange = async (id: string, plan: string) => {
+    setIsLoading(id)
+    await setBusinessFeatured(id, { plan: plan as (typeof PLAN_OPTIONS)[number] })
+    setIsLoading(null)
+  }
+
   return (
     <div className="space-y-4">
       {/* Barra de Herramientas */}
@@ -103,7 +120,7 @@ export function BusinessTable({ businesses, totalPages, currentPage }: BusinessT
             <thead>
               <tr>
                 <th>Negocio</th>
-                <th>Plan / Estado</th>
+                <th>Exposición / Estado</th>
                 <th>Ubicación</th>
                 <th>Contacto (Dueño)</th>
                 <th style={{ textAlign: 'right' }}>Acciones</th>
@@ -132,8 +149,32 @@ export function BusinessTable({ businesses, totalPages, currentPage }: BusinessT
                       </div>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        <span style={chip(biz.plan === 'PREMIUM' || biz.plan === 'SPONSOR' ? 'var(--lh-accent)' : 'var(--lh-fg3)')}>{biz.plan}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 150 }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, color: 'var(--lh-fg3)' }}>
+                          Slot
+                          <select
+                            className="lh-input"
+                            style={{ padding: '4px 8px', fontSize: 12.5, minWidth: 60 }}
+                            value={biz.ranking}
+                            disabled={isLoading === biz.id}
+                            onChange={(e) => handleSlotChange(biz.id, Number(e.target.value))}
+                            title="Posición en el carrusel del home (0 = sin slot)"
+                          >
+                            {Array.from({ length: MAX_SLOT + 1 }).map((_, n) => (
+                              <option key={n} value={n}>{n === 0 ? '— sin slot' : n}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <select
+                          className="lh-input"
+                          style={{ padding: '4px 8px', fontSize: 12.5 }}
+                          value={biz.plan}
+                          disabled={isLoading === biz.id}
+                          onChange={(e) => handlePlanChange(biz.id, e.target.value)}
+                          title="Plan comercial (PREMIUM/SPONSOR muestran el badge «Destacado»)"
+                        >
+                          {PLAN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                        </select>
                         <span style={chip(biz.isActive ? 'var(--lh-green)' : 'var(--lh-terra)')}>{biz.isActive ? 'Activo' : 'Inactivo'}</span>
                       </div>
                     </td>

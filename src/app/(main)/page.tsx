@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Store, Briefcase, CalendarDays, MessageCircle, Trophy, Cloud,
   ArrowLeftRight, Radio, Users, Search, ArrowRight, MapPin, Play,
-  Sparkles, Heart, Zap, Shield, Layers, Star, Sun, Moon,
+  Sparkles, Heart, Zap, Shield, Layers, Sun, Moon,
 } from 'lucide-react'
 import { ConstellationCanvas } from '@/components/home/ConstellationCanvas'
+import { FeaturedBusinesses } from '@/components/home/FeaturedBusinesses'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -28,20 +30,6 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/deportes', '/clima', '/tasas', '/emisoras', '/directorio']
-
-const PH = {
-  a: 'repeating-linear-gradient(135deg,#cdd7e2 0 11px,#d9e1ea 11px 22px)',
-  b: 'repeating-linear-gradient(135deg,#e6d3c4 0 11px,#efe0d3 11px 22px)',
-  c: 'repeating-linear-gradient(135deg,#cfe0d4 0 11px,#dceae0 11px 22px)',
-  d: 'repeating-linear-gradient(135deg,#e7d6b8 0 11px,#f0e3c8 11px 22px)',
-}
-
-const BUSINESSES = [
-  { name: 'Sabor Bogotá',      cat: 'Restaurante', city: 'Sydney, NSW',     rating: '4.9', img: PH.a },
-  { name: 'Don Pancho Grocer', cat: 'Mercado',     city: 'Melbourne, VIC',  rating: '4.8', img: PH.b },
-  { name: 'Estudio Tango',     cat: 'Baile',       city: 'Brisbane, QLD',   rating: '5.0', img: PH.c },
-  { name: 'Café Andino',       cat: 'Cafetería',   city: 'Perth, WA',       rating: '4.7', img: PH.d },
-]
 
 const JOBS = [
   { role: 'Chef de cocina latina',  company: 'Sabor Bogotá',    city: 'Sydney',    type: 'Tiempo completo', pay: '$75k', initials: 'SB', colorIdx: 0 },
@@ -78,7 +66,17 @@ const WHY = [
 
 
 
-const POPULAR = ['Restaurantes', 'Trabajo remoto', 'Salsa', 'Remesas', 'Fútbol', 'Abogados']
+/* Atajos populares → cada uno apunta a su módulo real.
+   Negocios usan el directorio (?categoria= cuando hay categoría, si no ?q=);
+   el resto va a su vertical (empleos, eventos, deportes). */
+const POPULAR: { label: string; href: string }[] = [
+  { label: 'Restaurantes',   href: '/directorio?categoria=GASTRONOMIA' },
+  { label: 'Trabajo remoto', href: `/empleos?q=${encodeURIComponent('remoto')}` },
+  { label: 'Salsa',          href: `/eventos?q=${encodeURIComponent('Salsa')}` },
+  { label: 'Remesas',        href: '/directorio?categoria=SERVICIOS' },
+  { label: 'Fútbol',         href: '/deportes' },
+  { label: 'Abogados',       href: '/directorio?categoria=SERVICIOS' },
+]
 
 /* ─── Scroll reveal hook ─── */
 function useReveal() {
@@ -117,8 +115,16 @@ function Reveal({ children, delay = 0, className = '', style = {} }: {
 ═══════════════════════════════════════════════════ */
 export default function Home() {
   const heroVariant = 2
+  const router = useRouter()
+  const [query, setQuery] = useState('')
   const { resolvedTheme, setTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = query.trim()
+    router.push(q ? `/directorio?q=${encodeURIComponent(q)}` : '/directorio')
+  }
 
   return (
     <>
@@ -221,33 +227,43 @@ export default function Home() {
         {/* ══════ QUICK SEARCH ══════ */}
         <section style={{ maxWidth: 1220, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 5, marginTop: -80 }}>
           <Reveal style={{ background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', borderRadius: 24, boxShadow: 'var(--lh-shadow-lg)', padding: 26 }}>
-            <div
+            <form
+              role="search"
+              onSubmit={handleSearch}
               style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 8px 6px 18px', border: '1px solid var(--lh-border)', borderRadius: 15, background: 'var(--lh-surface2)', transition: '.2s' }}
             >
-              <Search size={18} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} />
+              <Search size={18} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} aria-hidden="true" />
+              <label htmlFor="home-search" className="sr-only">Buscar en el directorio</label>
               <input
+                id="home-search"
+                name="q"
+                type="search"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
                 placeholder="Busca negocios, empleos, eventos…"
                 style={{ flex: 1, border: 0, background: 'transparent', outline: 'none', color: 'var(--lh-fg)', fontSize: 16.5, fontFamily: 'var(--lh-font)', padding: '13px 0' }}
               />
               <button
+                type="submit"
                 style={{ padding: '12px 22px', borderRadius: 11, border: 0, background: 'var(--lh-accent)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = '' }}
               >
                 Buscar
               </button>
-            </div>
+            </form>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
               <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11.5, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--lh-fg3)', marginRight: 2 }}>Popular</span>
-              {POPULAR.map(p => (
-                <button
-                  key={p}
-                  style={{ padding: '7px 14px', borderRadius: 99, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', color: 'var(--lh-fg2)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s' }}
+              {POPULAR.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  style={{ display: 'inline-block', padding: '7px 14px', borderRadius: 99, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', color: 'var(--lh-fg2)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s', textDecoration: 'none' }}
                   onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--lh-accent)'; el.style.color = 'var(--lh-fg)' }}
                   onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--lh-border)'; el.style.color = 'var(--lh-fg2)' }}
                 >
-                  {p}
-                </button>
+                  {label}
+                </Link>
               ))}
             </div>
           </Reveal>
@@ -300,31 +316,9 @@ export default function Home() {
               Ver directorio <ArrowRight size={16} />
             </Link>
           </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 18 }}>
-            {BUSINESSES.map(({ name, cat, city, rating, img }, i) => (
-              <Reveal key={name} delay={i * 50}>
-                <article
-                  style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s cubic-bezier(.22,.61,.36,1)' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-                >
-                  <div style={{ position: 'relative', height: 148, background: img, display: 'flex', alignItems: 'flex-end', padding: 12 }}>
-                    <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 10.5, color: 'rgba(255,255,255,.92)', background: 'rgba(0,0,0,.28)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: 7 }}>foto del local</span>
-                    <span style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 99, background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(8px)', fontSize: 12.5, fontWeight: 600, color: '#181B21' }}>
-                      <Star size={11} fill="#D4A24C" stroke="#D4A24C" /> {rating}
-                    </span>
-                  </div>
-                  <div style={{ padding: '18px 18px 20px' }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--lh-accent)', background: chip('var(--lh-accent)'), padding: '3px 9px', borderRadius: 99, display: 'inline-block', marginBottom: 9 }}>{cat}</span>
-                    <h3 style={{ fontSize: 17.5, fontWeight: 600, letterSpacing: '-.015em', margin: '0 0 6px', fontFamily: 'var(--lh-font)' }}>{name}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--lh-fg2)', fontSize: 13.5 }}>
-                      <MapPin size={14} /> {city}
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+          <Reveal>
+            <FeaturedBusinesses />
+          </Reveal>
         </section>
 
         {/* ══════ JOBS ══════ */}
