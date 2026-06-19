@@ -27,7 +27,8 @@ const businessSelect = {
   isVerified: true,
   logoUrl: true,
   plan: true,
-  reviews: { select: { rating: true } },
+  // Solo reseñas visibles influyen en el rating público (excluye HIDDEN/FLAGGED).
+  reviews: { where: { status: 'VISIBLE' as const }, select: { rating: true } },
 } as const
 
 type RawBusiness = Prisma.BusinessGetPayload<{ select: typeof businessSelect }>

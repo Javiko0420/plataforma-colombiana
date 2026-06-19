@@ -1,7 +1,7 @@
 'use server'
 
 import { getServerSession } from 'next-auth'
-import { BusinessPlan } from '@prisma/client'
+import { BusinessPlan, Prisma } from '@prisma/client'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
@@ -172,10 +172,24 @@ export async function setBusinessFeatured(
     })
     if (!before) return { success: false, error: 'Negocio no encontrado.' }
 
-    await prisma.business.update({
-      where: { id: businessId },
-      data: updateData,
-    })
+    // Un slot (ranking >= 1) es único: al asignarlo, se libera al ocupante
+    // anterior (ranking = 0) en la misma transacción para evitar duplicados.
+    const ops: Prisma.PrismaPromise<unknown>[] = []
+    if (updateData.ranking !== undefined && updateData.ranking >= 1) {
+      ops.push(
+        prisma.business.updateMany({
+          where: { ranking: updateData.ranking, NOT: { id: businessId } },
+          data: { ranking: 0 },
+        }),
+      )
+    }
+    ops.push(
+      prisma.business.update({
+        where: { id: businessId },
+        data: updateData,
+      }),
+    )
+    await prisma.$transaction(ops)
 
     await prisma.auditLog.create({
       data: {
