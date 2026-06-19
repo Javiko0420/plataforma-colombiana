@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation'
 import {
   Store, Briefcase, CalendarDays, MessageCircle, Trophy, Cloud,
   ArrowLeftRight, Radio, Users, Search, ArrowRight, MapPin, Play,
-  Sparkles, Heart, Zap, Shield, Layers, Star, Sun, Moon,
+  Sparkles, Heart, Zap, Shield, Layers, Sun, Moon,
 } from 'lucide-react'
 import { ConstellationCanvas } from '@/components/home/ConstellationCanvas'
+import { FeaturedBusinesses } from '@/components/home/FeaturedBusinesses'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -29,20 +30,6 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/deportes', '/clima', '/tasas', '/emisoras', '/directorio']
-
-const PH = {
-  a: 'repeating-linear-gradient(135deg,#cdd7e2 0 11px,#d9e1ea 11px 22px)',
-  b: 'repeating-linear-gradient(135deg,#e6d3c4 0 11px,#efe0d3 11px 22px)',
-  c: 'repeating-linear-gradient(135deg,#cfe0d4 0 11px,#dceae0 11px 22px)',
-  d: 'repeating-linear-gradient(135deg,#e7d6b8 0 11px,#f0e3c8 11px 22px)',
-}
-
-const BUSINESSES = [
-  { name: 'Sabor Bogotá',      cat: 'Restaurante', city: 'Sydney, NSW',     rating: '4.9', img: PH.a },
-  { name: 'Don Pancho Grocer', cat: 'Mercado',     city: 'Melbourne, VIC',  rating: '4.8', img: PH.b },
-  { name: 'Estudio Tango',     cat: 'Baile',       city: 'Brisbane, QLD',   rating: '5.0', img: PH.c },
-  { name: 'Café Andino',       cat: 'Cafetería',   city: 'Perth, WA',       rating: '4.7', img: PH.d },
-]
 
 const JOBS = [
   { role: 'Chef de cocina latina',  company: 'Sabor Bogotá',    city: 'Sydney',    type: 'Tiempo completo', pay: '$75k', initials: 'SB', colorIdx: 0 },
@@ -329,31 +316,9 @@ export default function Home() {
               Ver directorio <ArrowRight size={16} />
             </Link>
           </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 18 }}>
-            {BUSINESSES.map(({ name, cat, city, rating, img }, i) => (
-              <Reveal key={name} delay={i * 50}>
-                <article
-                  style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s cubic-bezier(.22,.61,.36,1)' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-                >
-                  <div style={{ position: 'relative', height: 148, background: img, display: 'flex', alignItems: 'flex-end', padding: 12 }}>
-                    <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 10.5, color: 'rgba(255,255,255,.92)', background: 'rgba(0,0,0,.28)', backdropFilter: 'blur(4px)', padding: '4px 8px', borderRadius: 7 }}>foto del local</span>
-                    <span style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 99, background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(8px)', fontSize: 12.5, fontWeight: 600, color: '#181B21' }}>
-                      <Star size={11} fill="#D4A24C" stroke="#D4A24C" /> {rating}
-                    </span>
-                  </div>
-                  <div style={{ padding: '18px 18px 20px' }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--lh-accent)', background: chip('var(--lh-accent)'), padding: '3px 9px', borderRadius: 99, display: 'inline-block', marginBottom: 9 }}>{cat}</span>
-                    <h3 style={{ fontSize: 17.5, fontWeight: 600, letterSpacing: '-.015em', margin: '0 0 6px', fontFamily: 'var(--lh-font)' }}>{name}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--lh-fg2)', fontSize: 13.5 }}>
-                      <MapPin size={14} /> {city}
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+          <Reveal>
+            <FeaturedBusinesses />
+          </Reveal>
         </section>
 
         {/* ══════ JOBS ══════ */}

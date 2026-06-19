@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma, type BusinessPlan } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 
@@ -25,7 +26,11 @@ const businessSelect = {
   images: true,
   isVerified: true,
   logoUrl: true,
+  plan: true,
+  reviews: { select: { rating: true } },
 } as const
+
+type RawBusiness = Prisma.BusinessGetPayload<{ select: typeof businessSelect }>
 
 type FeaturedBusiness = {
   id: string
@@ -43,6 +48,20 @@ type FeaturedBusiness = {
   images: string[]
   isVerified: boolean
   logoUrl: string | null
+  plan: BusinessPlan
+  rating: number | null
+  reviewCount: number
+}
+
+/** Aplana un negocio crudo: calcula el rating promedio y descarta el array de reseñas. */
+function toFeatured(business: RawBusiness): FeaturedBusiness {
+  const { reviews, ...rest } = business
+  const reviewCount = reviews.length
+  const rating =
+    reviewCount > 0
+      ? Math.round((reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount) * 10) / 10
+      : null
+  return { ...rest, rating, reviewCount }
 }
 
 /**
@@ -54,11 +73,14 @@ type FeaturedBusiness = {
  *   1. Paid/priority slots use Business.ranking (1-10).
  *   2. Empty slots are filled with the oldest active businesses (createdAt ASC).
  *
+ * Each business includes its commercial `plan` (drives the "Destacado" badge)
+ * and its real review `rating` (average) + `reviewCount`.
+ *
  * Query params:
  *   - limit: number (default 10, max 10)
  *
  * Response 200:
- *   { success, data: Business[] }
+ *   { success, data: FeaturedBusiness[] }
  */
 export async function GET(request: NextRequest) {
   try {
@@ -81,10 +103,11 @@ export async function GET(request: NextRequest) {
     const paidIds = new Set<string>()
 
     for (const business of paidSlots) {
-      const { ranking, ...featuredBusiness } = business
+      const { ranking, ...rest } = business
       if (ranking >= 1 && ranking <= limit && !paidBySlot.has(ranking)) {
-        paidBySlot.set(ranking, featuredBusiness)
-        paidIds.add(featuredBusiness.id)
+        const featured = toFeatured(rest)
+        paidBySlot.set(ranking, featured)
+        paidIds.add(featured.id)
       }
     }
 
@@ -110,7 +133,7 @@ export async function GET(request: NextRequest) {
       }
 
       if (organicIndex < organics.length) {
-        data.push(organics[organicIndex])
+        data.push(toFeatured(organics[organicIndex]))
         organicIndex += 1
       }
     }

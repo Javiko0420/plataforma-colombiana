@@ -1,7 +1,7 @@
 # Negocios destacados (home) — exposición real + preparación comercial
 
 **Fecha:** 2026-06-19
-**Estado:** Diseño aprobado (pendiente review del spec)
+**Estado:** Implementado y verificado
 **Autor:** Javier + Claude
 
 ## Contexto y objetivo
