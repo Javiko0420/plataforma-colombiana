@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Store, Briefcase, CalendarDays, MessageCircle, Trophy, Cloud,
   ArrowLeftRight, Radio, Users, Search, ArrowRight, MapPin, Play,
@@ -78,7 +79,17 @@ const WHY = [
 
 
 
-const POPULAR = ['Restaurantes', 'Trabajo remoto', 'Salsa', 'Remesas', 'Fútbol', 'Abogados']
+/* Atajos populares → cada uno apunta a su módulo real.
+   Negocios usan el directorio (?categoria= cuando hay categoría, si no ?q=);
+   el resto va a su vertical (empleos, eventos, deportes). */
+const POPULAR: { label: string; href: string }[] = [
+  { label: 'Restaurantes',   href: '/directorio?categoria=GASTRONOMIA' },
+  { label: 'Trabajo remoto', href: `/empleos?q=${encodeURIComponent('remoto')}` },
+  { label: 'Salsa',          href: `/eventos?q=${encodeURIComponent('Salsa')}` },
+  { label: 'Remesas',        href: '/directorio?categoria=SERVICIOS' },
+  { label: 'Fútbol',         href: '/deportes' },
+  { label: 'Abogados',       href: '/directorio?categoria=SERVICIOS' },
+]
 
 /* ─── Scroll reveal hook ─── */
 function useReveal() {
@@ -117,8 +128,16 @@ function Reveal({ children, delay = 0, className = '', style = {} }: {
 ═══════════════════════════════════════════════════ */
 export default function Home() {
   const heroVariant = 2
+  const router = useRouter()
+  const [query, setQuery] = useState('')
   const { resolvedTheme, setTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = query.trim()
+    router.push(q ? `/directorio?q=${encodeURIComponent(q)}` : '/directorio')
+  }
 
   return (
     <>
@@ -221,33 +240,43 @@ export default function Home() {
         {/* ══════ QUICK SEARCH ══════ */}
         <section style={{ maxWidth: 1220, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 5, marginTop: -80 }}>
           <Reveal style={{ background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', borderRadius: 24, boxShadow: 'var(--lh-shadow-lg)', padding: 26 }}>
-            <div
+            <form
+              role="search"
+              onSubmit={handleSearch}
               style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 8px 6px 18px', border: '1px solid var(--lh-border)', borderRadius: 15, background: 'var(--lh-surface2)', transition: '.2s' }}
             >
-              <Search size={18} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} />
+              <Search size={18} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} aria-hidden="true" />
+              <label htmlFor="home-search" className="sr-only">Buscar en el directorio</label>
               <input
+                id="home-search"
+                name="q"
+                type="search"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
                 placeholder="Busca negocios, empleos, eventos…"
                 style={{ flex: 1, border: 0, background: 'transparent', outline: 'none', color: 'var(--lh-fg)', fontSize: 16.5, fontFamily: 'var(--lh-font)', padding: '13px 0' }}
               />
               <button
+                type="submit"
                 style={{ padding: '12px 22px', borderRadius: 11, border: 0, background: 'var(--lh-accent)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = '' }}
               >
                 Buscar
               </button>
-            </div>
+            </form>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
               <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11.5, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--lh-fg3)', marginRight: 2 }}>Popular</span>
-              {POPULAR.map(p => (
-                <button
-                  key={p}
-                  style={{ padding: '7px 14px', borderRadius: 99, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', color: 'var(--lh-fg2)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s' }}
+              {POPULAR.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  style={{ display: 'inline-block', padding: '7px 14px', borderRadius: 99, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', color: 'var(--lh-fg2)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s', textDecoration: 'none' }}
                   onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--lh-accent)'; el.style.color = 'var(--lh-fg)' }}
                   onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--lh-border)'; el.style.color = 'var(--lh-fg2)' }}
                 >
-                  {p}
-                </button>
+                  {label}
+                </Link>
               ))}
             </div>
           </Reveal>

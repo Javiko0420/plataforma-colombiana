@@ -39,7 +39,7 @@ const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`
 
 export default function DirectoryClient({ initialBusinesses }: DirectoryClientProps) {
   const searchParams = useSearchParams()
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') ?? '')
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('categoria') ?? '')
   const [selectedCity, setSelectedCity] = useState('')
   const [showFilters, setShowFilters] = useState(false)
