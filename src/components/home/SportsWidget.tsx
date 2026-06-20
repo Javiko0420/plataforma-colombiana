@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-/* Solo los campos que el widget necesita del fixture del Mundial. */
-interface WidgetTeam { name: string; logo: string }
+/* Solo los campos que el widget necesita del fixture del Mundial.
+   `winner` viene de API-Football (lo preserva mapFixture) e indica el ganador
+   real incluso en partidos definidos por penales, donde `goals` queda empatado. */
+interface WidgetTeam { name: string; logo: string; winner: boolean | null }
 interface WidgetFixture {
   status: { short: string; elapsed: number | null }
   round: string
@@ -95,8 +97,8 @@ export function SportsWidget() {
             Mundial 2026 · {roundLabel(fixture.round)}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <TeamRow team={fixture.teams.home} goals={fixture.goals.home} winner={isWinner(fixture.goals.home, fixture.goals.away)} />
-            <TeamRow team={fixture.teams.away} goals={fixture.goals.away} winner={isWinner(fixture.goals.away, fixture.goals.home)} />
+            <TeamRow team={fixture.teams.home} goals={fixture.goals.home} winner={fixture.teams.home.winner === true} />
+            <TeamRow team={fixture.teams.away} goals={fixture.goals.away} winner={fixture.teams.away.winner === true} />
           </div>
           <div style={{ textAlign: 'center', marginTop: 14, fontSize: 12.5, color: 'var(--lh-fg2)' }}>
             {isLive && fixture.status.elapsed != null
@@ -126,11 +128,6 @@ function TeamRow({ team, goals, winner }: { team: WidgetTeam; goals: number | nu
       </span>
     </div>
   )
-}
-
-/* True si `a` ganó (más goles que `b`). Empates no resaltan a nadie. */
-function isWinner(a: number | null, b: number | null): boolean {
-  return a != null && b != null && a > b
 }
 
 function formatDate(iso: string): string {
