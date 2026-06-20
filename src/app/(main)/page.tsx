@@ -15,6 +15,7 @@ import { UpcomingEvents } from '@/components/home/UpcomingEvents'
 import { WeatherWidget } from '@/components/home/WeatherWidget'
 import { RatesWidget } from '@/components/home/RatesWidget'
 import { RadioWidget } from '@/components/home/RadioWidget'
+import { SportsWidget } from '@/components/home/SportsWidget'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -414,27 +415,7 @@ export default function Home() {
 
             {/* Deportes */}
             <Reveal delay={120}>
-              <Link href="/deportes" style={{ display: 'block', borderRadius: 20, padding: 22, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s', textDecoration: 'none' }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                  <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--lh-fg3)' }}>Deportes</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 600, color: 'var(--lh-terra)' }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--lh-terra)', display: 'inline-block', animation: 'lh-pulse 1.6s infinite' }} />
-                    EN VIVO
-                  </span>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--lh-fg3)', fontWeight: 500, marginBottom: 12 }}>Copa Libertadores</div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontWeight: 700, fontSize: 15, color: 'var(--lh-fg)' }}>BOC</div></div>
-                  <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-.02em', padding: '0 14px', color: 'var(--lh-fg)' }}>
-                    2<span style={{ color: 'var(--lh-fg3)', margin: '0 6px' }}>·</span>1
-                  </div>
-                  <div style={{ textAlign: 'center', flex: 1 }}><div style={{ fontWeight: 700, fontSize: 15, color: 'var(--lh-fg)' }}>RIV</div></div>
-                </div>
-                <div style={{ textAlign: 'center', marginTop: 12, fontSize: 12.5, color: 'var(--lh-fg2)' }}>73&apos;</div>
-              </Link>
+              <SportsWidget />
             </Reveal>
 
             {/* Radio */}

@@ -5,6 +5,9 @@ export const WORLDCUP_LEAGUE_ID = 1
 export const WORLDCUP_SEASON = 2026
 export const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io'
 
+/** Team ID de la selección Colombia en API-Football (usado por el widget del home). */
+export const COLOMBIA_TEAM_ID = 8
+
 // Cache TTLs in seconds
 export const TTL = {
   /** Coverage / league metadata: changes only when FIFA updates the schedule. */
