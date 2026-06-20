@@ -4,7 +4,7 @@ import { fetchWeather } from '@/lib/weather'
 import { findCityBySlug } from '@/lib/cities'
 import { resolveGeo } from '@/lib/geo'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const querySchema = z.object({
   lat: z.string().optional(),
