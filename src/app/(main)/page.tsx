@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { ConstellationCanvas } from '@/components/home/ConstellationCanvas'
 import { FeaturedBusinesses } from '@/components/home/FeaturedBusinesses'
+import { RecentJobs } from '@/components/home/RecentJobs'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -30,13 +31,6 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/deportes', '/clima', '/tasas', '/emisoras', '/directorio']
-
-const JOBS = [
-  { role: 'Chef de cocina latina',  company: 'Sabor Bogotá',    city: 'Sydney',    type: 'Tiempo completo', pay: '$75k', initials: 'SB', colorIdx: 0 },
-  { role: 'Barista bilingüe',       company: 'Café Andino',     city: 'Perth',     type: 'Medio tiempo',   pay: '$32/h', initials: 'CA', colorIdx: 1 },
-  { role: 'Community Manager',      company: 'Latin Media Co.', city: 'Remoto',    type: 'Contrato',       pay: '$60k',  initials: 'LM', colorIdx: 2 },
-  { role: 'Repartidor con auto',    company: 'Don Pancho',      city: 'Melbourne', type: 'Flexible',       pay: '$30/h', initials: 'DP', colorIdx: 3 },
-]
 
 const EVENTS = [
   { title: 'Festival Latino Sydney',     day: '21', month: 'Jun', place: 'Darling Harbour', city: 'Sydney',    tag: 'Música',  bg: 'linear-gradient(160deg,#2E5E8C,#1a3a57)' },
@@ -332,34 +326,9 @@ export default function Home() {
               Ver todos <ArrowRight size={16} />
             </Link>
           </Reveal>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {JOBS.map(({ role, company, city, type, pay, initials, colorIdx }, i) => {
-              const c = ACCENT_TINTS[colorIdx]
-              return (
-                <Reveal key={role} delay={i * 45}>
-                  <Link
-                    href="/empleos"
-                    style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '18px 22px', borderRadius: 16, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.24s', textDecoration: 'none' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateX(4px)'; el.style.borderColor = chip('var(--lh-accent)') }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.borderColor = 'var(--lh-border)' }}
-                  >
-                    <span style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 17, background: `linear-gradient(135deg,${c},var(--lh-accent-ink))`, color: '#fff', letterSpacing: '-.02em' }}>
-                      {initials}
-                    </span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 16.5, fontWeight: 600, letterSpacing: '-.01em' }}>{role}</div>
-                      <div style={{ fontSize: 13.5, color: 'var(--lh-fg2)', marginTop: 3 }}>{company} · {city}</div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--lh-fg2)', background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)', padding: '6px 11px', borderRadius: 99 }}>{type}</span>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--lh-green)', background: chip('var(--lh-green)'), padding: '6px 11px', borderRadius: 99 }}>{pay}</span>
-                    </div>
-                    <ArrowRight size={16} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} />
-                  </Link>
-                </Reveal>
-              )
-            })}
-          </div>
+          <Reveal>
+            <RecentJobs />
+          </Reveal>
         </section>
 
         {/* ══════ EVENTS ══════ */}
