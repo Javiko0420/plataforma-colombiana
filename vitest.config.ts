@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { defineConfig } from 'vitest/config'
+import { defineConfig, configDefaults } from 'vitest/config'
 
 export default defineConfig({
   resolve: {
@@ -11,6 +11,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
+    // Excluir git worktrees anidados (artefactos en .claude/worktrees) que
+    // contienen copias antiguas de los tests y contaminan la suite.
+    exclude: [...configDefaults.exclude, '**/.claude/**'],
   },
 })
 

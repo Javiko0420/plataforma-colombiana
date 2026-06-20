@@ -5,13 +5,16 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   Store, Briefcase, CalendarDays, MessageCircle, Trophy, Cloud,
-  ArrowLeftRight, Radio, Users, Search, ArrowRight, MapPin, Play,
+  ArrowLeftRight, Radio, Users, Search, ArrowRight,
   Sparkles, Heart, Zap, Shield, Layers, Sun, Moon,
 } from 'lucide-react'
 import { ConstellationCanvas } from '@/components/home/ConstellationCanvas'
 import { FeaturedBusinesses } from '@/components/home/FeaturedBusinesses'
 import { RecentJobs } from '@/components/home/RecentJobs'
 import { UpcomingEvents } from '@/components/home/UpcomingEvents'
+import { WeatherWidget } from '@/components/home/WeatherWidget'
+import { RatesWidget } from '@/components/home/RatesWidget'
+import { RadioWidget } from '@/components/home/RadioWidget'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -37,13 +40,6 @@ const FORUMS = [
   { title: '¿Mejor lugar para enviar remesas?',          author: 'María G.',  time: 'hace 2 h', replies: '24', av: 'MG', colorIdx: 0 },
   { title: 'Validar título profesional en Australia',    author: 'Carlos R.', time: 'hace 5 h', replies: '41', av: 'CR', colorIdx: 1 },
   { title: 'Grupos de fútbol los domingos en Sydney',   author: 'Diego T.',  time: 'hace 1 d', replies: '17', av: 'DT', colorIdx: 2 },
-]
-
-const FX = [
-  { code: 'COP', rate: '2.610', change: '+0,4%', up: true },
-  { code: 'MXN', rate: '12,1',  change: '-0,2%', up: false },
-  { code: 'ARS', rate: '640',   change: '+1,1%', up: true },
-  { code: 'CLP', rate: '612',   change: '+0,3%', up: true },
 ]
 
 const WHY = [
@@ -408,47 +404,12 @@ export default function Home() {
 
             {/* Clima */}
             <Reveal delay={0}>
-              <Link href="/clima" style={{ display: 'block', borderRadius: 20, padding: 22, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s', textDecoration: 'none' }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                  <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--lh-fg3)' }}>Clima</span>
-                  <Cloud size={20} style={{ color: 'var(--lh-warm)' }} />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-                  <span style={{ fontSize: 46, fontWeight: 600, letterSpacing: '-.03em', lineHeight: 1, color: 'var(--lh-fg)' }}>21°</span>
-                  <span style={{ color: 'var(--lh-fg2)', fontSize: 14, paddingBottom: 8 }}>Parcial nublado</span>
-                </div>
-                <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: 'var(--lh-fg2)' }}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={13} /> Sydney</span>
-                  <span>↑24° ↓15°</span>
-                </div>
-              </Link>
+              <WeatherWidget />
             </Reveal>
 
             {/* Tasas */}
             <Reveal delay={60}>
-              <Link href="/tasas" style={{ display: 'block', borderRadius: 20, padding: 22, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s', textDecoration: 'none' }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                  <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--lh-fg3)' }}>Cambio · AUD</span>
-                  <ArrowLeftRight size={20} style={{ color: 'var(--lh-green)' }} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-                  {FX.map(({ code, rate, change, up }) => (
-                    <div key={code} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                        <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, fontWeight: 600, color: 'var(--lh-fg2)', background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)', padding: '3px 7px', borderRadius: 6 }}>{code}</span>
-                        <span style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--lh-fg)' }}>{rate}</span>
-                      </span>
-                      <span style={{ fontSize: 12.5, fontWeight: 600, color: up ? 'var(--lh-green)' : 'var(--lh-terra)' }}>{change}</span>
-                    </div>
-                  ))}
-                </div>
-              </Link>
+              <RatesWidget />
             </Reveal>
 
             {/* Deportes */}
@@ -478,35 +439,7 @@ export default function Home() {
 
             {/* Radio */}
             <Reveal delay={180}>
-              <Link href="/emisoras" style={{ display: 'block', borderRadius: 20, padding: 22, background: 'linear-gradient(160deg,var(--lh-terra),var(--lh-warm))', color: '#fff', boxShadow: 'var(--lh-shadow)', transition: '.26s', textDecoration: 'none' }}
-                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                  <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', opacity: .85 }}>Radio</span>
-                  <span style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 18 }}>
-                    {[0, .2, .1, .3].map((delay, k) => (
-                      <span key={k} style={{ width: 3, background: '#fff', borderRadius: 2, animation: `lh-eq ${.8 + k * .1}s ease-in-out infinite`, animationDelay: `${delay}s`, display: 'block', height: '100%' }} />
-                    ))}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <button
-                    aria-label="Reproducir"
-                    onClick={e => e.preventDefault()}
-                    style={{ width: 50, height: 50, flexShrink: 0, borderRadius: '50%', border: 0, background: '#fff', color: 'var(--lh-terra)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '.2s' }}
-                  >
-                    <Play size={20} fill="currentColor" />
-                  </button>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 15.5, fontWeight: 600, letterSpacing: '-.01em' }}>Radio Latina FM</div>
-                    <div style={{ fontSize: 13, opacity: .9, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Mañanas con sabor — Mix tropical</div>
-                  </div>
-                </div>
-                <div style={{ marginTop: 16, fontSize: 12, opacity: .85, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Users size={13} /> 1.2k escuchando
-                </div>
-              </Link>
+              <RadioWidget />
             </Reveal>
 
           </div>

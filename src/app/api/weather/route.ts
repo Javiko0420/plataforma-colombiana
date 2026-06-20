@@ -4,7 +4,7 @@ import { fetchWeather } from '@/lib/weather'
 import { findCityBySlug } from '@/lib/cities'
 import { resolveGeo } from '@/lib/geo'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const querySchema = z.object({
   lat: z.string().optional(),
@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
 
   let latitude: number | undefined
   let longitude: number | undefined
+  // Nombre de la ciudad resuelta (para mostrar en la UI; opcional).
+  let city: string | undefined
+  let country: string | undefined
 
   // Priority: lat/lon → city → me (geo)
   if (q.lat && q.lon) {
@@ -34,16 +37,22 @@ export async function GET(request: NextRequest) {
     if (!c) return NextResponse.json({ success: false, error: 'Unknown city' }, { status: 404 })
     latitude = c.latitude
     longitude = c.longitude
+    city = c.name
+    country = c.country
   } else if (q.me === '1') {
     const g = await resolveGeo(request)
     if (g) {
       latitude = g.latitude
       longitude = g.longitude
+      city = g.city
+      country = g.country
     } else {
       // Fallback a Bogotá si no hay geo por IP
       const bogota = findCityBySlug('bogota')!
       latitude = bogota.latitude
       longitude = bogota.longitude
+      city = bogota.name
+      country = bogota.country
     }
   }
 
@@ -56,7 +65,11 @@ export async function GET(request: NextRequest) {
       currentTtlSec: 300, // 5 min
       forecastTtlSec: 3600 // 60 min
     })
-    return NextResponse.json({ success: true, data: bundle })
+    return NextResponse.json({
+      success: true,
+      data: bundle,
+      location: city ? { city, country: country ?? null } : null,
+    })
   } catch (err) {
     return NextResponse.json({ success: false, error: 'Weather fetch failed' }, { status: 502 })
   }
