@@ -11,6 +11,7 @@ import {
 import { ConstellationCanvas } from '@/components/home/ConstellationCanvas'
 import { FeaturedBusinesses } from '@/components/home/FeaturedBusinesses'
 import { RecentJobs } from '@/components/home/RecentJobs'
+import { UpcomingEvents } from '@/components/home/UpcomingEvents'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -31,12 +32,6 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/deportes', '/clima', '/tasas', '/emisoras', '/directorio']
-
-const EVENTS = [
-  { title: 'Festival Latino Sydney',     day: '21', month: 'Jun', place: 'Darling Harbour', city: 'Sydney',    tag: 'Música',  bg: 'linear-gradient(160deg,#2E5E8C,#1a3a57)' },
-  { title: 'Noche de Salsa & Bachata',   day: '28', month: 'Jun', place: 'The Espy',        city: 'Melbourne', tag: 'Baile',   bg: 'linear-gradient(160deg,#D8775F,#b8543c)' },
-  { title: 'Mercado Gastronómico',       day: '05', month: 'Jul', place: 'South Bank',      city: 'Brisbane',  tag: 'Comida',  bg: 'linear-gradient(160deg,#5C8A6B,#3f6b4d)' },
-]
 
 const FORUMS = [
   { title: '¿Mejor lugar para enviar remesas?',          author: 'María G.',  time: 'hace 2 h', replies: '24', av: 'MG', colorIdx: 0 },
@@ -342,31 +337,9 @@ export default function Home() {
               Ver agenda <ArrowRight size={16} />
             </Link>
           </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(290px,1fr))', gap: 18 }}>
-            {EVENTS.map(({ title, day, month, place, city, tag, bg }, i) => (
-              <Reveal key={title} delay={i * 60}>
-                <article
-                  style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', background: bg, minHeight: 280, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 20, boxShadow: 'var(--lh-shadow)', transition: '.26s cubic-bezier(.22,.61,.36,1)', cursor: 'pointer' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 56, padding: '9px 0', borderRadius: 13, background: 'rgba(255,255,255,.92)', color: '#181B21', boxShadow: '0 8px 20px -8px rgba(0,0,0,.4)' }}>
-                      <span style={{ fontSize: 22, fontWeight: 700, lineHeight: 1, letterSpacing: '-.02em' }}>{day}</span>
-                      <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 10.5, letterSpacing: '.08em', textTransform: 'uppercase', color: '#5C616D', marginTop: 2 }}>{month}</span>
-                    </span>
-                    <span style={{ fontSize: 11.5, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,.32)', backdropFilter: 'blur(6px)', padding: '5px 11px', borderRadius: 99 }}>{tag}</span>
-                  </div>
-                  <div style={{ color: '#fff', textShadow: '0 1px 14px rgba(0,0,0,.4)' }}>
-                    <h3 style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-.015em', margin: '0 0 7px', lineHeight: 1.15, fontFamily: 'var(--lh-font)' }}>{title}</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, opacity: .95 }}>
-                      <MapPin size={14} /> {place} · {city}
-                    </div>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
+          <Reveal>
+            <UpcomingEvents />
+          </Reveal>
         </section>
 
         {/* ══════ COMMUNITY / FORUMS ══════ */}
