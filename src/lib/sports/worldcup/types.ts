@@ -17,6 +17,7 @@ export type {
   WorldCupTeamsResponse,
   WorldCupH2HFixture,
   WorldCupHeadToHeadResponse,
+  WorldCupConfigResponse,
 } from './schemas'
 
 /** Cached coverage payload stored in CacheStore. */

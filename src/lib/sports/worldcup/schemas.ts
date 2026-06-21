@@ -443,3 +443,19 @@ export const HeadToHeadParamsSchema = z.object({
 
 export type WorldCupH2HFixture = z.infer<typeof WorldCupH2HFixtureSchema>
 export type WorldCupHeadToHeadResponse = z.infer<typeof WorldCupHeadToHeadResponseSchema>
+
+// ─── Config (feature flag for the temporary mobile campaign) ────────────────────
+
+/**
+ * Output shape served by GET /api/sports/worldcup/config.
+ * `enabled` already incorporates the sunset check server-side, so a client can
+ * treat it as the single source of truth (no dependency on the device clock).
+ * `sunsetAt` is exposed informationally for clients that want a local fallback.
+ */
+export const WorldCupConfigResponseSchema = z.object({
+  enabled: z.boolean(),
+  sunsetAt: z.string(), // ISO 8601
+  cachedAt: z.string(), // ISO 8601
+})
+
+export type WorldCupConfigResponse = z.infer<typeof WorldCupConfigResponseSchema>
