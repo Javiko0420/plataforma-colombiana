@@ -8,6 +8,15 @@ export const API_FOOTBALL_BASE_URL = 'https://v3.football.api-sports.io'
 /** Team ID de la selección Colombia en API-Football (usado por el widget del home). */
 export const COLOMBIA_TEAM_ID = 8
 
+/**
+ * Default sunset instant for the temporary World Cup campaign in the mobile app.
+ * After this moment the /config endpoint reports `enabled: false` and the mobile
+ * Sports section returns to its previous state. 2026-07-20 00:00 America/Bogota
+ * (UTC-5, no DST) — i.e. the day AFTER the final (19 Jul 2026), which stays live.
+ * Overridable at runtime via the WORLDCUP_SUNSET_AT environment variable.
+ */
+export const WORLDCUP_DEFAULT_SUNSET_AT = '2026-07-20T00:00:00-05:00'
+
 // Cache TTLs in seconds
 export const TTL = {
   /** Coverage / league metadata: changes only when FIFA updates the schedule. */
