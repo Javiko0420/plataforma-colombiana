@@ -1,34 +1,30 @@
 /**
- * Daily Forums Page
- * Main page for the daily forum system
+ * Daily Forums Hub
+ * "What is being talked about now" — live rooms + trending across forums.
  */
 
 import React, { Suspense } from 'react';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getActiveForums } from '@/lib/forum';
+import { getForumsHubData } from '@/lib/forum';
 import { getServerLocale } from '@/lib/i18n-server';
-import { translate } from '@/lib/i18n';
+import { translate, type SupportedLocale } from '@/lib/i18n';
 import { MessageSquare, Calendar, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { RetryButton } from '@/components/ui/retry-button';
-import { DateDisplay } from '@/components/ui/date-display';
-import { ForumGuidelinesBanner } from '@/components/foros/forum-guidelines-banner';
 import { PageHeader } from '@/components/lh/PageHeader';
 import { EmptyState } from '@/components/lh/EmptyState';
+import { ForumRoomCard } from '@/components/foros/forum-room-card';
+import { ForumsTrending } from '@/components/foros/forums-trending';
+import { ForumGuidelinesNotice } from '@/components/foros/forum-guidelines-notice';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
 
-const neutralChip: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 5,
-  fontSize: 12, fontWeight: 600, color: 'var(--lh-fg2)',
-  background: 'var(--lh-surface2)', border: '1px solid var(--lh-border2)',
-  padding: '5px 10px', borderRadius: 99,
-};
-
+/* Info-cards: contexto para visitantes nuevos. Solo se muestran sin sesión,
+   donde aportan; para usuarios recurrentes ocupaban demasiado espacio. */
 const INFO_CARDS = [
   {
     icon: MessageSquare,
@@ -50,14 +46,14 @@ const INFO_CARDS = [
   },
 ];
 
-async function ForumsList() {
-  const locale = await getServerLocale();
+/* Carga de datos del hub: vive en un Server Component suspendido. */
+async function ForumsHub({ locale }: { locale: SupportedLocale }) {
   const t = (k: string) => translate(k, { locale });
 
   try {
-    const forums = await getActiveForums();
+    const { rooms, trending } = await getForumsHubData();
 
-    if (forums.length === 0) {
+    if (rooms.length === 0) {
       return (
         <EmptyState
           icon={<MessageSquare size={26} />}
@@ -68,48 +64,27 @@ async function ForumsList() {
     }
 
     return (
-      <div className="grid gap-5 md:grid-cols-2">
-        {forums.map((forum) => (
-          <ForumGuidelinesBanner key={forum.id} targetUrl={`/foros/${forum.slug}`}>
-            <div className="lh-card lh-card--interactive group" style={{ padding: 24, display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
-                <div style={{ minWidth: 0 }}>
-                  <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 21, fontWeight: 600, letterSpacing: '-.02em', color: 'var(--lh-fg)', margin: '0 0 6px' }}>
-                    {forum.name}
-                  </h3>
-                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
-                    {forum.description}
-                  </p>
-                </div>
-                <span aria-hidden="true" style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint('var(--lh-accent)'), color: 'var(--lh-accent)' }}>
-                  <MessageSquare size={22} />
-                </span>
-              </div>
+      <>
+        {/* Salas vivas (una por foro activo) */}
+        <div className="grid gap-5 md:grid-cols-2">
+          {rooms.map((room) => (
+            <ForumRoomCard key={room.id} room={room} locale={locale} />
+          ))}
+        </div>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
-                <span style={neutralChip}>
-                  <Calendar size={12} aria-hidden="true" />
-                  {t('forums.activeUntil')}:{' '}
-                  <DateDisplay date={forum.endDate} locale={locale} options={{ hour: '2-digit', minute: '2-digit', timeZone: 'Australia/Brisbane' }} />
-                </span>
-                <span style={{ ...neutralChip, color: 'var(--lh-accent)', background: tint('var(--lh-accent)'), border: 'none' }}>
-                  <Users size={12} aria-hidden="true" />
-                  {forum.postsCount} {t('forums.postsCount')}
-                </span>
-              </div>
+        {/* Lo más comentado ahora (mezcla todos los foros) */}
+        <ForumsTrending trending={trending} locale={locale} />
 
-              <span className="lh-btn lh-btn--sm lh-btn--primary" style={{ marginTop: 'auto', width: '100%' }}>
-                {t('forums.enter')} <ArrowRight size={15} />
-              </span>
-            </div>
-          </ForumGuidelinesBanner>
-        ))}
-      </div>
+        {/* Enlace a foros anteriores (vista de archivo, pendiente) */}
+        <div style={{ marginTop: 36, textAlign: 'center' }}>
+          <Link href="/foros/archivo" className="lh-seemore" style={{ justifyContent: 'center' }}>
+            {t('forums.archive.link')} <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+      </>
     );
   } catch (error) {
-    console.error('Error loading forums:', error);
-    const locale = await getServerLocale();
-    const t = (k: string) => translate(k, { locale });
+    console.error('Error loading forums hub:', error);
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
         <p style={{ marginBottom: 16, fontWeight: 500, color: 'var(--lh-terra)' }}>{t('forums.error')}</p>
@@ -138,7 +113,7 @@ export default async function ForumsPage() {
 
       <main className="lh-container" style={{ maxWidth: 1100, paddingTop: 40, paddingBottom: 64 }}>
 
-        {/* Auth notice */}
+        {/* Auth notice (solo sin sesión) */}
         {!session && (
           <div style={{ marginBottom: 28, padding: '14px 18px', borderRadius: 14, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', textAlign: 'center' }}>
             <p style={{ fontSize: 14, color: 'var(--lh-fg2)', margin: 0 }}>
@@ -150,7 +125,15 @@ export default async function ForumsPage() {
           </div>
         )}
 
-        {/* Lista de foros */}
+        {/* Aviso de normas de comunidad (dismissable, una sola vez) */}
+        <ForumGuidelinesNotice
+          title={t('forums.guidelines.title')}
+          body={t('forums.guidelines.body')}
+          linkLabel={t('forums.guidelines.link')}
+          dismissLabel={t('forums.guidelines.dismiss')}
+        />
+
+        {/* Hub: salas + trending */}
         <Suspense
           fallback={
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '48px 0' }}>
@@ -159,27 +142,29 @@ export default async function ForumsPage() {
             </div>
           }
         >
-          <ForumsList />
+          <ForumsHub locale={locale} />
         </Suspense>
 
-        {/* Info cards */}
-        <div style={{ marginTop: 56 }}>
-          <div className="grid gap-5 md:grid-cols-3">
-            {INFO_CARDS.map(({ icon: Icon, title, desc, color }) => (
-              <div key={title} className="lh-card" style={{ padding: 24 }}>
-                <span aria-hidden="true" style={{ width: 48, height: 48, borderRadius: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint(color), color, marginBottom: 16 }}>
-                  <Icon size={22} />
-                </span>
-                <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 8px' }}>
-                  {title}
-                </h3>
-                <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
-                  {desc}
-                </p>
-              </div>
-            ))}
+        {/* Info cards: contexto para visitantes (solo sin sesión) */}
+        {!session && (
+          <div style={{ marginTop: 56 }}>
+            <div className="grid gap-5 md:grid-cols-3">
+              {INFO_CARDS.map(({ icon: Icon, title, desc, color }) => (
+                <div key={title} className="lh-card" style={{ padding: 24 }}>
+                  <span aria-hidden="true" style={{ width: 48, height: 48, borderRadius: 13, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: tint(color), color, marginBottom: 16 }}>
+                    <Icon size={22} />
+                  </span>
+                  <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, letterSpacing: '-.015em', color: 'var(--lh-fg)', margin: '0 0 8px' }}>
+                    {title}
+                  </h3>
+                  <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--lh-fg2)', margin: 0 }}>
+                    {desc}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
