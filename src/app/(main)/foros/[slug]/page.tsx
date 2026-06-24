@@ -12,7 +12,7 @@ import { prisma } from '@/lib/prisma';
 import { getServerLocale } from '@/lib/i18n-server';
 import { translate } from '@/lib/i18n';
 import ForumClient from './forum-client';
-import { Users } from 'lucide-react';
+import { Users, Archive } from 'lucide-react';
 
 const tint = (v: string) => `color-mix(in oklch, ${v} 14%, transparent)`;
 
@@ -52,9 +52,16 @@ export default async function ForumPage({ params }: ForumPageProps) {
     });
   }
 
+  const readOnly = !forum.isActive;
+
   const expiresAt = new Date(forum.endDate).toLocaleString(locale, {
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Australia/Brisbane',
+  });
+  const endedOn = new Date(forum.endDate).toLocaleString(locale, {
+    day: '2-digit',
+    month: 'short',
     timeZone: 'Australia/Brisbane',
   });
 
@@ -80,7 +87,14 @@ export default async function ForumPage({ params }: ForumPageProps) {
             {forum.description}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            <span style={neutralChip}>{t('forums.activeUntil')}: {expiresAt}</span>
+            {readOnly ? (
+              <span style={{ ...neutralChip, color: 'var(--lh-warm)', background: tint('var(--lh-warm)'), border: 'none' }}>
+                <Archive size={12} aria-hidden="true" />
+                {t('forums.archive.badge')} · {t('forums.archive.endedOn')} {endedOn}
+              </span>
+            ) : (
+              <span style={neutralChip}>{t('forums.activeUntil')}: {expiresAt}</span>
+            )}
             <span style={{ ...neutralChip, color: 'var(--lh-accent)', background: tint('var(--lh-accent)'), border: 'none' }}>
               <Users size={12} aria-hidden="true" />
               {forum._count.posts} {t('forums.postsCount')}
@@ -93,7 +107,9 @@ export default async function ForumPage({ params }: ForumPageProps) {
           forumId={forum.id}
           currentUser={userProfile}
           locale={locale}
+          readOnly={readOnly}
           translations={{
+            readOnlyBanner: t('forums.readOnly.banner'),
             authRequired: t('forums.auth.required'),
             authLogin: t('forums.auth.login'),
             nicknameRequired: t('forums.nickname.required'),

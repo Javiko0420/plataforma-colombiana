@@ -77,7 +77,7 @@ async function ForumsHub({ locale }: { locale: SupportedLocale }) {
 
         {/* Enlace a foros anteriores (vista de archivo, pendiente) */}
         <div style={{ marginTop: 36, textAlign: 'center' }}>
-          <Link href="/foros/archivo" className="lh-seemore" style={{ justifyContent: 'center' }}>
+          <Link href="/foros/anteriores" className="lh-seemore" style={{ justifyContent: 'center' }}>
             {t('forums.archive.link')} <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>

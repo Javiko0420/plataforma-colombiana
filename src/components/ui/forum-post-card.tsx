@@ -18,6 +18,8 @@ interface ForumPostCardProps {
   currentUserId?: string;
   /** User role — ADMIN/MODERATOR can report any content including their own */
   userRole?: string;
+  /** Archived/closed forum: hide mutating actions (like/report), keep counts. */
+  readOnly?: boolean;
 }
 
 const actionBtn: React.CSSProperties = {
@@ -35,6 +37,7 @@ export function ForumPostCard({
   onReply,
   currentUserId,
   userRole,
+  readOnly = false,
 }: ForumPostCardProps) {
   const [isLiking, setIsLiking] = useState(false);
 
@@ -54,7 +57,7 @@ export function ForumPostCard({
     onReport?.(post.id);
   };
 
-  const canReport = currentUserId && (currentUserId !== post.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR');
+  const canReport = !readOnly && currentUserId && (currentUserId !== post.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR');
 
   if (post.isDeleted) {
     return (
@@ -119,10 +122,17 @@ export function ForumPostCard({
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingTop: 12, borderTop: '1px solid var(--lh-border2)' }}>
-        <button onClick={handleLike} disabled={!currentUserId || isLiking} style={{ ...actionBtn, opacity: !currentUserId ? 0.5 : 1 }}>
-          <Heart size={15} style={{ color: isLiking ? 'var(--lh-terra)' : 'var(--lh-fg3)' }} aria-hidden="true" />
-          {post.likesCount} {t('postLikes')}
-        </button>
+        {readOnly ? (
+          <span style={{ ...actionBtn, cursor: 'default' }}>
+            <Heart size={15} style={{ color: 'var(--lh-fg3)' }} aria-hidden="true" />
+            {post.likesCount} {t('postLikes')}
+          </span>
+        ) : (
+          <button onClick={handleLike} disabled={!currentUserId || isLiking} style={{ ...actionBtn, opacity: !currentUserId ? 0.5 : 1 }}>
+            <Heart size={15} style={{ color: isLiking ? 'var(--lh-terra)' : 'var(--lh-fg3)' }} aria-hidden="true" />
+            {post.likesCount} {t('postLikes')}
+          </button>
+        )}
 
         <button onClick={() => onReply?.(post.id)} disabled={!currentUserId} style={{ ...actionBtn, opacity: !currentUserId ? 0.5 : 1 }}>
           <MessageCircle size={15} style={{ color: 'var(--lh-fg3)' }} aria-hidden="true" />
