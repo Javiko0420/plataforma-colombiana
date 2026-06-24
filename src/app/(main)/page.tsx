@@ -16,6 +16,7 @@ import { WeatherWidget } from '@/components/home/WeatherWidget'
 import { RatesWidget } from '@/components/home/RatesWidget'
 import { RadioWidget } from '@/components/home/RadioWidget'
 import { SportsWidget } from '@/components/home/SportsWidget'
+import { ForumsWidget } from '@/components/home/ForumsWidget'
 import { useTheme } from 'next-themes'
 
 /* ─── paleta de colores helpers ─── */
@@ -36,12 +37,6 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/deportes', '/clima', '/tasas', '/emisoras', '/directorio']
-
-const FORUMS = [
-  { title: '¿Mejor lugar para enviar remesas?',          author: 'María G.',  time: 'hace 2 h', replies: '24', av: 'MG', colorIdx: 0 },
-  { title: 'Validar título profesional en Australia',    author: 'Carlos R.', time: 'hace 5 h', replies: '41', av: 'CR', colorIdx: 1 },
-  { title: 'Grupos de fútbol los domingos en Sydney',   author: 'Diego T.',  time: 'hace 1 d', replies: '17', av: 'DT', colorIdx: 2 },
-]
 
 const WHY = [
   { title: 'Todo en un lugar',     desc: 'Negocios, empleos, eventos y comunidad sin saltar entre apps.',              Icon: Layers,  colorIdx: 0 },
@@ -349,27 +344,7 @@ export default function Home() {
                   <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 12, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--lh-accent)', fontWeight: 500 }}>Foros & comunidad</span>
                   <h2 style={{ fontSize: 'clamp(26px,3.4vw,38px)', lineHeight: 1.08, letterSpacing: '-.03em', fontWeight: 600, margin: '12px 0 0', fontFamily: 'var(--lh-font)' }}>Conversaciones que conectan</h2>
                 </div>
-                {FORUMS.map(({ title, author, time, replies, av, colorIdx }) => {
-                  const c = ACCENT_TINTS[colorIdx]
-                  return (
-                    <Link
-                      key={title}
-                      href="/foros"
-                      style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '17px 19px', borderRadius: 15, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.22s', textDecoration: 'none' }}
-                      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateX(4px)' }}
-                      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = '' }}
-                    >
-                      <span style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, background: `linear-gradient(135deg,${c},var(--lh-accent-ink))`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, fontSize: 15 }}>{av}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15.5, fontWeight: 600, letterSpacing: '-.01em' }}>{title}</div>
-                        <div style={{ fontSize: 13, color: 'var(--lh-fg2)', marginTop: 3 }}>{author} · {time}</div>
-                      </div>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--lh-fg2)', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
-                        <MessageCircle size={15} /> {replies}
-                      </span>
-                    </Link>
-                  )
-                })}
+                <ForumsWidget />
               </div>
 
               {/* Join CTA card */}

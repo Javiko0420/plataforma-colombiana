@@ -96,6 +96,248 @@ export async function getActiveForums(): Promise<ForumWithPosts[]> {
   }
 }
 
+// ─── Hub data (rooms + trending) ──────────────────────────────────────────
+
+/** A single thread preview shown in a room card or in the trending strip. */
+export interface ForumHubThread {
+  id: string;
+  forumSlug: string;
+  forumName: string;
+  /** Derived from `content`: newlines stripped, truncated to ~70 chars. */
+  displayTitle: string;
+  authorNickname: string;
+  createdAt: Date;
+  likesCount: number;
+  commentsCount: number;
+  /** Color identity inherited from the owning forum (0=accent, 1=terra…). */
+  colorIdx: number;
+}
+
+/** An active forum rendered as a "live room" with its top threads. */
+export interface ForumHubRoom {
+  id: string;
+  name: string;
+  description: string;
+  slug: string;
+  topic: ForumTopic;
+  endDate: Date;
+  colorIdx: number;
+  postsCount: number;
+  participantsCount: number;
+  threads: ForumHubThread[];
+}
+
+export interface ForumsHubData {
+  rooms: ForumHubRoom[];
+  trending: ForumHubThread[];
+}
+
+/** Collapse whitespace/newlines and truncate to `max` chars with an ellipsis. */
+function deriveDisplayTitle(content: string, max = 70): string {
+  const oneLine = content.replace(/\s+/g, ' ').trim();
+  if (oneLine.length <= max) return oneLine;
+  return `${oneLine.slice(0, max).trimEnd()}…`;
+}
+
+/** Shape a raw post + resolved forum/color into a serializable hub thread. */
+function toHubThread(input: {
+  id: string;
+  content: string;
+  createdAt: Date;
+  likesCount: number;
+  commentsCount: number;
+  forumSlug: string;
+  forumName: string;
+  nickname: string | null;
+  colorIdx: number;
+}): ForumHubThread {
+  return {
+    id: input.id,
+    forumSlug: input.forumSlug,
+    forumName: input.forumName,
+    displayTitle: deriveDisplayTitle(input.content),
+    authorNickname: input.nickname || 'Anonymous',
+    createdAt: input.createdAt,
+    likesCount: input.likesCount,
+    commentsCount: input.commentsCount,
+    colorIdx: input.colorIdx,
+  };
+}
+
+/**
+ * Aggregated data for the /foros hub: each active forum with its top 3 threads
+ * and live stats, plus a flat "trending" list across all active forums.
+ *
+ * Resolved in 3 queries (no N+1):
+ *   1. forums + nested top-3 posts (single findMany with nested take/orderBy)
+ *   2. one groupBy → distinct participants AND non-deleted post counts per forum
+ *   3. trending posts ordered by comment count across all active forums
+ */
+export async function getForumsHubData(): Promise<ForumsHubData> {
+  try {
+    // 1. Active forums, each with its top 3 posts (most liked, then newest).
+    const forums = await prisma.forum.findMany({
+      where: { isActive: true },
+      orderBy: { topic: 'asc' },
+      include: {
+        posts: {
+          where: { isDeleted: false },
+          orderBy: [{ likesCount: 'desc' }, { createdAt: 'desc' }],
+          take: 3,
+          include: {
+            author: { select: { nickname: true } },
+            _count: { select: { comments: true } },
+          },
+        },
+      },
+    });
+
+    if (forums.length === 0) {
+      return { rooms: [], trending: [] };
+    }
+
+    const forumIds = forums.map((f) => f.id);
+
+    // Color identity is assigned by forum order (topic asc): 1st→0, 2nd→1…
+    const colorByForumId = new Map<string, number>();
+    forums.forEach((f, i) => colorByForumId.set(f.id, i));
+
+    // 2. Single groupBy gives, per forum: distinct participants (row count)
+    //    and non-deleted post total (sum of per-author counts). No N+1.
+    const grouped = await prisma.forumPost.groupBy({
+      by: ['forumId', 'authorId'],
+      where: { forumId: { in: forumIds }, isDeleted: false },
+      _count: { _all: true },
+    });
+
+    const statsByForumId = new Map<string, { participants: number; posts: number }>();
+    for (const row of grouped) {
+      const prev = statsByForumId.get(row.forumId) ?? { participants: 0, posts: 0 };
+      prev.participants += 1;
+      prev.posts += row._count._all;
+      statsByForumId.set(row.forumId, prev);
+    }
+
+    // 3. Trending: most-commented posts across all active forums.
+    const trendingPosts = await prisma.forumPost.findMany({
+      where: { isDeleted: false, forum: { isActive: true } },
+      orderBy: [
+        { comments: { _count: 'desc' } },
+        { likesCount: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: 5,
+      include: {
+        author: { select: { nickname: true } },
+        forum: { select: { slug: true, name: true } },
+        _count: { select: { comments: true } },
+      },
+    });
+
+    const rooms: ForumHubRoom[] = forums.map((forum) => {
+      const colorIdx = colorByForumId.get(forum.id) ?? 0;
+      const stats = statsByForumId.get(forum.id) ?? { participants: 0, posts: 0 };
+
+      return {
+        id: forum.id,
+        name: forum.name,
+        description: forum.description,
+        slug: forum.slug,
+        topic: forum.topic,
+        endDate: forum.endDate,
+        colorIdx,
+        postsCount: stats.posts,
+        participantsCount: stats.participants,
+        threads: forum.posts.map((post) =>
+          toHubThread({
+            id: post.id,
+            content: post.content,
+            createdAt: post.createdAt,
+            likesCount: post.likesCount,
+            commentsCount: post._count.comments,
+            forumSlug: forum.slug,
+            forumName: forum.name,
+            nickname: post.author.nickname,
+            colorIdx,
+          })
+        ),
+      };
+    });
+
+    const trending: ForumHubThread[] = trendingPosts.map((post) =>
+      toHubThread({
+        id: post.id,
+        content: post.content,
+        createdAt: post.createdAt,
+        likesCount: post.likesCount,
+        commentsCount: post._count.comments,
+        forumSlug: post.forum.slug,
+        forumName: post.forum.name,
+        nickname: post.author.nickname,
+        colorIdx: colorByForumId.get(post.forumId) ?? 0,
+      })
+    );
+
+    return { rooms, trending };
+  } catch (error) {
+    logger.error('Error fetching forums hub data', { error });
+    throw error;
+  }
+}
+
+/**
+ * Most-relevant threads across all active forums (most commented, then most
+ * liked, then newest). Powers the landing "Conversaciones que conectan" widget.
+ * Standalone + light (2 queries): active forum ids for color identity, then the
+ * ranked posts. colorIdx follows forum order (topic asc), matching the hub.
+ */
+export async function getTrendingThreads(limit = 3): Promise<ForumHubThread[]> {
+  try {
+    const activeForums = await prisma.forum.findMany({
+      where: { isActive: true },
+      orderBy: { topic: 'asc' },
+      select: { id: true },
+    });
+
+    if (activeForums.length === 0) return [];
+
+    const colorByForumId = new Map<string, number>();
+    activeForums.forEach((f, i) => colorByForumId.set(f.id, i));
+
+    const posts = await prisma.forumPost.findMany({
+      where: { isDeleted: false, forum: { isActive: true } },
+      orderBy: [
+        { comments: { _count: 'desc' } },
+        { likesCount: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: limit,
+      include: {
+        author: { select: { nickname: true } },
+        forum: { select: { slug: true, name: true } },
+        _count: { select: { comments: true } },
+      },
+    });
+
+    return posts.map((post) =>
+      toHubThread({
+        id: post.id,
+        content: post.content,
+        createdAt: post.createdAt,
+        likesCount: post.likesCount,
+        commentsCount: post._count.comments,
+        forumSlug: post.forum.slug,
+        forumName: post.forum.name,
+        nickname: post.author.nickname,
+        colorIdx: colorByForumId.get(post.forumId) ?? 0,
+      })
+    );
+  } catch (error) {
+    logger.error('Error fetching trending threads', { error });
+    throw error;
+  }
+}
+
 /**
  * Get recently archived forums within the retention window
  */

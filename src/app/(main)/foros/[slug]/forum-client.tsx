@@ -13,7 +13,7 @@ import { ForumPostForm } from '@/components/ui/forum-post-form';
 import { ForumReportModal } from '@/components/ui/forum-report-modal';
 import { PostWithAuthor } from '@/lib/forum';
 import { ReportReason } from '@prisma/client';
-import { MessageSquare, AlertCircle, Plus } from 'lucide-react';
+import { MessageSquare, AlertCircle, Plus, Archive } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -44,6 +44,8 @@ interface ForumClientProps {
   currentUser: UserProfile | null;
   locale: string;
   translations: Record<string, string>;
+  /** Archived/closed forum: read-only (no new posts/comments/likes/reports). */
+  readOnly?: boolean;
 }
 
 export default function ForumClient({
@@ -51,6 +53,7 @@ export default function ForumClient({
   currentUser,
   locale: _locale,
   translations: t,
+  readOnly = false,
 }: ForumClientProps) {
   const router = useRouter();
   const [posts, setPosts] = React.useState<PostWithAuthor[]>([]);
@@ -289,8 +292,16 @@ export default function ForumClient({
 
   return (
     <div className="space-y-6">
+      {/* Read-only banner for archived/closed forums */}
+      {readOnly && (
+        <div role="note" style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 12, border: '1px solid var(--lh-border)', background: 'var(--lh-surface2)' }}>
+          <Archive size={16} style={{ color: 'var(--lh-warm)', flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
+          <p style={{ fontSize: 13.5, lineHeight: 1.5, color: 'var(--lh-fg2)', margin: 0 }}>{t.readOnlyBanner}</p>
+        </div>
+      )}
+
       {/* Nickname Form - Show automatically if user has no nickname */}
-      {currentUser && !currentUser.nickname && (
+      {!readOnly && currentUser && !currentUser.nickname && (
         <div className="lh-card" style={{ padding: 24 }}>
           <h3 style={{ fontFamily: 'var(--lh-font)', fontSize: 17, fontWeight: 600, color: 'var(--lh-fg)', margin: '0 0 6px' }}>
             {t.setNickname || 'Configura tu nickname'}
@@ -323,7 +334,7 @@ export default function ForumClient({
       )}
 
       {/* New Post Button/Form */}
-      {currentUser && currentUser.nickname && !currentUser.isBanned && (
+      {!readOnly && currentUser && currentUser.nickname && !currentUser.isBanned && (
         <div className="space-y-4">
           {!showNewPost ? (
             <button
@@ -364,6 +375,7 @@ export default function ForumClient({
                 t={(key) => t[key] || key}
                 currentUserId={currentUser?.id}
                 userRole={currentUser?.role}
+                readOnly={readOnly}
                 onLike={handleLikePost}
                 onReport={(postId) => {
                   setReportTarget({ type: 'post', id: postId });
@@ -376,7 +388,7 @@ export default function ForumClient({
               {expandedPost === post.id && (
                 <div className="ml-4 space-y-4">
                   {/* Comment Form */}
-                  {currentUser && currentUser.nickname && !currentUser.isBanned && (
+                  {!readOnly && currentUser && currentUser.nickname && !currentUser.isBanned && (
                     <div className="pl-12 pt-4">
                       <ForumPostForm
                         t={(key) => t[key] || key}
@@ -399,6 +411,7 @@ export default function ForumClient({
                           t={(key) => t[key] || key}
                           currentUserId={currentUser?.id}
                           userRole={currentUser?.role}
+                          readOnly={readOnly}
                           onLike={handleLikeComment}
                           onReport={(commentId) => {
                             setReportTarget({ type: 'comment', id: commentId });

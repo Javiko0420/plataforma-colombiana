@@ -32,6 +32,8 @@ interface ForumCommentCardProps {
   currentUserId?: string;
   /** User role — ADMIN/MODERATOR can report any content including their own */
   userRole?: string;
+  /** Archived/closed forum: hide mutating actions (like/report), keep counts. */
+  readOnly?: boolean;
 }
 
 const actionBtn: React.CSSProperties = {
@@ -48,6 +50,7 @@ export function ForumCommentCard({
   onReport,
   currentUserId,
   userRole,
+  readOnly = false,
 }: ForumCommentCardProps) {
   const [isLiking, setIsLiking] = React.useState(false);
 
@@ -63,7 +66,7 @@ export function ForumCommentCard({
     }
   };
 
-  const canReport = currentUserId && (currentUserId !== comment.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR');
+  const canReport = !readOnly && currentUserId && (currentUserId !== comment.author.id || userRole === 'ADMIN' || userRole === 'MODERATOR');
 
   if (comment.isDeleted) {
     return (
@@ -103,10 +106,17 @@ export function ForumCommentCard({
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <button onClick={handleLike} disabled={!currentUserId || isLiking} style={{ ...actionBtn, opacity: !currentUserId ? 0.5 : 1 }}>
-          <Heart size={14} style={{ color: isLiking ? 'var(--lh-terra)' : 'var(--lh-fg3)' }} aria-hidden="true" />
-          {comment.likesCount}
-        </button>
+        {readOnly ? (
+          <span style={{ ...actionBtn, cursor: 'default' }}>
+            <Heart size={14} style={{ color: 'var(--lh-fg3)' }} aria-hidden="true" />
+            {comment.likesCount}
+          </span>
+        ) : (
+          <button onClick={handleLike} disabled={!currentUserId || isLiking} style={{ ...actionBtn, opacity: !currentUserId ? 0.5 : 1 }}>
+            <Heart size={14} style={{ color: isLiking ? 'var(--lh-terra)' : 'var(--lh-fg3)' }} aria-hidden="true" />
+            {comment.likesCount}
+          </button>
+        )}
 
         {canReport && (
           <button onClick={() => onReport?.(comment.id)} style={actionBtn}>
