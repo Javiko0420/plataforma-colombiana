@@ -331,3 +331,36 @@ select.lh-input { cursor: pointer; appearance: none; -webkit-appearance: none; p
     transform: none !important;
   }
 }
+
+/* ============================================================
+   Bracket de llaves eliminatorias (Mundial 2026)
+   Conectores en L dibujados con pseudo-elementos. La geometría
+   (alturas/márgenes) la fija el componente WorldcupBracket para
+   que cada partido padre quede centrado entre sus dos hijos.
+   ============================================================ */
+.wc-bracket {
+  --wc-gut: 30px; /* debe coincidir con GUTTER en WorldcupBracket.tsx */
+  --wc-line: var(--lh-border);
+}
+.wc-bracket .wc-match {
+  position: relative;
+}
+/* Codo saliente hacia la siguiente ronda: horizontal en el centro del
+   partido + vertical hasta el centro del padre (mitad del par). */
+.wc-bracket .wc-match[data-next='1']::after {
+  content: '';
+  position: absolute;
+  left: 100%;
+  width: var(--wc-gut);
+  height: var(--wc-rail);
+  border-right: 2px solid var(--wc-line);
+  pointer-events: none;
+}
+.wc-bracket .wc-match[data-next='1'][data-pos='top']::after {
+  top: 50%;
+  border-top: 2px solid var(--wc-line);
+}
+.wc-bracket .wc-match[data-next='1'][data-pos='bottom']::after {
+  bottom: 50%;
+  border-bottom: 2px solid var(--wc-line);
+}

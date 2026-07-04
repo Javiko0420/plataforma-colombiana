@@ -48,3 +48,6 @@ logs/*
 
 # Google OAuth credentials (never commit secrets)
 client_secret_*.json
+
+# Playwright MCP test artifacts (screenshots, console logs, snapshots)
+.playwright-mcp/

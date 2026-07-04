@@ -5,7 +5,7 @@ import { getWorldcupLive } from '@/lib/sports/worldcup/service'
 import WorldcupHero from './components/WorldcupHero'
 import WorldcupLiveSection from './components/WorldcupLiveSection'
 import WorldcupFixturesSection from './components/WorldcupFixturesSection'
-import WorldcupGroupStandingsGrid from './components/WorldcupGroupStandingsGrid'
+import WorldcupBracket from './components/WorldcupBracket'
 import WorldcupTeamsGrid from './components/WorldcupTeamsGrid'
 
 export const dynamic = 'force-dynamic'
@@ -71,10 +71,10 @@ export default async function WorldcupPage() {
           </Suspense>
         </section>
 
-        <section aria-labelledby="wc-standings-title">
-          <SectionTitle id="wc-standings-title" title={t('sports.worldcup.standings')} />
+        <section aria-labelledby="wc-bracket-title">
+          <SectionTitle id="wc-bracket-title" title={t('sports.worldcup.bracket')} />
           <Suspense fallback={<SectionSkeleton rows={3} />}>
-            <WorldcupGroupStandingsGrid locale={locale} />
+            <WorldcupBracket locale={locale} />
           </Suspense>
         </section>
 
