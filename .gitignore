@@ -51,3 +51,6 @@ client_secret_*.json
 
 # Playwright MCP test artifacts (screenshots, console logs, snapshots)
 .playwright-mcp/
+
+# Claude Code local settings (personal permissions allowlist, not shared)
+.claude/settings.local.json
