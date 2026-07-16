@@ -5,11 +5,12 @@
  * Devuelve UN partido para el widget del home:
  *   - Si hay partidos del Mundial en vivo → el primero (tal cual la API, sin
  *     filtro por país).
- *   - Si no hay en vivo → el último partido finalizado de la selección Colombia.
+ *   - Si no hay en vivo → el último partido finalizado del Mundial (todo el
+ *     torneo, sin filtro por país).
  */
 
 import { NextResponse } from 'next/server'
-import { WORLDCUP_LEAGUE_ID, WORLDCUP_SEASON, COLOMBIA_TEAM_ID, TTL } from '@/lib/sports/worldcup/constants'
+import { WORLDCUP_LEAGUE_ID, WORLDCUP_SEASON, TTL } from '@/lib/sports/worldcup/constants'
 import { fetchApiFootball } from '@/lib/sports/worldcup/api-football-client'
 import { worldcupCache } from '@/lib/sports/worldcup/cache'
 import { ApiFootballFixturesEnvelopeSchema } from '@/lib/sports/worldcup/schemas'
@@ -56,21 +57,21 @@ export async function GET() {
       return NextResponse.json(payload)
     }
 
-    // 2) Sin partidos en vivo → último partido finalizado de Colombia.
-    const colEnvelope = await fetchApiFootball(
+    // 2) Sin partidos en vivo → último partido finalizado del Mundial (todo el torneo).
+    const fixturesEnvelope = await fetchApiFootball(
       'fixtures',
-      { league: String(WORLDCUP_LEAGUE_ID), season: String(WORLDCUP_SEASON), team: String(COLOMBIA_TEAM_ID) },
+      { league: String(WORLDCUP_LEAGUE_ID), season: String(WORLDCUP_SEASON) },
       ApiFootballFixturesEnvelopeSchema,
       { allowEmptyResponse: true }
     )
-    const lastColombia = colEnvelope.response
+    const lastFinished = fixturesEnvelope.response
       .map(mapFixture)
       .filter((f) => FINISHED.has(f.status.short))
       .sort((a, b) => b.timestamp - a.timestamp)[0] ?? null
 
-    const payload: WidgetPayload = { mode: 'last', fixture: lastColombia, cachedAt: new Date().toISOString() }
+    const payload: WidgetPayload = { mode: 'last', fixture: lastFinished, cachedAt: new Date().toISOString() }
     worldcupCache.set(CACHE_KEY, payload, TTL.LIVE_TTL_IDLE_S)
-    wcLogger.info('widget: last Colombia fixture', { found: lastColombia !== null })
+    wcLogger.info('widget: last finished fixture', { found: lastFinished !== null })
     return NextResponse.json(payload)
   } catch (err) {
     if (err instanceof ApiFootballError) {
