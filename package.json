@@ -70,7 +70,7 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@types/sanitize-html": "^2.16.0",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "^15.5.9",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
