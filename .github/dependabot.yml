@@ -1,0 +1,28 @@
+# Dependabot: PRs semanales de dependencias, agrupando minor+patch para
+# reducir ruido. Los majors llegan como PR individuales y se revisan a mano
+# antes de merge — nunca auto-merge. Los avisos de seguridad no dependen
+# del schedule: Dependabot los abre en cuanto se publican.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    commit-message:
+      prefix: "chore(ci)"
