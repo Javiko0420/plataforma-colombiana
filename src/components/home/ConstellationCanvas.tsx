@@ -25,12 +25,17 @@ export function ConstellationCanvas({ variant }: Props) {
     h: number
     dark: boolean
     variant: number
-  }>({ points: [], raf: 0, w: 0, h: 0, dark: false, variant })
+    reduced: boolean
+  }>({ points: [], raf: 0, w: 0, h: 0, dark: false, variant, reduced: false })
 
   const { resolvedTheme } = useTheme()
 
   useEffect(() => {
     stateRef.current.dark = resolvedTheme === 'dark'
+    // Con reduced-motion no hay bucle de animación: redibujar el frame
+    // estático para que el cambio de tema se refleje.
+    if (stateRef.current.reduced) drawFrame()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resolvedTheme])
 
   useEffect(() => {
@@ -57,8 +62,11 @@ export function ConstellationCanvas({ variant }: Props) {
   function initPoints() {
     resizeCanvas()
     const counts = [0, 56, 96]
-    const n = counts[stateRef.current.variant] ?? 0
+    let n = counts[stateRef.current.variant] ?? 0
     const { w, h } = stateRef.current
+    // Menos puntos en pantallas pequeñas: el costo del enlace es O(n²) y en
+    // móvil compite con la hidratación y los fetches del home.
+    if (w < 640) n = Math.round(n * 0.45)
     const pts: Point[] = []
     for (let i = 0; i < n; i++) {
       pts.push({
@@ -73,8 +81,66 @@ export function ConstellationCanvas({ variant }: Props) {
     stateRef.current.points = pts
   }
 
+  /** Avanza la simulación un paso (rebote en bordes). */
+  function stepPoints() {
+    const { w, h, points } = stateRef.current
+    for (const p of points) {
+      p.x += p.vx
+      p.y += p.vy
+      if (p.x < 0 || p.x > w) p.vx *= -1
+      if (p.y < 0 || p.y > h) p.vy *= -1
+    }
+  }
+
+  /** Dibuja un frame con el estado actual (sin avanzar la simulación). */
+  function drawFrame() {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const { w, h, points, dark, variant } = stateRef.current
+    ctx.clearRect(0, 0, w, h)
+    if (!points.length) return
+
+    const base = dark ? '120,170,220' : '46,94,140'
+    const warm = dark ? '226,184,106' : '212,162,76'
+    const linkDist = variant === 2 ? 150 : 122
+
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const a = points[i], b = points[j]
+        const dx = a.x - b.x, dy = a.y - b.y
+        const d = Math.sqrt(dx * dx + dy * dy)
+        if (d < linkDist) {
+          const o = (1 - d / linkDist) * (dark ? 0.26 : 0.18)
+          ctx.strokeStyle = `rgba(${base},${o})`
+          ctx.lineWidth = 1
+          ctx.beginPath()
+          ctx.moveTo(a.x, a.y)
+          ctx.lineTo(b.x, b.y)
+          ctx.stroke()
+        }
+      }
+    }
+
+    for (const p of points) {
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+      ctx.fillStyle = `rgba(${p.warm ? warm : base},${dark ? 0.9 : 0.7})`
+      ctx.fill()
+    }
+  }
+
   useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    stateRef.current.reduced = reduced
     initPoints()
+
+    // Sin animación para quien pide movimiento reducido: un solo frame estático.
+    if (reduced) {
+      drawFrame()
+      return
+    }
 
     const onResize = () => {
       resizeCanvas()
@@ -83,53 +149,36 @@ export function ConstellationCanvas({ variant }: Props) {
 
     const tick = () => {
       stateRef.current.raf = requestAnimationFrame(tick)
-      const canvas = canvasRef.current
-      if (!canvas) return
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      const { w, h, points, dark, variant } = stateRef.current
-      ctx.clearRect(0, 0, w, h)
-      if (!points.length) return
-
-      const base = dark ? '120,170,220' : '46,94,140'
-      const warm = dark ? '226,184,106' : '212,162,76'
-      const linkDist = variant === 2 ? 150 : 122
-
-      for (const p of points) {
-        p.x += p.vx
-        p.y += p.vy
-        if (p.x < 0 || p.x > w) p.vx *= -1
-        if (p.y < 0 || p.y > h) p.vy *= -1
-      }
-
-      for (let i = 0; i < points.length; i++) {
-        for (let j = i + 1; j < points.length; j++) {
-          const a = points[i], b = points[j]
-          const dx = a.x - b.x, dy = a.y - b.y
-          const d = Math.sqrt(dx * dx + dy * dy)
-          if (d < linkDist) {
-            const o = (1 - d / linkDist) * (dark ? 0.26 : 0.18)
-            ctx.strokeStyle = `rgba(${base},${o})`
-            ctx.lineWidth = 1
-            ctx.beginPath()
-            ctx.moveTo(a.x, a.y)
-            ctx.lineTo(b.x, b.y)
-            ctx.stroke()
-          }
-        }
-      }
-
-      for (const p of points) {
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(${p.warm ? warm : base},${dark ? 0.9 : 0.7})`
-        ctx.fill()
-      }
+      stepPoints()
+      drawFrame()
     }
-    stateRef.current.raf = requestAnimationFrame(tick)
+
+    const start = () => {
+      if (stateRef.current.raf) return
+      stateRef.current.raf = requestAnimationFrame(tick)
+    }
+    const stop = () => {
+      cancelAnimationFrame(stateRef.current.raf)
+      stateRef.current.raf = 0
+    }
+
+    // Pausar el bucle cuando el hero sale del viewport: sin esto el O(n²)
+    // de los enlaces sigue quemando CPU durante todo el scroll de la página.
+    const canvas = canvasRef.current
+    let observer: IntersectionObserver | null = null
+    if (canvas && 'IntersectionObserver' in window) {
+      observer = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) start(); else stop() },
+        { threshold: 0 }
+      )
+      observer.observe(canvas)
+    } else {
+      start()
+    }
 
     return () => {
-      cancelAnimationFrame(stateRef.current.raf)
+      stop()
+      observer?.disconnect()
       window.removeEventListener('resize', onResize)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
