@@ -8,12 +8,6 @@ const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
-  const response = NextResponse.next()
-
-  // Auth routes pass through without any processing to prevent redirect loops
-  if (path.startsWith('/auth/') || path.startsWith('/api/auth/')) {
-    return NextResponse.next()
-  }
 
   // ── 1. Protección del Panel de Administración (/admin) ─────────────────
   if (path.startsWith('/admin')) {
@@ -83,30 +77,9 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // ── 4. Headers de Seguridad (Security Hardening) ───────────────────────
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('X-Frame-Options', 'DENY')
-  response.headers.set('X-XSS-Protection', '1; mode=block')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://upload-widget.cloudinary.com",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https: https://media.api-sports.io https://media-3.api-sports.io https://res.cloudinary.com https://lh3.googleusercontent.com",
-      "font-src 'self'",
-      "connect-src 'self' https://api.open-meteo.com https://ipwho.is https://api-football-v1.p.rapidapi.com https://v3.football.api-sports.io https://widgets.api-sports.io https://widgets.api-football.com https://playerservices.streamtheworld.com https://*.streamtheworld.com https://api.cloudinary.com https://formspree.io",
-      "media-src 'self' https: data: https://playerservices.streamtheworld.com https://*.streamtheworld.com",
-      "frame-src https://widgets.api-sports.io https://widgets.api-football.com https://upload-widget.cloudinary.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "frame-ancestors 'none'",
-      "upgrade-insecure-requests",
-    ].join('; '),
-  )
-
-  return response
+  // Nota: los headers de seguridad (CSP, X-Frame-Options, etc.) viven en
+  // next.config.ts → headers(). Este middleware solo corre en rutas protegidas.
+  return NextResponse.next()
 }
 
 export const config = {
@@ -115,6 +88,5 @@ export const config = {
     '/registrar-negocio', // Requiere autenticación para registrar negocio
     '/perfil/:path*', // Requiere autenticación para ver perfil
     '/api/admin/:path*', // Protege endpoints de automatización
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)', // Aplica headers a todo lo demás
   ],
 }
