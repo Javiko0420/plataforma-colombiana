@@ -1,23 +1,16 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { MapPin, CalendarDays } from 'lucide-react'
 import { EVENT_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
+import { getHomeEvents, type HomeEvent } from '@/lib/home-data'
+import { logger } from '@/lib/logger'
 
-/* Solo los campos que la vitrina necesita; evitamos arrastrar @prisma/client
-   al bundle cliente (mismo criterio que FeaturedBusinesses / RecentJobs). */
-interface UpcomingEvent {
-  id: string
-  title: string
-  category: string
-  eventDate: string // ISO string desde el JSON de la API
-  location: string
-  imageUrl: string | null
-}
+/*
+ * Server Component: los datos llegan en el HTML inicial (SEO + sin pop-in).
+ * El hover de las tarjetas es CSS (.lh-hover-lift) — no necesita hidratación.
+ */
 
 /* Gradientes del mock: preservan el look "poster" cuando el evento no tiene foto. */
 const EVENT_GRADIENTS = [
@@ -32,35 +25,13 @@ const gridStyle: React.CSSProperties = {
   gap: 18,
 }
 
-/* ─── Sección completa: hace fetch y resuelve estados ─── */
-export function UpcomingEvents() {
-  const [events, setEvents] = useState<UpcomingEvent[] | null>(null)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    let active = true
-    fetch('/api/events/upcoming?limit=3')
-      .then(res => res.json())
-      .then(json => {
-        if (!active) return
-        if (json?.success && Array.isArray(json.data)) setEvents(json.data)
-        else setError(true)
-      })
-      .catch(() => { if (active) setError(true) })
-    return () => { active = false }
-  }, [])
-
-  // Carga
-  if (events === null && !error) {
-    return (
-      <div style={gridStyle}>
-        {Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)}
-      </div>
-    )
-  }
-
-  // Error de red / API
-  if (error) {
+/* ─── Sección completa (async server): datos cacheados 5 min ─── */
+export async function UpcomingEvents() {
+  let events: HomeEvent[]
+  try {
+    events = await getHomeEvents()
+  } catch (error) {
+    logger.error('Error loading home upcoming events', { error })
     return (
       <p style={{ fontSize: 14.5, color: 'var(--lh-fg2)', padding: '8px 2px' }}>
         No pudimos cargar los eventos en este momento. Intenta recargar la página.
@@ -69,7 +40,7 @@ export function UpcomingEvents() {
   }
 
   // Vacío (aún no hay eventos próximos)
-  if (!events || events.length === 0) {
+  if (events.length === 0) {
     return (
       <div style={{ padding: '40px 24px', textAlign: 'center', borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
         <CalendarDays size={30} style={{ color: 'var(--lh-fg3)', opacity: 0.5 }} aria-hidden="true" />
@@ -97,7 +68,7 @@ export function UpcomingEvents() {
 }
 
 /* ─── Tarjeta "poster" de evento próximo ─── */
-function EventPosterCard({ event, index }: { event: UpcomingEvent; index: number }) {
+function EventPosterCard({ event, index }: { event: HomeEvent; index: number }) {
   const date = new Date(event.eventDate)
   const day = format(date, 'dd', { locale: es })
   const month = format(date, 'MMM', { locale: es }).toUpperCase()
@@ -107,9 +78,8 @@ function EventPosterCard({ event, index }: { event: UpcomingEvent; index: number
   return (
     <Link href={`/eventos/${event.id}`} style={{ textDecoration: 'none' }}>
       <article
-        style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', background: hasImage ? 'var(--lh-surface2)' : fallback, minHeight: 280, display: 'flex', boxShadow: 'var(--lh-shadow)', transition: '.26s cubic-bezier(.22,.61,.36,1)', cursor: 'pointer' }}
-        onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-        onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
+        className="lh-hover-lift"
+        style={{ position: 'relative', borderRadius: 20, overflow: 'hidden', background: hasImage ? 'var(--lh-surface2)' : fallback, minHeight: 280, display: 'flex', cursor: 'pointer' }}
       >
         {hasImage && (
           <>
@@ -153,9 +123,13 @@ function EventPosterCard({ event, index }: { event: UpcomingEvent; index: number
   )
 }
 
-/* ─── Skeleton de carga (misma forma de tarjeta) ─── */
-function SkeletonCard() {
+/* ─── Skeleton (fallback de Suspense, misma forma de tarjeta) ─── */
+export function UpcomingEventsSkeleton() {
   return (
-    <div aria-hidden="true" style={{ borderRadius: 20, minHeight: 280, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border)' }} />
+    <div style={gridStyle}>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} aria-hidden="true" style={{ borderRadius: 20, minHeight: 280, background: 'var(--lh-surface2)', border: '1px solid var(--lh-border)' }} />
+      ))}
+    </div>
   )
 }

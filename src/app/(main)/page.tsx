@@ -1,23 +1,29 @@
-'use client'
-
-import { useState, useEffect, useRef } from 'react'
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
   Store, Briefcase, CalendarDays, MessageCircle, Trophy, Cloud,
-  ArrowLeftRight, Radio, Users, Search, ArrowRight,
-  Sparkles, Heart, Zap, Shield, Layers, Sun, Moon,
+  ArrowLeftRight, Radio, Users, ArrowRight,
+  Heart, Zap, Shield, Layers,
 } from 'lucide-react'
+import { Reveal } from '@/components/lh/Reveal'
 import { ConstellationCanvas } from '@/components/home/ConstellationCanvas'
-import { FeaturedBusinesses } from '@/components/home/FeaturedBusinesses'
-import { RecentJobs } from '@/components/home/RecentJobs'
-import { UpcomingEvents } from '@/components/home/UpcomingEvents'
+import { HomeSearch } from '@/components/home/HomeSearch'
+import { FeaturedBusinesses, FeaturedBusinessesSkeleton } from '@/components/home/FeaturedBusinesses'
+import { RecentJobs, RecentJobsSkeleton } from '@/components/home/RecentJobs'
+import { UpcomingEvents, UpcomingEventsSkeleton } from '@/components/home/UpcomingEvents'
+import { ForumsWidget, ForumsWidgetSkeleton } from '@/components/home/ForumsWidget'
 import { WeatherWidget } from '@/components/home/WeatherWidget'
 import { RatesWidget } from '@/components/home/RatesWidget'
 import { RadioWidget } from '@/components/home/RadioWidget'
 import { SportsWidget } from '@/components/home/SportsWidget'
-import { ForumsWidget } from '@/components/home/ForumsWidget'
-import { useTheme } from 'next-themes'
+
+/*
+ * Server Component: el shell y las secciones de datos se renderizan en el
+ * servidor (SEO + contenido en el primer paint). Las secciones con datos
+ * hacen streaming vía <Suspense> con datos cacheados (lib/home-data).
+ * Solo son client: búsqueda, canvas del hero, reveals y widgets "vivos"
+ * (clima, tasas, deportes, radio).
+ */
 
 /* ─── paleta de colores helpers ─── */
 const ACCENT_TINTS = ['var(--lh-accent)', 'var(--lh-terra)', 'var(--lh-warm)', 'var(--lh-green)']
@@ -45,8 +51,6 @@ const WHY = [
   { title: 'Comunidad segura',     desc: 'Perfiles verificados y un espacio cuidado para conectar con confianza.',     Icon: Shield,  colorIdx: 3 },
 ]
 
-
-
 /* Atajos populares → cada uno apunta a su módulo real.
    Negocios usan el directorio (?categoria= cuando hay categoría, si no ?q=);
    el resto va a su vertical (empleos, eventos, deportes). */
@@ -59,69 +63,40 @@ const POPULAR: { label: string; href: string }[] = [
   { label: 'Abogados',       href: '/directorio?categoria=SERVICIOS' },
 ]
 
-/* ─── Scroll reveal hook ─── */
-function useReveal() {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) { el.classList.add('lh-in'); obs.disconnect() } },
-      { threshold: 0.08 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-  return ref
-}
-
-/* ─── Reveal wrapper component ─── */
-function Reveal({ children, delay = 0, className = '', style = {} }: {
-  children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties
-}) {
-  const ref = useReveal()
-  return (
-    <div
-      ref={ref}
-      className={`lh-reveal ${className}`}
-      style={{ transitionDelay: `${delay}ms`, ...style }}
-    >
-      {children}
-    </div>
-  )
-}
-
 /* ═══════════════════════════════════════════════════
-   PAGE COMPONENT
+   PAGE COMPONENT (Server)
 ═══════════════════════════════════════════════════ */
 export default function Home() {
   const heroVariant = 2
-  const router = useRouter()
-  const [query, setQuery] = useState('')
-  const { resolvedTheme, setTheme } = useTheme()
-  const isDark = resolvedTheme === 'dark'
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    const q = query.trim()
-    router.push(q ? `/directorio?q=${encodeURIComponent(q)}` : '/directorio')
-  }
 
   return (
     <>
-      {/* Estilos de reveal (scoped, sin afectar el resto del app) */}
+      {/* Estilos del home (scoped): hovers en CSS puro — sin hidratación.
+          .lh-reveal vive global en design-tokens.css. */}
       <style>{`
-        #lt-home .lh-reveal {
-          opacity: 0;
-          transform: translateY(22px);
-          transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1);
-        }
-        #lt-home .lh-reveal.lh-in {
-          opacity: 1;
-          transform: none;
-        }
         #lt-home a { color: inherit; text-decoration: none; }
         #lt-home *  { box-sizing: border-box; }
+        #lt-home .lh-hover-lift { box-shadow: var(--lh-shadow); transition: transform .26s cubic-bezier(.22,.61,.36,1), box-shadow .26s cubic-bezier(.22,.61,.36,1); }
+        #lt-home .lh-hover-lift:hover { transform: translateY(-4px); box-shadow: var(--lh-shadow-lg); }
+        #lt-home .lh-hover-slide { border: 1px solid var(--lh-border); box-shadow: var(--lh-shadow); transition: transform .24s, border-color .24s; }
+        #lt-home .lh-hover-slide:hover { transform: translateX(4px); border-color: color-mix(in oklch, var(--lh-accent) 14%, transparent); }
+        #lt-home .lh-hover-pop { transition: transform .22s; }
+        #lt-home .lh-hover-pop:hover { transform: translateY(-1px); }
+        #lt-home .lh-cta-primary { box-shadow: 0 14px 30px -12px var(--lh-accent); transition: .24s; }
+        #lt-home .lh-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 20px 40px -12px var(--lh-accent); }
+        #lt-home .lh-cta-ghost { background: var(--lh-surface); box-shadow: var(--lh-shadow); transition: .24s; }
+        #lt-home .lh-cta-ghost:hover { transform: translateY(-2px); background: var(--lh-surface2); }
+        #lt-home .lh-btn-pop { transition: transform .22s; }
+        #lt-home .lh-btn-pop:hover { transform: translateY(-2px); }
+        #lt-home .lh-btn-glass { background: rgba(255,255,255,.12); transition: .24s; }
+        #lt-home .lh-btn-glass:hover { background: rgba(255,255,255,.2); transform: translateY(-2px); }
+        #lt-home .lh-chip { border: 1px solid var(--lh-border); color: var(--lh-fg2); transition: .2s; }
+        #lt-home .lh-chip:hover { border-color: var(--lh-accent); color: var(--lh-fg); }
+        @media (prefers-reduced-motion: reduce) {
+          #lt-home .lh-hover-lift:hover, #lt-home .lh-hover-slide:hover, #lt-home .lh-hover-pop:hover,
+          #lt-home .lh-cta-primary:hover, #lt-home .lh-cta-ghost:hover, #lt-home .lh-btn-pop:hover,
+          #lt-home .lh-btn-glass:hover { transform: none; }
+        }
       `}</style>
 
       <div
@@ -185,17 +160,15 @@ export default function Home() {
             <Reveal delay={200} style={{ display: 'flex', gap: 13, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 46 }}>
               <Link
                 href="#categorias"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', borderRadius: 13, background: 'var(--lh-accent)', color: '#fff', fontSize: 16, fontWeight: 600, letterSpacing: '-.01em', boxShadow: '0 14px 30px -12px var(--lh-accent)', transition: '.24s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 20px 40px -12px var(--lh-accent)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = '0 14px 30px -12px var(--lh-accent)' }}
+                className="lh-cta-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', borderRadius: 13, background: 'var(--lh-accent)', color: '#fff', fontSize: 16, fontWeight: 600, letterSpacing: '-.01em' }}
               >
                 Explorar comunidad <ArrowRight size={18} />
               </Link>
               <Link
                 href="/registrar-negocio"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', borderRadius: 13, background: 'var(--lh-surface)', color: 'var(--lh-fg)', border: '1px solid var(--lh-border)', fontSize: 16, fontWeight: 600, letterSpacing: '-.01em', boxShadow: 'var(--lh-shadow)', transition: '.24s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.background = 'var(--lh-surface2)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.background = 'var(--lh-surface)' }}
+                className="lh-cta-ghost"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 26px', borderRadius: 13, color: 'var(--lh-fg)', border: '1px solid var(--lh-border)', fontSize: 16, fontWeight: 600, letterSpacing: '-.01em' }}
               >
                 Registrar mi negocio
               </Link>
@@ -208,40 +181,15 @@ export default function Home() {
         {/* ══════ QUICK SEARCH ══════ */}
         <section style={{ maxWidth: 1220, margin: '0 auto', padding: '0 24px', position: 'relative', zIndex: 5, marginTop: -80 }}>
           <Reveal style={{ background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', borderRadius: 24, boxShadow: 'var(--lh-shadow-lg)', padding: 26 }}>
-            <form
-              role="search"
-              onSubmit={handleSearch}
-              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '6px 8px 6px 18px', border: '1px solid var(--lh-border)', borderRadius: 15, background: 'var(--lh-surface2)', transition: '.2s' }}
-            >
-              <Search size={18} style={{ color: 'var(--lh-fg3)', flexShrink: 0 }} aria-hidden="true" />
-              <label htmlFor="home-search" className="sr-only">Buscar en el directorio</label>
-              <input
-                id="home-search"
-                name="q"
-                type="search"
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                placeholder="Busca negocios, empleos, eventos…"
-                style={{ flex: 1, border: 0, background: 'transparent', outline: 'none', color: 'var(--lh-fg)', fontSize: 16.5, fontFamily: 'var(--lh-font)', padding: '13px 0' }}
-              />
-              <button
-                type="submit"
-                style={{ padding: '12px 22px', borderRadius: 11, border: 0, background: 'var(--lh-accent)', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = '' }}
-              >
-                Buscar
-              </button>
-            </form>
+            <HomeSearch />
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 16 }}>
               <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 11.5, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--lh-fg3)', marginRight: 2 }}>Popular</span>
               {POPULAR.map(({ label, href }) => (
                 <Link
                   key={label}
                   href={href}
-                  style={{ display: 'inline-block', padding: '7px 14px', borderRadius: 99, border: '1px solid var(--lh-border)', background: 'var(--lh-surface)', color: 'var(--lh-fg2)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--lh-font)', transition: '.2s', textDecoration: 'none' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--lh-accent)'; el.style.color = 'var(--lh-fg)' }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--lh-border)'; el.style.color = 'var(--lh-fg2)' }}
+                  className="lh-chip"
+                  style={{ display: 'inline-block', padding: '7px 14px', borderRadius: 99, background: 'var(--lh-surface)', fontSize: 13.5, fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--lh-font)', textDecoration: 'none' }}
                 >
                   {label}
                 </Link>
@@ -268,9 +216,8 @@ export default function Home() {
                 <Reveal key={name} delay={i * 40}>
                   <Link
                     href={CATEGORY_HREFS[i]}
-                    style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 24, borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s cubic-bezier(.22,.61,.36,1)', textDecoration: 'none' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
+                    className="lh-hover-lift"
+                    style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 24, borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', textDecoration: 'none' }}
                   >
                     <span style={{ width: 46, height: 46, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', background: chip(c), color: c }}>
                       <Icon size={22} />
@@ -298,7 +245,9 @@ export default function Home() {
             </Link>
           </Reveal>
           <Reveal>
-            <FeaturedBusinesses />
+            <Suspense fallback={<FeaturedBusinessesSkeleton />}>
+              <FeaturedBusinesses />
+            </Suspense>
           </Reveal>
         </section>
 
@@ -314,7 +263,9 @@ export default function Home() {
             </Link>
           </Reveal>
           <Reveal>
-            <RecentJobs />
+            <Suspense fallback={<RecentJobsSkeleton />}>
+              <RecentJobs />
+            </Suspense>
           </Reveal>
         </section>
 
@@ -330,7 +281,9 @@ export default function Home() {
             </Link>
           </Reveal>
           <Reveal>
-            <UpcomingEvents />
+            <Suspense fallback={<UpcomingEventsSkeleton />}>
+              <UpcomingEvents />
+            </Suspense>
           </Reveal>
         </section>
 
@@ -344,7 +297,9 @@ export default function Home() {
                   <span style={{ fontFamily: 'var(--lh-mono)', fontSize: 12, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--lh-accent)', fontWeight: 500 }}>Foros & comunidad</span>
                   <h2 style={{ fontSize: 'clamp(26px,3.4vw,38px)', lineHeight: 1.08, letterSpacing: '-.03em', fontWeight: 600, margin: '12px 0 0', fontFamily: 'var(--lh-font)' }}>Conversaciones que conectan</h2>
                 </div>
-                <ForumsWidget />
+                <Suspense fallback={<ForumsWidgetSkeleton />}>
+                  <ForumsWidget />
+                </Suspense>
               </div>
 
               {/* Join CTA card */}
@@ -359,9 +314,8 @@ export default function Home() {
                 </div>
                 <Link
                   href="/auth/signup"
-                  style={{ position: 'relative', marginTop: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px 20px', borderRadius: 12, background: '#fff', color: 'var(--lh-accent)', fontSize: 15, fontWeight: 600, transition: '.22s', textDecoration: 'none' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = '' }}
+                  className="lh-btn-pop"
+                  style={{ position: 'relative', marginTop: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '13px 20px', borderRadius: 12, background: '#fff', color: 'var(--lh-accent)', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}
                 >
                   Crear cuenta gratis <ArrowRight size={16} />
                 </Link>
@@ -413,9 +367,8 @@ export default function Home() {
               return (
                 <Reveal key={title} delay={i * 50}>
                   <div
-                    style={{ padding: '28px 24px', borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
+                    className="lh-hover-lift"
+                    style={{ padding: '28px 24px', borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}
                   >
                     <span style={{ display: 'inline-flex', width: 50, height: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', background: chip(c), color: c, marginBottom: 18 }}>
                       <Icon size={24} />
@@ -445,17 +398,15 @@ export default function Home() {
                 <div style={{ display: 'flex', gap: 13, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <Link
                     href="/auth/signup"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 28px', borderRadius: 13, background: '#fff', color: 'var(--lh-accent)', fontSize: 16, fontWeight: 600, transition: '.24s', textDecoration: 'none' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = '' }}
+                    className="lh-btn-pop"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 28px', borderRadius: 13, background: '#fff', color: 'var(--lh-accent)', fontSize: 16, fontWeight: 600, textDecoration: 'none' }}
                   >
                     Unirme a la comunidad <ArrowRight size={18} />
                   </Link>
                   <Link
                     href="/empleos"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 28px', borderRadius: 13, background: 'rgba(255,255,255,.12)', color: '#fff', border: '1px solid rgba(255,255,255,.3)', fontSize: 16, fontWeight: 600, transition: '.24s', textDecoration: 'none' }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,.2)'; el.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(255,255,255,.12)'; el.style.transform = '' }}
+                    className="lh-btn-glass"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '15px 28px', borderRadius: 13, color: '#fff', border: '1px solid rgba(255,255,255,.3)', fontSize: 16, fontWeight: 600, textDecoration: 'none' }}
                   >
                     Publicar empleo
                   </Link>

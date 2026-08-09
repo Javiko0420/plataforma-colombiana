@@ -1,31 +1,18 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, MapPin, Building2, Sparkles } from 'lucide-react'
 import { BUSINESS_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
+import { getHomeBusinesses, type HomeBusiness } from '@/lib/home-data'
+import { logger } from '@/lib/logger'
 
-/* Plan comercial: union local para no arrastrar @prisma/client al bundle cliente. */
-type BusinessPlan = 'FREE' | 'BASIC' | 'PREMIUM' | 'SPONSOR'
-
-interface FeaturedBusiness {
-  id: string
-  name: string
-  slug: string
-  category: string
-  city: string | null
-  state: string | null
-  images: string[]
-  isVerified: boolean
-  logoUrl: string | null
-  plan: BusinessPlan
-  rating: number | null
-  reviewCount: number
-}
+/*
+ * Server Component: los datos llegan en el HTML inicial (SEO + sin pop-in).
+ * El hover de las tarjetas es CSS (.lh-hover-lift, definido en el <style>
+ * scoped del home) — no necesita hidratación.
+ */
 
 const chip = (v: string) => `color-mix(in oklch,${v} 14%,transparent)`
-const isPaid = (plan: BusinessPlan) => plan === 'PREMIUM' || plan === 'SPONSOR'
+const isPaid = (plan: HomeBusiness['plan']) => plan === 'PREMIUM' || plan === 'SPONSOR'
 
 const gridStyle: React.CSSProperties = {
   display: 'grid',
@@ -33,35 +20,13 @@ const gridStyle: React.CSSProperties = {
   gap: 18,
 }
 
-/* ─── Sección completa: hace fetch y resuelve estados ─── */
-export function FeaturedBusinesses() {
-  const [businesses, setBusinesses] = useState<FeaturedBusiness[] | null>(null)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    let active = true
-    fetch('/api/businesses/featured?limit=8')
-      .then(res => res.json())
-      .then(json => {
-        if (!active) return
-        if (json?.success && Array.isArray(json.data)) setBusinesses(json.data)
-        else setError(true)
-      })
-      .catch(() => { if (active) setError(true) })
-    return () => { active = false }
-  }, [])
-
-  // Carga
-  if (businesses === null && !error) {
-    return (
-      <div style={gridStyle}>
-        {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-      </div>
-    )
-  }
-
-  // Error de red / API
-  if (error) {
+/* ─── Sección completa (async server): datos cacheados 5 min ─── */
+export async function FeaturedBusinesses() {
+  let businesses: HomeBusiness[]
+  try {
+    businesses = await getHomeBusinesses()
+  } catch (error) {
+    logger.error('Error loading home featured businesses', { error })
     return (
       <p style={{ fontSize: 14.5, color: 'var(--lh-fg2)', padding: '8px 2px' }}>
         No pudimos cargar los negocios en este momento. Intenta recargar la página.
@@ -70,7 +35,7 @@ export function FeaturedBusinesses() {
   }
 
   // Vacío (aún no hay negocios registrados)
-  if (!businesses || businesses.length === 0) {
+  if (businesses.length === 0) {
     return (
       <div style={{ padding: '40px 24px', textAlign: 'center', borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
         <Building2 size={30} style={{ color: 'var(--lh-fg3)', opacity: 0.5 }} aria-hidden="true" />
@@ -98,16 +63,15 @@ export function FeaturedBusinesses() {
 }
 
 /* ─── Tarjeta de negocio destacado ─── */
-function BusinessCard({ business }: { business: FeaturedBusiness }) {
+function BusinessCard({ business }: { business: HomeBusiness }) {
   const hasImage = business.images && business.images.length > 0
   const paid = isPaid(business.plan)
 
   return (
     <Link
       href={`/negocio/${business.slug}`}
-      style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.26s cubic-bezier(.22,.61,.36,1)', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}
-      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateY(-4px)'; el.style.boxShadow = 'var(--lh-shadow-lg)' }}
-      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.boxShadow = 'var(--lh-shadow)' }}
+      className="lh-hover-lift"
+      style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', textDecoration: 'none', display: 'flex', flexDirection: 'column' }}
     >
       {/* Imagen / placeholder */}
       <div style={{ position: 'relative', height: 148, background: 'var(--lh-surface2)', overflow: 'hidden' }}>
@@ -151,16 +115,20 @@ function BusinessCard({ business }: { business: FeaturedBusiness }) {
   )
 }
 
-/* ─── Skeleton de carga ─── */
-function SkeletonCard() {
+/* ─── Skeleton (fallback de Suspense) ─── */
+export function FeaturedBusinessesSkeleton() {
   return (
-    <div aria-hidden="true" style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
-      <div style={{ height: 148, background: 'var(--lh-surface2)' }} />
-      <div style={{ padding: '18px 18px 20px', display: 'flex', flexDirection: 'column', gap: 9 }}>
-        <div style={{ width: 80, height: 18, borderRadius: 99, background: 'var(--lh-surface2)' }} />
-        <div style={{ width: '70%', height: 18, borderRadius: 6, background: 'var(--lh-surface2)' }} />
-        <div style={{ width: '50%', height: 14, borderRadius: 6, background: 'var(--lh-surface2)' }} />
-      </div>
+    <div style={gridStyle}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} aria-hidden="true" style={{ borderRadius: 20, overflow: 'hidden', background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
+          <div style={{ height: 148, background: 'var(--lh-surface2)' }} />
+          <div style={{ padding: '18px 18px 20px', display: 'flex', flexDirection: 'column', gap: 9 }}>
+            <div style={{ width: 80, height: 18, borderRadius: 99, background: 'var(--lh-surface2)' }} />
+            <div style={{ width: '70%', height: 18, borderRadius: 6, background: 'var(--lh-surface2)' }} />
+            <div style={{ width: '50%', height: 14, borderRadius: 6, background: 'var(--lh-surface2)' }} />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

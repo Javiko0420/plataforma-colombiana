@@ -1,20 +1,14 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, Briefcase } from 'lucide-react'
 import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories'
+import { getHomeJobs, type HomeJob } from '@/lib/home-data'
+import { logger } from '@/lib/logger'
 
-/* Solo los campos que la vitrina necesita; evitamos arrastrar @prisma/client
-   al bundle cliente (mismo criterio que FeaturedBusinesses). */
-interface RecentJob {
-  id: string
-  title: string
-  category: string
-  location: string
-  jobType: string
-  hourlyRate: number
-}
+/*
+ * Server Component: los datos llegan en el HTML inicial (SEO + sin pop-in).
+ * El hover de las filas es CSS (.lh-hover-slide, definido en el <style>
+ * scoped del home) — no necesita hidratación.
+ */
 
 /* Paleta rotativa para el avatar (espejo de la del home). */
 const ACCENT_TINTS = ['var(--lh-accent)', 'var(--lh-terra)', 'var(--lh-warm)', 'var(--lh-green)']
@@ -43,35 +37,13 @@ function initialsFromTitle(title: string): string {
   return (words[0][0] + words[1][0]).toUpperCase()
 }
 
-/* ─── Sección completa: hace fetch y resuelve estados ─── */
-export function RecentJobs() {
-  const [jobs, setJobs] = useState<RecentJob[] | null>(null)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    let active = true
-    fetch('/api/jobs?limit=4')
-      .then(res => res.json())
-      .then(json => {
-        if (!active) return
-        if (json?.success && Array.isArray(json.data)) setJobs(json.data)
-        else setError(true)
-      })
-      .catch(() => { if (active) setError(true) })
-    return () => { active = false }
-  }, [])
-
-  // Carga
-  if (jobs === null && !error) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} />)}
-      </div>
-    )
-  }
-
-  // Error de red / API
-  if (error) {
+/* ─── Sección completa (async server): datos cacheados 1 min ─── */
+export async function RecentJobs() {
+  let jobs: HomeJob[]
+  try {
+    jobs = await getHomeJobs()
+  } catch (error) {
+    logger.error('Error loading home recent jobs', { error })
     return (
       <p style={{ fontSize: 14.5, color: 'var(--lh-fg2)', padding: '8px 2px' }}>
         No pudimos cargar los empleos en este momento. Intenta recargar la página.
@@ -80,7 +52,7 @@ export function RecentJobs() {
   }
 
   // Vacío (aún no hay ofertas activas)
-  if (!jobs || jobs.length === 0) {
+  if (jobs.length === 0) {
     return (
       <div style={{ padding: '40px 24px', textAlign: 'center', borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
         <Briefcase size={30} style={{ color: 'var(--lh-fg3)', opacity: 0.5 }} aria-hidden="true" />
@@ -108,15 +80,14 @@ export function RecentJobs() {
 }
 
 /* ─── Fila de empleo reciente ─── */
-function JobRow({ job, index }: { job: RecentJob; index: number }) {
+function JobRow({ job, index }: { job: HomeJob; index: number }) {
   const c = ACCENT_TINTS[index % ACCENT_TINTS.length]
 
   return (
     <Link
       href={`/empleos/${job.id}`}
-      style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '18px 22px', borderRadius: 16, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', boxShadow: 'var(--lh-shadow)', transition: '.24s', textDecoration: 'none' }}
-      onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'translateX(4px)'; el.style.borderColor = chip('var(--lh-accent)') }}
-      onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = ''; el.style.borderColor = 'var(--lh-border)' }}
+      className="lh-hover-slide"
+      style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '18px 22px', borderRadius: 16, background: 'var(--lh-surface)', textDecoration: 'none' }}
     >
       <span
         aria-hidden="true"
@@ -139,16 +110,20 @@ function JobRow({ job, index }: { job: RecentJob; index: number }) {
   )
 }
 
-/* ─── Skeleton de carga (misma forma de fila) ─── */
-function SkeletonRow() {
+/* ─── Skeleton (fallback de Suspense, misma forma de fila) ─── */
+export function RecentJobsSkeleton() {
   return (
-    <div aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '18px 22px', borderRadius: 16, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
-      <span style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 13, background: 'var(--lh-surface2)' }} />
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ width: '45%', height: 16, borderRadius: 6, background: 'var(--lh-surface2)' }} />
-        <div style={{ width: '30%', height: 13, borderRadius: 6, background: 'var(--lh-surface2)' }} />
-      </div>
-      <div style={{ width: 120, height: 28, borderRadius: 99, background: 'var(--lh-surface2)', flexShrink: 0 }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '18px 22px', borderRadius: 16, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)' }}>
+          <span style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 13, background: 'var(--lh-surface2)' }} />
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ width: '45%', height: 16, borderRadius: 6, background: 'var(--lh-surface2)' }} />
+            <div style={{ width: '30%', height: 13, borderRadius: 6, background: 'var(--lh-surface2)' }} />
+          </div>
+          <div style={{ width: 120, height: 28, borderRadius: 99, background: 'var(--lh-surface2)', flexShrink: 0 }} />
+        </div>
+      ))}
     </div>
   )
 }
