@@ -3,7 +3,12 @@ import { PrismaClient } from '@prisma/client';
 // Evita múltiples instancias en desarrollo debido al Hot Reload
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    log: ['query', 'error', 'warn'], // Logs útiles en consola
+    // Logs de queries solo en desarrollo: en producción añaden overhead
+    // por query y ruido (potencialmente con datos) en los logs.
+    log:
+      process.env.NODE_ENV === 'production'
+        ? ['error']
+        : ['query', 'error', 'warn'],
   });
 };
 

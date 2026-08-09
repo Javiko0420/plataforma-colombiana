@@ -65,12 +65,18 @@ export async function GET(request: NextRequest) {
       currentTtlSec: 300, // 5 min
       forecastTtlSec: 3600 // 60 min
     })
+    // `me=1` depende de la IP del visitante: solo caché privada (navegador).
+    // Variantes por ciudad/coordenadas son públicas y cacheables en CDN por URL.
+    const cacheControl =
+      q.me === '1'
+        ? 'private, max-age=300'
+        : 'public, s-maxage=600, stale-while-revalidate=1800'
     return NextResponse.json({
       success: true,
       data: bundle,
       location: city ? { city, country: country ?? null } : null,
-    })
-  } catch (err) {
+    }, { headers: { 'Cache-Control': cacheControl } })
+  } catch {
     return NextResponse.json({ success: false, error: 'Weather fetch failed' }, { status: 502 })
   }
 }

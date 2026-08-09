@@ -150,11 +150,17 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({
-      success: true,
-      data,
-      timestamp: new Date().toISOString(),
-    })
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        // CDN cache: la agenda del home tolera 5 min de retraso.
+        headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' },
+      }
+    )
   } catch (error) {
     logger.error('Error in GET /api/events/upcoming', { error })
     return NextResponse.json(

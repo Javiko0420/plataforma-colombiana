@@ -26,11 +26,17 @@ export async function GET(request: NextRequest) {
 
     const data = await getTrendingThreads(limit);
 
-    return NextResponse.json({
-      success: true,
-      data,
-      timestamp: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        // CDN cache corto: trending puede ir 1 min detrás sin afectar UX.
+        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+      }
+    );
   } catch (error) {
     logger.error('Error in GET /api/forums/trending', { error });
     return ErrorHandler.handleError(error);

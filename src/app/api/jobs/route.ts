@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 import { getAuthUserId } from '@/lib/get-auth-user'
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get('limit') || '20')))
     const skip = (page - 1) * limit
 
-    const where: any = {
+    const where: Prisma.JobOfferWhereInput = {
       deletedAt: null,
       expiresAt: { gt: new Date() },
     }
@@ -84,17 +85,23 @@ export async function GET(request: NextRequest) {
       prisma.jobOffer.count({ where }),
     ])
 
-    return NextResponse.json({
-      success: true,
-      data: jobs,
-      pagination: {
-        page,
-        limit,
-        total,
-        hasMore: skip + jobs.length < total,
+    return NextResponse.json(
+      {
+        success: true,
+        data: jobs,
+        pagination: {
+          page,
+          limit,
+          total,
+          hasMore: skip + jobs.length < total,
+        },
+        timestamp: new Date().toISOString(),
       },
-      timestamp: new Date().toISOString(),
-    })
+      {
+        // CDN cache por URL (incluye filtros); listado público, sin datos por-usuario.
+        headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' },
+      }
+    )
   } catch (error) {
     logger.error('Error in GET /api/jobs', { error })
     return NextResponse.json(

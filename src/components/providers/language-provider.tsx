@@ -16,7 +16,10 @@ type LanguageContextValue = {
 const LanguageContext = React.createContext<LanguageContextValue | undefined>(undefined)
 
 async function fetchMessages(locale: SupportedLocale): Promise<MessagesMap> {
-  const res = await fetch(`/api/i18n/messages?locale=${locale}`, { cache: 'no-store' })
+  // Sin `no-store`: el endpoint ya declara Cache-Control (s-maxage=3600) y los
+  // mensajes estáticos del bundle cubren el primer render; esto solo añade
+  // las claves auto-traducidas, así que puede venir de caché HTTP/CDN.
+  const res = await fetch(`/api/i18n/messages?locale=${locale}`)
   if (!res.ok) return {}
   const json = await res.json()
   return json?.data?.messages ?? {}

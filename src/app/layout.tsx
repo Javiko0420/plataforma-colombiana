@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import './globals.css';
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LanguageProvider } from "@/components/providers/language-provider";
@@ -7,11 +7,6 @@ import { AudioProvider } from "@/components/providers/audio-provider";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { AppDownloadBanner } from "@/components/AppDownloadBanner";
 import { getServerLocale } from '@/lib/i18n-server'
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 const geist = Geist({
   subsets: ["latin"],
@@ -51,7 +46,7 @@ export default async function RootLayout({
         {/* Apple Smart Banner — native iOS prompt */}
         <meta name="apple-itunes-app" content="app-id=6775073125" />
       </head>
-      <body className={`${inter.variable} ${geist.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground`} suppressHydrationWarning>
+      <body className={`${geist.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground`} suppressHydrationWarning>
         <SessionProvider>
           <ThemeProvider
             attribute="class"

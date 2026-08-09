@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { fetchExchangeRates, getPopularRates, convertCurrency } from '@/lib/exchange-rate'
 
-export const runtime = 'edge'
+// CDN cache: las tasas FX se actualizan cada hora upstream; 5 min de frescura sobra.
+const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900' }
 
 const querySchema = z.object({
   base: z.string().optional().default('COP'),
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest) {
             rate: rates.rates[target.toUpperCase()],
             lastUpdate: rates.lastUpdate
           }
-        })
+        }, { headers: CACHE_HEADERS })
       } catch (conversionError) {
         return NextResponse.json(
           { 
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest) {
         lastUpdate: rates.lastUpdate,
         rates: responseRates
       }
-    })
+    }, { headers: CACHE_HEADERS })
   } catch (error) {
     console.error('Exchange rates API error:', error)
     return NextResponse.json(
