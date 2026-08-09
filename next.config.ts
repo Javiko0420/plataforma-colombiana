@@ -32,6 +32,9 @@ const nextConfig: NextConfig = {
   // Ensure Prisma works properly with Next.js
   serverExternalPackages: ['@prisma/client', '@prisma/engines'],
   images: {
+    // AVIF primero (~20-30% menos bytes que WebP en fotos); WebP como fallback.
+    // El costo extra de transformación se paga una vez por imagen (se cachea).
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',

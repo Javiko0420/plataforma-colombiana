@@ -438,7 +438,7 @@ function StationCard({ station, index, isCurrent, isPlaying, isLoading, onPlay, 
         <div aria-hidden="true" style={{ width: 56, height: 56, background: tint(accent), borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, color: accent }}>
           {showLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={station.logoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setLogoErrored(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={station.logoUrl} alt="" width={56} height={56} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setLogoErrored(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             <RadioIcon size={26} />
           )}

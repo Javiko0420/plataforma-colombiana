@@ -123,7 +123,7 @@ export default function TeamAutocomplete({
               >
                 {opt.badge || opt.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={(opt.badge || opt.logo) as string} alt="" style={{ height: 16, width: 16 }} />
+                  <img src={(opt.badge || opt.logo) as string} alt="" width={16} height={16} loading="lazy" decoding="async" style={{ height: 16, width: 16 }} />
                 ) : null}
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{opt.name}</span>
                 {opt.country ? <span style={{ marginLeft: 'auto', color: 'var(--lh-fg3)', fontSize: 12 }}>{opt.country}</span> : null}

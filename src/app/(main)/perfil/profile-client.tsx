@@ -206,7 +206,7 @@ export default function ProfileClient({ user, recentPosts, recentComments, userJ
               <div style={{ width: 104, height: 104, borderRadius: '50%', border: '4px solid var(--lh-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, background: 'var(--lh-surface2)', boxShadow: 'var(--lh-shadow)' }}>
                 {user.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={user.image} alt={user.name || user.email} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={user.image} alt={user.name || user.email} width={104} height={104} decoding="async" referrerPolicy="no-referrer" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <UserIcon size={52} style={{ color: 'var(--lh-fg3)' }} aria-hidden="true" />
                 )}
