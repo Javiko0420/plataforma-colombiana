@@ -30,6 +30,21 @@ export default async function EmpleosPage({
       ...(location && { location }),
     },
     orderBy: { createdAt: 'desc' },
+    // Cap defensivo: el muro no pagina (aún); sin límite la página crece
+    // linealmente con la tabla. 60 cubre de sobra el volumen actual.
+    take: 60,
+    // Solo los campos que renderiza JobCard: fuera contacto (email/phone/
+    // externalLink) y metadatos — menos payload RSC y sin PII en el listado.
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      jobType: true,
+      location: true,
+      hourlyRate: true,
+      description: true,
+      expiresAt: true,
+    },
   });
 
   return (

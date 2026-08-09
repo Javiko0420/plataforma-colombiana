@@ -1,4 +1,4 @@
-import { JobOffer } from '@prisma/client';
+import type { JobOffer } from '@prisma/client';
 import Link from 'next/link';
 import { Clock, DollarSign, MapPin, Briefcase, ArrowRight } from 'lucide-react';
 import { JOB_CATEGORIES, categoryLabel } from '@/lib/constants/categories';
@@ -13,7 +13,14 @@ const neutralChip: React.CSSProperties = {
   padding: '5px 10px', borderRadius: 99,
 };
 
-export default function JobCard({ job }: { job: JobOffer; index?: number }) {
+/** Campos que la card realmente renderiza — permite un `select` estrecho en la
+ *  query del listado (sin contacto ni metadatos: menos payload y menos PII). */
+export type JobCardData = Pick<
+  JobOffer,
+  'id' | 'title' | 'category' | 'jobType' | 'location' | 'hourlyRate' | 'description' | 'expiresAt'
+>;
+
+export default function JobCard({ job }: { job: JobCardData; index?: number }) {
   const today = new Date();
   const expirationDate = new Date(job.expiresAt);
   const diffDays = Math.ceil(Math.abs(expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));

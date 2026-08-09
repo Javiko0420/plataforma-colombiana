@@ -29,6 +29,18 @@ export default async function EventosPage({
       ...(category && { category }),
     },
     orderBy: { eventDate: 'asc' },
+    // Cap defensivo + solo los campos que renderiza EventCard.
+    take: 60,
+    select: {
+      id: true,
+      title: true,
+      category: true,
+      imageUrl: true,
+      eventDate: true,
+      ticketPrice: true,
+      description: true,
+      location: true,
+    },
   })
 
   return (

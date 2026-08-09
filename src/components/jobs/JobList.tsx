@@ -1,11 +1,10 @@
-import { JobOffer } from '@prisma/client';
-import JobCard from './JobCard';
+import JobCard, { type JobCardData } from './JobCard';
 import { Briefcase } from 'lucide-react';
 import { Reveal } from '@/components/lh/Reveal';
 import { EmptyState } from '@/components/lh/EmptyState';
 import { Button } from '@/components/lh/Button';
 
-export default function JobList({ jobs }: { jobs: JobOffer[] }) {
+export default function JobList({ jobs }: { jobs: JobCardData[] }) {
   if (jobs.length === 0) {
     return (
       <EmptyState

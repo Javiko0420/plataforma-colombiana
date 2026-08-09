@@ -15,8 +15,15 @@ const neutralChip: React.CSSProperties = {
   padding: '5px 10px', borderRadius: 99,
 }
 
+/** Campos que la card realmente renderiza — permite un `select` estrecho en la
+ *  query del listado. */
+export type EventCardData = Pick<
+  Event,
+  'id' | 'title' | 'category' | 'imageUrl' | 'eventDate' | 'ticketPrice' | 'description' | 'location'
+>
+
 interface EventCardProps {
-  event: Event
+  event: EventCardData
   index?: number
 }
 

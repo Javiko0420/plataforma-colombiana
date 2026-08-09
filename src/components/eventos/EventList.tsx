@@ -1,11 +1,10 @@
-import type { Event } from '@prisma/client'
-import EventCard from './EventCard'
+import EventCard, { type EventCardData } from './EventCard'
 import { CalendarDays } from 'lucide-react'
 import { Reveal } from '@/components/lh/Reveal'
 import { EmptyState } from '@/components/lh/EmptyState'
 import { Button } from '@/components/lh/Button'
 
-export default function EventList({ events }: { events: Event[] }) {
+export default function EventList({ events }: { events: EventCardData[] }) {
   if (events.length === 0) {
     return (
       <EmptyState
