@@ -35,7 +35,7 @@ const FOOT_COLS = [
   {
     head: 'Latin Territory',
     links: [
-      { label: 'Sobre nosotros', href: '/' },
+      { label: 'Sobre nosotros', href: '/sobre-nosotros' },
       { label: 'Contacto',       href: '/soporte' },
       { label: 'Privacidad',     href: '/privacidad' },
       { label: 'Términos',       href: '/terminos' },
