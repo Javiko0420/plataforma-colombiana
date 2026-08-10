@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-// Reemplazamos express-rate-limit por un bucket en memoria compatible con NextRequest
 import { z } from 'zod'
 import { translateText, type SupportedLang } from '@/lib/translation'
-
-const WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW || 15 * 60 * 1000)
-const MAX_REQS = Number(process.env.RATE_LIMIT_MAX || 100)
-const bucket = new Map<string, { count: number; ts: number }>()
+import { checkRateLimit, rateLimitHeaders, getClientIp } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -31,17 +27,15 @@ const bodySchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
-  // Simple rate limit
-  const key = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-  const now = Date.now()
-  const rec = bucket.get(key)
-  if (!rec || now - rec.ts > WINDOW_MS) {
-    bucket.set(key, { count: 1, ts: now })
-  } else {
-    rec.count += 1
-    if (rec.count > MAX_REQS) {
-      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 })
-    }
+  // Rate limit compartido en Redis: cada traducción consume cuota de DeepL,
+  // así que el abuso cuesta dinero real. El bucket en memoria anterior no
+  // servía en serverless (cada invocación arrancaba con el contador a cero).
+  const limit = await checkRateLimit('translate', getClientIp(request))
+  if (!limit.success) {
+    return NextResponse.json(
+      { success: false, error: 'Too many requests' },
+      { status: 429, headers: rateLimitHeaders(limit) }
+    )
   }
 
   const body = await request.json().catch(() => null)

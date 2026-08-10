@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { PasswordSecurity } from '@/lib/password-security'
 import { SecurityLogger } from '@/lib/logger'
 import { userRegistrationSchema } from '@/lib/validations'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { z } from 'zod'
 
 /**
@@ -24,6 +25,22 @@ export async function POST(req: NextRequest) {
                req.headers.get('x-real-ip') || 
                'unknown'
     const userAgent = req.headers.get('user-agent') || 'unknown'
+
+    // Rate limit: frena la creación masiva de cuentas desde un mismo origen.
+    const limit = await checkRateLimit('register', ip)
+    if (!limit.success) {
+      SecurityLogger.logSecurityViolation({
+        type: 'rate_limit',
+        ip,
+        userAgent,
+        details: 'user registration',
+        severity: 'medium',
+      })
+      return NextResponse.json(
+        { success: false, error: 'Demasiados intentos. Inténtalo de nuevo más tarde.' },
+        { status: 429, headers: rateLimitHeaders(limit) }
+      )
+    }
 
     // Validate input data
     let validatedData

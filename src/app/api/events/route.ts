@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 import { getAuthUserId } from '@/lib/get-auth-user'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { EVENT_CATEGORIES, eventCategoryValues, isValidCategory } from '@/lib/constants/categories'
 
 const URL_SHORTENER_REGEX = /(https?:\/\/)?(bit\.ly|tinyurl\.com|cutt\.ly|t\.co|goo\.gl|ow\.ly|is\.gd|buff\.ly|shorte\.st)\//i
@@ -115,6 +116,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    // Rate limit por usuario autenticado: freno anti-spam de publicaciones.
+    const limit = await checkRateLimit('content', `event:${userId}`)
+    if (!limit.success) {
+      return NextResponse.json(
+        { success: false, error: 'Has publicado demasiados eventos. Inténtalo más tarde.' },
+        { status: 429, headers: rateLimitHeaders(limit) }
       )
     }
 

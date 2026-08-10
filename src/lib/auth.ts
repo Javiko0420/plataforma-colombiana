@@ -8,6 +8,7 @@ import { prisma } from './prisma'
 import { PasswordSecurity } from './password-security'
 import { SecurityLogger } from './logger'
 import { userLoginSchema } from './validations'
+import { checkRateLimit } from './rate-limit'
 
 function buildAppleClientSecret(): string {
   const privateKey = (process.env.APPLE_PRIVATE_KEY ?? '').replace(/\\n/g, '\n')
@@ -61,6 +62,21 @@ export const authOptions: NextAuthOptions = {
                     'unknown'
           
           const userAgent = req?.headers?.['user-agent'] || 'unknown'
+
+          // Rate limit por email+IP: frena el credential stuffing en el login
+          // web. Devolver null se traduce en credenciales inválidas para el
+          // cliente — no revelamos si el freno fue por límite o por password.
+          const limit = await checkRateLimit('login', `${validatedData.email}:${ip}`)
+          if (!limit.success) {
+            SecurityLogger.logSecurityViolation({
+              type: 'rate_limit',
+              ip,
+              userAgent: String(userAgent),
+              details: 'web login',
+              severity: 'medium',
+            })
+            return null
+          }
 
           // Find user by email
           const user = await prisma.user.findUnique({

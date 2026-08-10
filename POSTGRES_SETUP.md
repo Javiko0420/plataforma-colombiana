@@ -582,9 +582,8 @@ Configura en `vercel.json`:
 - Valida payloads con **Zod** — ya implementado (`src/lib/validations.ts`).
 - Content-Security-Policy y headers de seguridad — ya implementados en
   `next.config.ts` → `headers()`.
-- Pendiente: limitador en `/api/auth/*` y endpoints sensibles con un backend
-  compartido (Upstash/Redis) o Vercel Firewall — un limitador en memoria no sirve
-  en serverless, donde cada invocación tiene su propio estado.
+- Rate limiting con Upstash Redis — ya implementado (`src/lib/rate-limit.ts`);
+  cubre login, registro, traducción y publicación de contenido.
 - Si en el futuro se renderiza HTML de usuario (foros), sanitizarlo en servidor
   antes de guardarlo. Hoy no aplica: React escapa la salida y no se usa
   `dangerouslySetInnerHTML`.

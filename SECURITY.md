@@ -22,6 +22,8 @@
 - ✅ Autenticación web con NextAuth.js (JWT, sesión 24 h) + OAuth Google/Apple
 - ✅ Autenticación mobile con JWT propio de vida corta + refresh tokens rotativos
 - ✅ Hashing de contraseñas con **bcrypt** (`src/lib/password-security.ts`)
+- ✅ **Rate limiting** en login, registro, traducción y publicación de contenido
+  (Upstash Redis — `src/lib/rate-limit.ts`)
 - ✅ Validación de entrada con **Zod** en los boundaries (`src/lib/validations.ts`)
 - ✅ Headers de seguridad HTTP + CSP estricta (`next.config.ts`)
 - ✅ Protección de rutas por rol y dominio corporativo (`src/middleware.ts`)
@@ -104,12 +106,37 @@ Ejemplos de validación por endpoint:
 - Las APIs mutadoras exigen sesión (cookie) o Bearer token.
 
 ### 4. Fuerza bruta / credenciales
+- **Rate limiting** con Upstash Redis (`src/lib/rate-limit.ts`) — ver tabla abajo.
+- **Bloqueo de cuenta**: `loginAttempts` + `lockedUntil` en BD protegen una cuenta
+  concreta; el rate limit cubre el barrido de muchas cuentas desde un mismo origen.
 - bcrypt con costo configurable encarece ataques offline.
 - Access tokens móviles de 15 min + refresh rotativo limitan el impacto de un robo
   de token; los refresh tokens nunca se guardan en claro.
-- Intentos de login fallidos quedan registrados (`SecurityLogger`).
+- Intentos de login fallidos y bloqueos por límite quedan registrados (`SecurityLogger`).
 
-### 5. Exposición de datos
+### 5. Rate limiting (`src/lib/rate-limit.ts`)
+
+Estado compartido en **Upstash Redis** (integración del Marketplace de Vercel).
+Un limitador en memoria no sirve en serverless: cada invocación arranca con el
+contador a cero.
+
+| Limitador | Límite | Clave | Endpoints |
+|---|---|---|---|
+| `login` | 5 / 15 min | `email:ip` | Login web (NextAuth `authorize`) y `POST /api/auth/mobile/login` |
+| `register` | 3 / hora | `ip` | `POST /api/auth/register` |
+| `translate` | 20 / hora | `ip` | `POST /api/translate` (protege la cuota de DeepL) |
+| `content` | 10 / hora | `userId` | `POST /api/jobs`, `POST /api/events` |
+
+- Ventana deslizante; respuestas `429` con `Retry-After` y `X-RateLimit-*`.
+- El login web devuelve credenciales inválidas al superar el límite: no se revela
+  si el rechazo fue por límite o por contraseña.
+- **Fail-open deliberado**: si Redis no responde o faltan las credenciales, se
+  permite la petición y se registra el error. Una caída de Redis no debe dejar a
+  los usuarios fuera de la plataforma; el trade-off es que durante esa ventana no
+  hay límites.
+- Variables: `KV_REST_API_URL` y `KV_REST_API_TOKEN` (las inyecta la integración).
+
+### 6. Exposición de datos
 - Respuestas de error genéricas vía `ErrorHandler` — sin stack traces en producción.
 - Logs de queries de Prisma **solo en desarrollo**; producción registra solo errores.
 - El endpoint de clima por IP responde con `Cache-Control: private` (nunca se
@@ -162,6 +189,7 @@ JWT_SECRET="clave para los JWT móviles (obligatoria para mobile auth)"
 BCRYPT_ROUNDS="12"            # validado: entre 10 y 15
 N8N_ADMIN_API_KEY="api key para /api/admin/*"
 DATABASE_URL="postgres con SSL; en producción usar el pooler de Neon (-pooler)"
+KV_REST_API_URL / KV_REST_API_TOKEN   # rate limiting; los inyecta la integración Upstash
 ```
 
 Reglas:
@@ -208,11 +236,6 @@ SecurityLogger.logSecurityViolation({ type: 'unauthorized_access', /* … */ })
 
 Documentadas explícitamente para no dar por implementado lo que no lo está:
 
-- **Rate limiting no está activo.** Ningún endpoint aplica límites de tasa, así que
-  login, registro y publicación de contenido no tienen freno ante abuso automatizado.
-  Una implementación en memoria no sirve en serverless (cada invocación tiene su
-  propio estado): hace falta un backend compartido (Upstash/Redis) o
-  Vercel Firewall / BotID en los endpoints sensibles.
 - **Sin sanitización de HTML de usuario.** Hoy no es un hueco explotable porque React
   escapa la salida y no se usa `dangerouslySetInnerHTML`. Si en el futuro se
   renderiza HTML de usuario (p. ej. en foros), la sanitización en servidor debe

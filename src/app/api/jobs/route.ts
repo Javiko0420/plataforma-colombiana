@@ -9,6 +9,7 @@ import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/logger'
 import { getAuthUserId } from '@/lib/get-auth-user'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { JOB_CATEGORIES, jobCategoryValues, isValidCategory } from '@/lib/constants/categories'
 
 const VALID_LOCATIONS  = ['Brisbane', 'Sydney', 'Melbourne', 'Gold Coast', 'Remoto']
@@ -134,6 +135,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
+      )
+    }
+
+    // Rate limit por usuario autenticado: freno anti-spam de publicaciones.
+    const limit = await checkRateLimit('content', `job:${userId}`)
+    if (!limit.success) {
+      return NextResponse.json(
+        { success: false, error: 'Has publicado demasiadas ofertas. Inténtalo más tarde.' },
+        { status: 429, headers: rateLimitHeaders(limit) }
       )
     }
 

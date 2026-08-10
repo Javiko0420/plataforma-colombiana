@@ -52,6 +52,8 @@ DATABASE_URL="postgresql://username:password@localhost:5432/plataforma_colombian
 ```env
 JWT_SECRET="your-jwt-secret-key-minimum-32-characters"   # ✅ en uso
 BCRYPT_ROUNDS="12"                                        # ✅ en uso
+KV_REST_API_URL="https://..."                             # ✅ en uso (auto)
+KV_REST_API_TOKEN="..."                                   # ✅ en uso (auto)
 ```
 
 **Uso**:
@@ -59,10 +61,15 @@ BCRYPT_ROUNDS="12"                                        # ✅ en uso
   — **Archivo**: `src/lib/mobile-jwt.ts`. NextAuth (web) usa `NEXTAUTH_SECRET`.
 - `BCRYPT_ROUNDS`: costo de bcrypt, validado entre 10 y 15 (default 12)
   — **Archivo**: `src/lib/password-security.ts`.
+- `KV_REST_API_URL` / `KV_REST_API_TOKEN`: rate limiting con Upstash Redis
+  — **Archivo**: `src/lib/rate-limit.ts`. Las **inyecta automáticamente** la
+  integración del Marketplace de Vercel; no las definas a mano. Sin ellas, el
+  rate limiting se desactiva (fail-open) en vez de romper la app.
 
-> ⚠️ `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW` y `ALLOWED_ORIGINS` aparecen en
-> `env.example` pero **ningún código las lee**: el rate limiting no está
-> implementado y no hay capa CORS propia. Ver "Brechas conocidas" en `SECURITY.md`.
+> ⚠️ `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW` y `ALLOWED_ORIGINS` siguen en
+> `env.example` pero **ya ningún código las lee**: el limitador en memoria de
+> `/api/translate` que las usaba fue reemplazado por Upstash, y no hay capa CORS
+> propia. Se pueden borrar de `env.example`.
 
 ## Variables Opcionales (Futuras Features)
 

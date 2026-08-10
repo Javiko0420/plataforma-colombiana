@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { PasswordSecurity } from '@/lib/password-security'
 import { SecurityLogger } from '@/lib/logger'
 import { userLoginSchema } from '@/lib/validations'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import {
   generateTokenPair,
   hashRefreshToken,
@@ -40,6 +41,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'VALIDATION_ERROR', message: 'Email and password are required.' },
         { status: 400 }
+      )
+    }
+
+    // ── Rate Limit ──────────────────────────────────────
+    // El bloqueo de cuenta (loginAttempts/lockedUntil) protege una cuenta
+    // concreta; esto frena el barrido de muchas cuentas desde un mismo origen.
+    const limit = await checkRateLimit('login', `${validatedData.email}:${ip}`)
+    if (!limit.success) {
+      SecurityLogger.logSecurityViolation({
+        type: 'rate_limit',
+        ip,
+        userAgent,
+        details: 'mobile login',
+        severity: 'medium',
+      })
+      return NextResponse.json(
+        { error: 'RATE_LIMITED', message: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: rateLimitHeaders(limit) }
       )
     }
 
