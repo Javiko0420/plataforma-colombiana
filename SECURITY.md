@@ -1,284 +1,250 @@
-# Guía de Seguridad - Plataforma Colombiana
+# Guía de Seguridad — Latin Territory
+
+> Este documento describe las medidas de seguridad **realmente implementadas** en el
+> código, con referencias a los módulos donde viven. Manténlo sincronizado con cada
+> cambio de seguridad.
 
 ## 📋 Índice
-1. [Resumen de Seguridad](#resumen-de-seguridad)
-2. [Autenticación y Autorización](#autenticación-y-autorización)
-3. [Validación de Datos](#validación-de-datos)
-4. [Protección contra Ataques](#protección-contra-ataques)
-5. [Logging y Monitoreo](#logging-y-monitoreo)
-6. [Configuración Segura](#configuración-segura)
-7. [Mejores Prácticas para Desarrolladores](#mejores-prácticas-para-desarrolladores)
-8. [Respuesta a Incidentes](#respuesta-a-incidentes)
+1. [Resumen de Seguridad](#-resumen-de-seguridad)
+2. [Autenticación y Autorización](#-autenticación-y-autorización)
+3. [Validación de Datos](#-validación-de-datos)
+4. [Protección contra Ataques](#-protección-contra-ataques)
+5. [Headers de Seguridad](#-headers-de-seguridad)
+6. [Logging y Monitoreo](#-logging-y-monitoreo)
+7. [Configuración Segura](#-configuración-segura)
+8. [Mejores Prácticas para Desarrolladores](#-mejores-prácticas-para-desarrolladores)
+9. [Brechas conocidas (backlog)](#️-brechas-conocidas-backlog)
+10. [Reporte de Vulnerabilidades](#-reporte-de-vulnerabilidades)
 
 ## 🔒 Resumen de Seguridad
 
-Esta aplicación implementa múltiples capas de seguridad para proteger los datos de los usuarios y la integridad del sistema:
-
-### Características de Seguridad Implementadas:
-- ✅ Autenticación robusta con NextAuth.js
-- ✅ Validación de entrada con Zod
-- ✅ Sanitización de datos con DOMPurify y sanitize-html
-- ✅ Rate limiting para prevenir abuso
-- ✅ Headers de seguridad HTTP
-- ✅ Logging de eventos de seguridad
-- ✅ Manejo centralizado de errores
-- ✅ Protección CSRF
-- ✅ Validación de tipos con TypeScript
+### Características implementadas
+- ✅ Autenticación web con NextAuth.js (JWT, sesión 24 h) + OAuth Google/Apple
+- ✅ Autenticación mobile con JWT propio de vida corta + refresh tokens rotativos
+- ✅ Hashing de contraseñas con **bcrypt** (`src/lib/password-security.ts`)
+- ✅ Validación de entrada con **Zod** en los boundaries (`src/lib/validations.ts`)
+- ✅ Headers de seguridad HTTP + CSP estricta (`next.config.ts`)
+- ✅ Protección de rutas por rol y dominio corporativo (`src/middleware.ts`)
+- ✅ Prisma ORM con consultas parametrizadas (sin SQL crudo con entrada de usuario)
+- ✅ Logging de eventos de seguridad sin PII sensible (`src/lib/logger.ts`)
+- ✅ Manejo centralizado de errores (`src/lib/error-handler.ts`) — sin stack traces al cliente
+- ✅ Tipado estricto con TypeScript (sin `any`)
 
 ## 🔐 Autenticación y Autorización
 
-### Sistema de Autenticación
-```typescript
-// Configuración segura de NextAuth.js
-export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 horas
-    updateAge: 60 * 60, // Actualización cada hora
-  },
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
-    maxAge: 24 * 60 * 60,
-  }
-}
-```
+### Web — NextAuth.js (`src/lib/auth.ts`)
+- Estrategia **JWT** con `maxAge` de 24 horas.
+- Re-validación de frescura del token contra la BD (ventana de 1 hora): cambios de
+  rol o perfil se reflejan sin esperar a que expire la sesión.
+- Providers: credenciales (email + contraseña), **Google** y **Apple** OAuth.
+- Contraseñas con **bcryptjs**: `BCRYPT_ROUNDS` configurable (10–15, default 12),
+  validado en `src/lib/password-security.ts`.
+- Cookies del flujo OAuth (`pkce.code_verifier`, `state`, `nonce`) con
+  `httpOnly`, `secure` y `SameSite=None` — requerido por el `form_post` de Apple.
+  La cookie de **sesión** conserva el `SameSite=Lax` por defecto de NextAuth.
 
-### Roles de Usuario
-- **USER**: Usuario básico con acceso a funcionalidades públicas
-- **BUSINESS_OWNER**: Puede crear y gestionar emprendimientos
-- **ADMIN**: Acceso completo al sistema
+### Mobile — JWT propio (`src/lib/mobile-jwt.ts`)
+- **Access token** JWT de 15 minutos (`issuer: latinterritory`, `audience: mobile`),
+  firmado con `JWT_SECRET`.
+- **Refresh token opaco** (64 bytes aleatorios, no es un JWT): se almacena **solo su
+  hash SHA-256** en la BD, con rotación por familias de tokens y vida de 30 días.
+- Endpoints móviles: login con credenciales, Google (`google-auth-library`) y Apple
+  (`apple-signin-auth`).
+- `src/lib/get-auth-user.ts` unifica ambas vías: cookie de sesión (web) o header
+  `Authorization: Bearer` (mobile).
 
-### Protección de Rutas
-```typescript
-// Middleware automático para rutas protegidas
-const PROTECTED_ROUTES = [
-  '/dashboard',
-  '/profile',
-  '/business/create',
-  '/business/edit',
-  '/admin',
-]
-```
+### Roles (`prisma/schema.prisma` → `enum UserRole`)
+- **USER**: funcionalidades públicas y de comunidad.
+- **BUSINESS_OWNER**: gestión de sus negocios.
+- **MODERATOR**: moderación de contenido + acceso al panel admin.
+- **ADMIN**: acceso completo.
+
+### Protección de rutas (`src/middleware.ts`)
+El middleware corre **solo** en las rutas protegidas (matcher explícito):
+
+| Ruta | Requisito |
+|---|---|
+| `/admin/*` | Sesión + rol `ADMIN`/`MODERATOR` + email en dominio corporativo autorizado + perfil completo (defensa en profundidad) |
+| `/registrar-negocio`, `/perfil/*` | Sesión iniciada (con redirección a completar perfil si aplica) |
+| `/api/admin/*` | Header `x-api-key` igual a `N8N_ADMIN_API_KEY` (automatización n8n) |
 
 ## ✅ Validación de Datos
 
-### Esquemas de Validación con Zod
+Toda entrada de usuario se valida **en el servidor** con Zod (`src/lib/validations.ts`)
+o validaciones explícitas por endpoint:
+
 ```typescript
-// Ejemplo: Validación de registro de usuario
-export const userRegistrationSchema = z.object({
-  name: z.string()
-    .min(2, 'Mínimo 2 caracteres')
-    .max(50, 'Máximo 50 caracteres')
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Solo letras y espacios'),
-  email: z.string()
-    .email('Email inválido')
-    .max(255)
-    .toLowerCase(),
-  password: z.string()
-    .min(8)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/, 
-           'Debe contener mayúscula, minúscula, número y carácter especial')
-})
+// Política de contraseñas (src/lib/validations.ts)
+password: z.string()
+  .min(8).max(128)
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    'Debe contener minúscula, mayúscula, número y carácter especial')
 ```
 
-### Sanitización de Entrada
-```typescript
-// Sanitización automática de HTML
-const sanitizedContent = InputSanitizer.sanitizeHtml(userInput)
-
-// Sanitización de texto plano
-const sanitizedText = InputSanitizer.sanitizeText(userInput)
-```
+Ejemplos de validación por endpoint:
+- `POST /api/jobs`: whitelists de categoría/ubicación/tipo, salario obligatorio,
+  al menos un método de contacto y **bloqueo de acortadores de URL** en enlaces externos.
+- Queries de listado con `select` explícito y límites (`take`) — los datos de
+  contacto no viajan en listados públicos, solo en la página de detalle.
 
 ## 🛡️ Protección contra Ataques
 
 ### 1. Cross-Site Scripting (XSS)
-- Sanitización automática de HTML con `sanitize-html`
-- Sanitización de texto con `DOMPurify`
-- Headers de seguridad: `X-XSS-Protection`
+- **React escapa todo por defecto**; el proyecto no usa `dangerouslySetInnerHTML`.
+- **CSP estricta** (ver sección de headers) limita orígenes de scripts, conexiones,
+  frames y media a la lista blanca de servicios que la app realmente usa.
 
 ### 2. SQL Injection
-- Uso exclusivo de Prisma ORM con consultas parametrizadas
-- Validación de entrada con Zod
-- Escape de caracteres especiales
+- Uso exclusivo de **Prisma ORM** con consultas parametrizadas.
+- Sin SQL crudo construido con entrada de usuario.
 
 ### 3. Cross-Site Request Forgery (CSRF)
-- Protección automática con NextAuth.js
-- Validación de origen en middleware
-- Tokens CSRF para formularios críticos
+- Protección integrada de NextAuth.js (token CSRF) en los flujos de autenticación.
+- Cookie de sesión con `SameSite=Lax` (default de NextAuth).
+- Las APIs mutadoras exigen sesión (cookie) o Bearer token.
 
-### 4. Rate Limiting
-```typescript
-// Configuración de límites por tipo de endpoint
-const RATE_LIMITS = {
-  api: { max: 100, window: 15 * 60 * 1000 },
-  auth: { max: 5, window: 15 * 60 * 1000 },
-  search: { max: 50, window: 60 * 1000 },
-  upload: { max: 10, window: 60 * 60 * 1000 },
-}
+### 4. Fuerza bruta / credenciales
+- bcrypt con costo configurable encarece ataques offline.
+- Access tokens móviles de 15 min + refresh rotativo limitan el impacto de un robo
+  de token; los refresh tokens nunca se guardan en claro.
+- Intentos de login fallidos quedan registrados (`SecurityLogger`).
+
+### 5. Exposición de datos
+- Respuestas de error genéricas vía `ErrorHandler` — sin stack traces en producción.
+- Logs de queries de Prisma **solo en desarrollo**; producción registra solo errores.
+- El endpoint de clima por IP responde con `Cache-Control: private` (nunca se
+  comparte entre usuarios vía CDN).
+
+## 🔰 Headers de Seguridad
+
+Definidos en **`next.config.ts` → `headers()`** (constante `SECURITY_HEADERS`) y
+aplicados por la plataforma a **todas** las rutas, incluidas las de auth:
+
+```
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Content-Security-Policy: default-src 'self'; … (lista blanca completa en next.config.ts)
 ```
 
-### 5. Headers de Seguridad
-```typescript
-export const securityHeaders = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY',
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
-  'Content-Security-Policy': '...' // CSP completa
-}
-```
+- **HSTS** (`Strict-Transport-Security`) lo inyecta Vercel automáticamente en los
+  dominios de producción.
+- Nota histórica: hasta 2026-08 estos headers vivían en el middleware con un matcher
+  catch-all; se movieron a `next.config.ts` para cubrir también las rutas de auth y
+  evitar invocar el middleware en cada request.
 
 ## 📊 Logging y Monitoreo
 
-### Eventos de Seguridad Registrados
-1. **Autenticación**
-   - Intentos de login exitosos/fallidos
-   - Registros de usuarios
-   - Cambios de contraseña
+`src/lib/logger.ts` (winston) expone `SecurityLogger` con:
 
-2. **Violaciones de Seguridad**
-   - Rate limiting excedido
-   - Entrada sospechosa detectada
-   - Acceso no autorizado
-   - Intentos de CSRF/XSS
+1. **Eventos de autenticación** (`logAuthEvent`): logins exitosos/fallidos, registros.
+2. **Violaciones de seguridad** (`logSecurityViolation`): accesos no autorizados,
+   entrada sospechosa.
 
-3. **Acceso a Datos**
-   - Lectura/escritura/eliminación de datos
-   - Exportación de información
-   - Cambios en permisos
-
-### Ejemplo de Log de Seguridad
 ```typescript
 SecurityLogger.logAuthEvent({
   type: 'failed_login',
   email: 'user@example.com',
-  ip: '192.168.1.1',
-  userAgent: 'Mozilla/5.0...',
   success: false,
-  reason: 'Invalid password'
+  reason: 'Invalid password',
 })
 ```
+
+Reglas para logs: **sin contraseñas, sin tokens, sin PII innecesaria**.
 
 ## ⚙️ Configuración Segura
 
-### Variables de Entorno Requeridas
+### Variables de entorno de seguridad (ver `env.example`)
 ```bash
-# Seguridad básica
-NEXTAUTH_SECRET="clave-super-secreta-minimo-32-caracteres"
-JWT_SECRET="otra-clave-secreta-para-jwt"
-BCRYPT_ROUNDS="12"
-
-# Rate limiting
-RATE_LIMIT_MAX="100"
-RATE_LIMIT_WINDOW="900000"
-
-# Configuración de aplicación
-ALLOWED_ORIGINS="http://localhost:3000,https://tudominio.com"
+NEXTAUTH_SECRET="mínimo 32 caracteres aleatorios"
+JWT_SECRET="clave para los JWT móviles (obligatoria para mobile auth)"
+BCRYPT_ROUNDS="12"            # validado: entre 10 y 15
+N8N_ADMIN_API_KEY="api key para /api/admin/*"
+DATABASE_URL="postgres con SSL; en producción usar el pooler de Neon (-pooler)"
 ```
 
-### Configuración de Base de Datos
-- Conexiones encriptadas (SSL/TLS)
-- Credenciales en variables de entorno
-- Backup automático configurado
-- Acceso restringido por IP
+Reglas:
+- Nunca commitear `.env*` ni credenciales (las credenciales OAuth de Google viven
+  **fuera del repo**).
+- `service_role`/secrets solo en servidor — jamás en código cliente.
+- Conexiones a la BD siempre con SSL/TLS; producción verificada con pooler.
 
 ## 👨‍💻 Mejores Prácticas para Desarrolladores
 
-### 1. Validación de Entrada
+### 1. Validar SIEMPRE en el servidor
 ```typescript
-// ✅ CORRECTO: Siempre validar entrada
+// ✅ CORRECTO
 const validatedData = businessSchema.parse(requestData)
 
-// ❌ INCORRECTO: Usar datos sin validar
-const business = await prisma.business.create({ data: requestData })
+// ❌ INCORRECTO: usar datos sin validar
+await prisma.business.create({ data: requestData })
 ```
 
-### 2. Manejo de Errores
+### 2. Manejo de errores centralizado
 ```typescript
-// ✅ CORRECTO: Usar el manejador centralizado
-export default ErrorHandler.asyncHandler(async (req) => {
-  const data = await ErrorHandler.validateRequest(req, businessSchema)
-  // ... lógica de la API
-  return createSuccessResponse(result)
-})
-
-// ❌ INCORRECTO: Manejo manual de errores
-export default async function handler(req, res) {
-  try {
-    // ... lógica sin validación
-  } catch (error) {
-    res.status(500).json({ error: 'Something went wrong' })
-  }
+// ✅ CORRECTO: respuesta genérica + log interno
+} catch (error) {
+  logger.error('Error in POST /api/jobs', { error })
+  return NextResponse.json({ success: false, error: 'No se pudo crear la oferta.' }, { status: 500 })
 }
 ```
 
-### 3. Logging de Seguridad
+### 3. Proyección de datos en listados
 ```typescript
-// ✅ CORRECTO: Registrar eventos importantes
-SecurityLogger.logDataAccess({
-  type: 'delete',
-  resource: 'Business',
-  userId: user.id,
-  success: true
-})
+// ✅ CORRECTO: solo los campos que la UI necesita (sin PII de contacto)
+prisma.jobOffer.findMany({ take: 60, select: { id: true, title: true, /* … */ } })
 
-// ❌ INCORRECTO: No registrar eventos críticos
-await prisma.business.delete({ where: { id } })
+// ❌ INCORRECTO: volcar la tabla completa al cliente
+prisma.jobOffer.findMany()
 ```
 
-### 4. Sanitización de Datos
+### 4. Registrar eventos de seguridad relevantes
 ```typescript
-// ✅ CORRECTO: Sanitizar antes de almacenar
-const sanitizedDescription = InputSanitizer.sanitizeHtml(description)
-await prisma.business.create({
-  data: { ...data, description: sanitizedDescription }
-})
-
-// ❌ INCORRECTO: Almacenar datos sin sanitizar
-await prisma.business.create({ data })
+SecurityLogger.logSecurityViolation({ type: 'unauthorized_access', /* … */ })
 ```
 
-## 🚨 Respuesta a Incidentes
+## ⚠️ Brechas conocidas (backlog)
 
-### Procedimiento de Respuesta
-1. **Detección**: Monitoreo automático de logs de seguridad
-2. **Evaluación**: Determinar severidad y alcance
-3. **Contención**: Bloquear acceso si es necesario
-4. **Investigación**: Analizar logs y determinar causa
-5. **Recuperación**: Restaurar servicios de forma segura
-6. **Documentación**: Registrar incidente y lecciones aprendidas
+Documentadas explícitamente para no dar por implementado lo que no lo está:
 
-### Contactos de Emergencia
-- **Administrador del Sistema**: admin@plataformacolombia.co
-- **Equipo de Seguridad**: security@plataformacolombia.co
-- **Soporte Técnico**: support@plataformacolombia.co
+- **Rate limiting no está activo.** `src/lib/security.ts` incluye una clase
+  `RateLimiter` en memoria, pero **ningún endpoint la usa**, y una implementación
+  en memoria no sirve en serverless (cada invocación tiene su propio estado).
+  Para hacerlo bien haría falta un backend compartido (Redis/Upstash) o
+  Vercel Firewall / BotID en los endpoints sensibles (login, registro, publicación).
+- **`InputSanitizer` sin uso.** Las utilidades de sanitización de `src/lib/security.ts`
+  no se invocan en ningún endpoint. Hoy no es un hueco explotable porque React
+  escapa la salida y no se usa `dangerouslySetInnerHTML`, pero si en el futuro se
+  renderiza HTML de usuario, la sanitización debe implementarse antes.
+  > Nota: versiones anteriores de este documento mencionaban `DOMPurify` y
+  > `sanitize-html`; esas dependencias **nunca se usaron** y se eliminaron del
+  > proyecto en agosto de 2026.
 
-### Niveles de Severidad
-- **CRÍTICO**: Compromiso de datos, acceso no autorizado masivo
-- **ALTO**: Intentos de ataque exitosos, vulnerabilidades explotadas
-- **MEDIO**: Rate limiting excedido, patrones sospechosos
-- **BAJO**: Intentos de login fallidos, errores de validación
+## 🚨 Reporte de Vulnerabilidades
 
-## 📚 Recursos Adicionales
+Si encuentras una vulnerabilidad, **no abras un issue público**. Escríbenos a:
 
-### Documentación de Referencia
+- **privacy@latinterritory.com**
+
+Incluye pasos de reproducción y alcance estimado. Procedimiento interno:
+detección → evaluación de severidad → contención → investigación → recuperación →
+documentación de lecciones aprendidas.
+
+### Niveles de severidad
+- **CRÍTICO**: compromiso de datos o acceso no autorizado masivo.
+- **ALTO**: vulnerabilidad explotable confirmada.
+- **MEDIO**: patrones sospechosos, abuso de endpoints.
+- **BAJO**: intentos fallidos de login, errores de validación.
+
+## 📚 Recursos
+
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Next.js Security](https://nextjs.org/docs/advanced-features/security-headers)
-- [Prisma Security](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-prismaclient/connection-management)
-
-### Herramientas de Seguridad
-- **Análisis estático**: ESLint con reglas de seguridad
-- **Dependencias**: npm audit, Snyk
-- **Headers**: securityheaders.com
-- **Penetration testing**: OWASP ZAP
+- [Next.js: Content Security Policy](https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy)
+- [Prisma: Connection management](https://www.prisma.io/docs/concepts/components/prisma-client/working-with-prismaclient/connection-management)
+- Herramientas: `npm audit` + Dependabot (activo en el repo), securityheaders.com, OWASP ZAP
 
 ---
 
-## ⚠️ Importante
-
-Esta documentación debe mantenerse actualizada con cada cambio en las medidas de seguridad. Todos los desarrolladores deben revisar y seguir estas pautas antes de contribuir al proyecto.
-
-**Última actualización**: Agosto 2024
-**Versión**: 1.0.0
+**Última actualización**: Agosto 2026
+**Versión**: 2.0.0

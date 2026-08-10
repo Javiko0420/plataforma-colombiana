@@ -1,4 +1,4 @@
-# 🌟 Guía de Accesibilidad - Plataforma Colombiana
+# 🌟 Guía de Accesibilidad - Latin Territory
 
 ## 📋 Índice
 1. [Resumen de Accesibilidad](#resumen-de-accesibilidad)
@@ -12,7 +12,7 @@
 
 ## 🎯 Resumen de Accesibilidad
 
-La **Plataforma Colombiana** ha sido diseñada siguiendo las **WCAG 2.1 AA** (Web Content Accessibility Guidelines) para garantizar que sea usable por todas las personas, incluyendo aquellas con discapacidades.
+**Latin Territory** ha sido diseñada siguiendo las **WCAG 2.1 AA** (Web Content Accessibility Guidelines) para garantizar que sea usable por todas las personas, incluyendo aquellas con discapacidades.
 
 ### **Nivel de Conformidad: WCAG 2.1 AA** ✅
 
@@ -363,16 +363,15 @@ jobs:
 - [Colour Contrast Analyser](https://www.tpgi.com/color-contrast-checker/)
 
 ### **Contacto para Accesibilidad**
-- **Email**: accessibility@plataformacolombia.co
-- **Reporte de problemas**: [GitHub Issues](https://github.com/tu-usuario/plataforma-colombiana/issues)
-- **Solicitud de funciones**: accessibility-requests@plataformacolombia.co
+- **Email**: privacy@latinterritory.com
+- **Reporte de problemas y solicitud de funciones**: [GitHub Issues](https://github.com/Javiko0420/plataforma-colombiana/issues)
 
 ---
 
 ## 🎯 Compromiso con la Inclusión
 
-La **Plataforma Colombiana** se compromete a mantener y mejorar continuamente la accesibilidad de nuestra plataforma. Creemos que la tecnología debe ser accesible para todos, sin excepciones.
+**Latin Territory** se compromete a mantener y mejorar continuamente la accesibilidad de nuestra plataforma. Creemos que la tecnología debe ser accesible para todos, sin excepciones.
 
-**Última actualización**: Agosto 2024  
-**Versión**: 1.0.0  
+**Última actualización**: Agosto 2026  
+**Versión**: 1.1.0  
 **Conformidad**: WCAG 2.1 AA ✅

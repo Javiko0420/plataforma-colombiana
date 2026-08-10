@@ -1,4 +1,4 @@
-# Guía de Desarrollo - Plataforma Colombiana
+# Guía de Desarrollo - Latin Territory
 
 ## 📋 Índice
 1. [Configuración del Entorno](#configuración-del-entorno)
@@ -579,9 +579,9 @@ npm run format
 ## 📞 Soporte
 
 Para preguntas sobre desarrollo:
-- **Email**: dev@plataformacolombia.co
-- **Slack**: #desarrollo
-- **Documentación**: /docs
+- **Issues**: [GitHub Issues](https://github.com/Javiko0420/plataforma-colombiana/issues)
+- **Email**: privacy@latinterritory.com
+- **Documentación**: los `.md` de la raíz del repo (ver `SECURITY.md`, `POSTGRES_SETUP.md`)
 
-**Última actualización**: Agosto 2024
-**Versión**: 1.0.0
+**Última actualización**: Agosto 2026
+**Versión**: 1.1.0
