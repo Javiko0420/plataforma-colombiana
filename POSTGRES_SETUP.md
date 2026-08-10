@@ -583,8 +583,8 @@ Configura en `vercel.json`:
 - Content-Security-Policy y headers de seguridad — ya implementados en
   `next.config.ts` → `headers()`.
 - Pendiente: limitador en `/api/auth/*` y endpoints sensibles con un backend
-  compartido (Upstash/Redis) o Vercel Firewall — la clase `RateLimiter` en memoria
-  de `src/lib/security.ts` no sirve en serverless y hoy no se usa.
+  compartido (Upstash/Redis) o Vercel Firewall — un limitador en memoria no sirve
+  en serverless, donde cada invocación tiene su propio estado.
 - Si en el futuro se renderiza HTML de usuario (foros), sanitizarlo en servidor
   antes de guardarlo. Hoy no aplica: React escapa la salida y no se usa
   `dangerouslySetInnerHTML`.

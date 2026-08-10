@@ -208,18 +208,23 @@ SecurityLogger.logSecurityViolation({ type: 'unauthorized_access', /* … */ })
 
 Documentadas explícitamente para no dar por implementado lo que no lo está:
 
-- **Rate limiting no está activo.** `src/lib/security.ts` incluye una clase
-  `RateLimiter` en memoria, pero **ningún endpoint la usa**, y una implementación
-  en memoria no sirve en serverless (cada invocación tiene su propio estado).
-  Para hacerlo bien haría falta un backend compartido (Redis/Upstash) o
-  Vercel Firewall / BotID en los endpoints sensibles (login, registro, publicación).
-- **`InputSanitizer` sin uso.** Las utilidades de sanitización de `src/lib/security.ts`
-  no se invocan en ningún endpoint. Hoy no es un hueco explotable porque React
-  escapa la salida y no se usa `dangerouslySetInnerHTML`, pero si en el futuro se
-  renderiza HTML de usuario, la sanitización debe implementarse antes.
-  > Nota: versiones anteriores de este documento mencionaban `DOMPurify` y
-  > `sanitize-html`; esas dependencias **nunca se usaron** y se eliminaron del
-  > proyecto en agosto de 2026.
+- **Rate limiting no está activo.** Ningún endpoint aplica límites de tasa, así que
+  login, registro y publicación de contenido no tienen freno ante abuso automatizado.
+  Una implementación en memoria no sirve en serverless (cada invocación tiene su
+  propio estado): hace falta un backend compartido (Upstash/Redis) o
+  Vercel Firewall / BotID en los endpoints sensibles.
+- **Sin sanitización de HTML de usuario.** Hoy no es un hueco explotable porque React
+  escapa la salida y no se usa `dangerouslySetInnerHTML`. Si en el futuro se
+  renderiza HTML de usuario (p. ej. en foros), la sanitización en servidor debe
+  implementarse **antes** de esa feature.
+- **Sin `Permissions-Policy` ni `form-action` en la CSP.** Endurecimiento adicional
+  posible en `next.config.ts`. Ojo al añadirlos: `/clima` usa `navigator.geolocation`
+  y el formulario de soporte postea a Formspree, así que cualquier directiva debe
+  permitirlos explícitamente.
+  > Nota histórica: versiones anteriores de este documento acreditaban `DOMPurify` y
+  > `sanitize-html`; esas dependencias **nunca se usaron** y se eliminaron en agosto
+  > de 2026, junto con `src/lib/security.ts` (módulo sin uso que además duplicaba
+  > `PasswordSecurity` con SHA-256 en vez de bcrypt).
 
 ## 🚨 Reporte de Vulnerabilidades
 

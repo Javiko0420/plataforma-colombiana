@@ -47,21 +47,22 @@ DATABASE_URL="postgresql://username:password@localhost:5432/plataforma_colombian
 - Conexión a PostgreSQL para Prisma
 - Usado para almacenar usuarios, sesiones, posts, etc.
 
-### 4. Otras Variables de Seguridad (✅ Implementado)
+### 4. Otras Variables de Seguridad
 
 ```env
-JWT_SECRET="your-jwt-secret-key-minimum-32-characters"
-RATE_LIMIT_MAX="100"
-RATE_LIMIT_WINDOW="900000"
-ALLOWED_ORIGINS="http://localhost:3000,https://yourdomain.com"
+JWT_SECRET="your-jwt-secret-key-minimum-32-characters"   # ✅ en uso
+BCRYPT_ROUNDS="12"                                        # ✅ en uso
 ```
 
 **Uso**:
-- `JWT_SECRET`: Respaldo para firma de JWT (NextAuth usa NEXTAUTH_SECRET)
-- `RATE_LIMIT_MAX`: Máximo de requests permitidos en la ventana de tiempo
-- `RATE_LIMIT_WINDOW`: Ventana de tiempo en milisegundos (15 min = 900000)
-- `ALLOWED_ORIGINS`: Orígenes permitidos para CORS
-  - **Archivo**: `src/lib/security.ts` (línea 224)
+- `JWT_SECRET` (**obligatoria**): firma de los JWT de la app mobile
+  — **Archivo**: `src/lib/mobile-jwt.ts`. NextAuth (web) usa `NEXTAUTH_SECRET`.
+- `BCRYPT_ROUNDS`: costo de bcrypt, validado entre 10 y 15 (default 12)
+  — **Archivo**: `src/lib/password-security.ts`.
+
+> ⚠️ `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW` y `ALLOWED_ORIGINS` aparecen en
+> `env.example` pero **ningún código las lee**: el rate limiting no está
+> implementado y no hay capa CORS propia. Ver "Brechas conocidas" en `SECURITY.md`.
 
 ## Variables Opcionales (Futuras Features)
 
