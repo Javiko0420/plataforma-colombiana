@@ -16,6 +16,14 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    # Prisma 7 exige prisma.config.ts, driver adapter y el generator nuevo
+    # (sin motores Rust); CLI y client deben subir juntos. Se migra a mano
+    # en una rama propia — hasta entonces solo minor/patch de 6.x.
+    ignore:
+      - dependency-name: "prisma"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@prisma/client"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore(deps)"
 
