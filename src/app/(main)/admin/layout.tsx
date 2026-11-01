@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -14,7 +13,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
     redirect('/')

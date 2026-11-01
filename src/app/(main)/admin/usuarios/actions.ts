@@ -1,20 +1,23 @@
 'use server'
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { UserRole } from '@prisma/client'
 
 // Cambiar el Rol de un usuario (Ascensos/Descensos)
 export async function updateUserRole(userId: string, newRole: UserRole) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   // Solo ADMIN puede cambiar roles
   if (!session || session.user.role !== 'ADMIN') {
     throw new Error(
       'Unauthorized: Solo los administradores pueden gestionar roles.',
     )
+  }
+
+  if (!Object.values(UserRole).includes(newRole)) {
+    return { success: false, error: 'Rol inválido.' }
   }
 
   // Protección: No puedes cambiar tu propio rol
@@ -26,21 +29,15 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
   }
 
   try {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: newRole },
-    })
-
-    // Log de auditoría
-    await prisma.auditLog.create({
-      data: {
-        action: 'USER_ROLE_CHANGE',
-        resource: 'User',
-        resourceId: userId,
-        userId: session.user.id,
-        newValues: { role: newRole },
-      },
-    })
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: userId }, data: { role: newRole } }),
+      prisma.auditLog.create({
+        data: {
+          action: 'USER_ROLE_CHANGE', resource: 'User', resourceId: userId,
+          userId: session.user.id, newValues: { role: newRole },
+        },
+      }),
+    ])
 
     revalidatePath('/admin/usuarios')
     return { success: true }
@@ -52,7 +49,7 @@ export async function updateUserRole(userId: string, newRole: UserRole) {
 
 // Banear / Desbanear Usuario
 export async function toggleUserBan(userId: string, currentStatus: boolean) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   // Solo ADMIN puede banear (ban global es delicado)
   if (!session || session.user.role !== 'ADMIN') {
@@ -64,21 +61,30 @@ export async function toggleUserBan(userId: string, currentStatus: boolean) {
   }
 
   try {
-    const newStatus = !currentStatus
-    await prisma.user.update({
-      where: { id: userId },
-      data: { isBanned: newStatus },
-    })
-
-    await prisma.auditLog.create({
-      data: {
-        action: newStatus ? 'USER_BAN' : 'USER_UNBAN',
-        resource: 'User',
-        resourceId: userId,
-        userId: session.user.id,
-        oldValues: { isBanned: currentStatus },
-        newValues: { isBanned: newStatus },
-      },
+    await prisma.$transaction(async (tx) => {
+      const current = await tx.user.findUnique({
+        where: { id: userId }, select: { isBanned: true },
+      })
+      if (!current || current.isBanned !== currentStatus) {
+        throw new Error('Account state changed; reload before retrying')
+      }
+      const newStatus = !current.isBanned
+      const changed = await tx.user.updateMany({
+        where: { id: userId, isBanned: current.isBanned }, data: { isBanned: newStatus },
+      })
+      if (!changed.count) throw new Error('Account state changed; reload before retrying')
+      if (newStatus) {
+        await tx.mobileRefreshToken.updateMany({
+          where: { userId, isRevoked: false }, data: { isRevoked: true },
+        })
+      }
+      await tx.auditLog.create({
+        data: {
+          action: newStatus ? 'USER_BAN' : 'USER_UNBAN',
+          resource: 'User', resourceId: userId, userId: session.user.id,
+          oldValues: { isBanned: current.isBanned }, newValues: { isBanned: newStatus },
+        },
+      })
     })
 
     revalidatePath('/admin/usuarios')

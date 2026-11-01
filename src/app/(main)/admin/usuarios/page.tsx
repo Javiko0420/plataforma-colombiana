@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { UsersTable } from '@/components/admin/users-table'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import { Prisma } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
@@ -11,7 +10,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>
 }) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
   const resolvedParams = await searchParams
   const query = resolvedParams.q || ''
   const page = Number(resolvedParams.page) || 1

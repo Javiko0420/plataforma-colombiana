@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { verifyAccessToken } from '@/lib/mobile-jwt'
+import { getCurrentAccount } from '@/lib/account-policy'
 
 export interface AuthUser {
   id: string
@@ -21,7 +22,8 @@ export async function getAuthUser(
   // 1. Try NextAuth session first (web clients).
   const session = await getServerSession(authOptions)
   if (session?.user?.id) {
-    return { id: session.user.id, role: session.user.role }
+    const current = await getCurrentAccount(session.user.id)
+    return current ? { id: current.id, role: current.role } : null
   }
 
   // 2. Fall back to mobile JWT from Authorization header.
@@ -30,7 +32,8 @@ export async function getAuthUser(
     try {
       const token = authHeader.slice(7)
       const payload = verifyAccessToken(token)
-      return { id: payload.sub, role: payload.role }
+      const current = await getCurrentAccount(payload.sub)
+      return current ? { id: current.id, role: current.role } : null
     } catch {
       // Invalid or expired token — fall through to return null.
     }

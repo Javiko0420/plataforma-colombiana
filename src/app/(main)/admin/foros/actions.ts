@@ -1,7 +1,6 @@
 'use server'
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
@@ -14,7 +13,7 @@ export async function moderateForumContent(
   type: ForumContentType,
   decision: ModerationDecision,
 ) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   // Solo Admins y Moderadores
   if (
@@ -71,7 +70,7 @@ export async function updateForumDetails(
   name: string,
   description: string,
 ) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (!session || session.user.role !== 'ADMIN') {
     throw new Error('Unauthorized')

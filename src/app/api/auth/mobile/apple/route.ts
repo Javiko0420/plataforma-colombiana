@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import appleSignin from 'apple-signin-auth'
+import appleSignin, { type AppleIdTokenType } from 'apple-signin-auth'
 import { prisma } from '@/lib/prisma'
+import { resolveMobileOAuthAccount } from '@/lib/mobile-oauth-account'
+import { z } from 'zod'
 import {
   generateTokenPair,
   hashRefreshToken,
@@ -28,7 +30,7 @@ export async function POST(req: NextRequest) {
     const body: RequestBody = await req.json()
     const { identityToken, user: appleUserPayload } = body
 
-    if (!identityToken) {
+    if (!identityToken || typeof identityToken !== 'string') {
       return NextResponse.json(
         { error: 'MISSING_TOKEN', message: 'identityToken is required.' },
         { status: 400 }
@@ -36,7 +38,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Verify Apple identity token ─────────────────────
-    let appleUser: { sub: string; email?: string }
+    let appleUser: AppleIdTokenType
     try {
       appleUser = await appleSignin.verifyIdToken(identityToken, {
         audience: 'com.latinterritory.mobile',
@@ -49,102 +51,41 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const appleId = appleUser.sub
-    const appleEmail = appleUser.email ?? appleUserPayload?.email
-
-    // ── Find or create user ─────────────────────────────
-    let dbUser: {
-      id: string
-      email: string
-      name: string | null
-      nickname: string | null
-      image: string | null
-      role: string
-      dateOfBirth: Date | null
-      contractAcceptedAt: Date | null
+    if (!appleUser.sub || typeof appleUser.sub !== 'string') {
+      return NextResponse.json({ error: 'INVALID_TOKEN', message: 'Invalid Apple subject.' }, { status: 401 })
     }
-
-    const existingAccount = await prisma.account.findUnique({
-      where: { provider_providerAccountId: { provider: 'apple', providerAccountId: appleId } },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            nickname: true,
-            image: true,
-            role: true,
-            dateOfBirth: true,
-            contractAcceptedAt: true,
-          },
-        },
-      },
+    const emailVerified = appleUser.email_verified === true || appleUser.email_verified === 'true'
+    const signedEmail = z.email().safeParse(appleUser.email)
+    const fullName = appleUserPayload?.name
+      ? `${appleUserPayload.name.firstName ?? ''} ${appleUserPayload.name.lastName ?? ''}`.trim() || null
+      : null
+    const resolved = await resolveMobileOAuthAccount({
+      provider: 'apple',
+      subject: appleUser.sub,
+      // Client-provided user.email is intentionally ignored for identity/linking.
+      verifiedEmail: emailVerified && signedEmail.success ? signedEmail.data : undefined,
+      name: fullName,
     })
-
-    if (existingAccount) {
-      dbUser = existingAccount.user
-    } else {
-      // Try to find user by email first to avoid duplicates
-      const existingUser = appleEmail
-        ? await prisma.user.findUnique({
-            where: { email: appleEmail },
-            select: {
-              id: true,
-              email: true,
-              name: true,
-              nickname: true,
-              image: true,
-              role: true,
-              dateOfBirth: true,
-              contractAcceptedAt: true,
-            },
-          })
-        : null
-
-      if (existingUser) {
-        dbUser = existingUser
-      } else {
-        if (!appleEmail) {
-          return NextResponse.json(
-            { error: 'MISSING_EMAIL', message: 'No email available to create account.' },
-            { status: 400 }
-          )
-        }
-
-        const fullName = appleUserPayload?.name
-          ? `${appleUserPayload.name.firstName ?? ''} ${appleUserPayload.name.lastName ?? ''}`.trim() || null
-          : null
-
-        dbUser = await prisma.user.create({
-          data: {
-            email: appleEmail,
-            name: fullName,
-            emailVerified: new Date(),
+    if (!resolved.success) {
+      if (resolved.reason === 'link-required') {
+        return NextResponse.json(
+          {
+            error: 'ACCOUNT_LINK_REQUIRED',
+            message: 'An account with this email already exists. Sign in with your password.',
           },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            nickname: true,
-            image: true,
-            role: true,
-            dateOfBirth: true,
-            contractAcceptedAt: true,
-          },
-        })
+          { status: 409 }
+        )
       }
-
-      // Link Apple account
-      await prisma.account.create({
-        data: {
-          userId: dbUser.id,
-          type: 'oauth',
-          provider: 'apple',
-          providerAccountId: appleId,
+      const unverified = resolved.reason === 'unverified-email'
+      return NextResponse.json(
+        {
+          error: unverified ? 'EMAIL_NOT_VERIFIED' : 'ACCOUNT_SUSPENDED',
+          message: unverified ? 'A verified Apple email is required to link or create an account.' : 'Your account is unavailable.',
         },
-      })
+        { status: unverified ? 401 : 403 }
+      )
     }
+    const dbUser = resolved.user
 
     // ── Generate tokens ─────────────────────────────────
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
@@ -185,8 +126,8 @@ export async function POST(req: NextRequest) {
         image: dbUser.image,
       },
     })
-  } catch (error) {
-    console.error('[mobile/apple] Unexpected error:', error)
+  } catch {
+    console.error('[mobile/apple] Authentication failed')
     return NextResponse.json(
       { error: 'SERVER_ERROR', message: 'Something went wrong. Please try again.' },
       { status: 500 }
