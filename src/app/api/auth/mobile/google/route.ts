@@ -83,6 +83,15 @@ export async function POST(req: NextRequest) {
       image: googlePayload.picture,
     })
     if (!resolved.success) {
+      if (resolved.reason === 'link-required') {
+        return NextResponse.json(
+          {
+            error: 'ACCOUNT_LINK_REQUIRED',
+            message: 'An account with this email already exists. Sign in with your password.',
+          },
+          { status: 409 }
+        )
+      }
       return NextResponse.json(
         {
           error: resolved.reason === 'banned' ? 'ACCOUNT_BANNED' : 'ACCOUNT_INACTIVE',

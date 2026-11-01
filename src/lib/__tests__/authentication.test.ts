@@ -65,6 +65,7 @@ function account() {
     id: 'user-1', email: 'member@example.com', name: 'Test User', nickname: 'member',
     image: null, role: 'USER' as UserRole, isActive: true, isBanned: false,
     password: 'synthetic-hash', loginAttempts: 0, lockedUntil: null as Date | null,
+    emailVerified: null as Date | null,
     dateOfBirth: new Date('1990-01-01'), contractAcceptedAt: new Date('2026-01-01'),
   }
 }
@@ -304,6 +305,7 @@ describe('verified provider identity and account eligibility', () => {
   })
 
   it('links only the signed verified Apple email, ignoring a different client email', async () => {
+    row!.password = ''
     const response = await apple(request('/api/auth/mobile/apple', {
       identityToken: 'synthetic-id', user: { email: 'attacker-input@example.com' },
     }))
@@ -312,6 +314,31 @@ describe('verified provider identity and account eligibility', () => {
     expect(mocks.db.account.create).toHaveBeenCalledWith({ data: {
       userId: 'user-1', type: 'oauth', provider: 'apple', providerAccountId: 'apple-subject',
     } })
+  })
+
+  it.each(['apple', 'google'])('refuses %s email linking to a password account with an unverified email', async name => {
+    const handler = name === 'apple' ? apple : google
+    const response = await handler(request(`/api/auth/mobile/${name}`, name === 'apple' ? { identityToken: 'synthetic-id' } : { idToken: 'synthetic-id' }))
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({ error: 'ACCOUNT_LINK_REQUIRED' })
+    expect(mocks.db.account.create).not.toHaveBeenCalled()
+    expect(mocks.db.user.create).not.toHaveBeenCalled()
+    expect(mocks.generatePair).not.toHaveBeenCalled()
+  })
+
+  it('links a password account only once its email ownership is verified, without exposing the hash', async () => {
+    row!.emailVerified = new Date('2026-01-01')
+    const resolved = await resolveMobileOAuthAccount({ provider: 'google', subject: 'subject-1', verifiedEmail: 'member@example.com' })
+    expect(resolved).toMatchObject({ success: true, isNewUser: false, user: { id: 'user-1' } })
+    expect(resolved.success && resolved.user).not.toHaveProperty('password')
+    expect(resolved.success && resolved.user).not.toHaveProperty('emailVerified')
+    expect(mocks.db.account.create).toHaveBeenCalledTimes(1)
+  })
+
+  it('still allows an existing subject link for a password account with an unverified email', async () => {
+    mocks.db.account.findUnique.mockResolvedValue({ user: row })
+    expect((await google(request('/api/auth/mobile/google', { idToken: 'synthetic-id' }))).status).toBe(200)
+    expect(mocks.db.account.create).not.toHaveBeenCalled()
   })
 
   it('creates a new user and provider link atomically without persisting the identity token', async () => {

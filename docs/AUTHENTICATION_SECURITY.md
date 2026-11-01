@@ -45,6 +45,18 @@ token firmado y tener su claim de verificación afirmativo. El correo de
 transaccional y se comprueba la elegibilidad antes de escribir. El token de
 identidad no se almacena como si fuera un access token del proveedor.
 
+**Protección contra pre-hijacking.** El registro por contraseña no verifica la
+propiedad del correo, así que cualquiera puede crear una cuenta con un correo
+ajeno y elegir su contraseña. Por eso el móvil no vincula por correo una cuenta
+que tenga contraseña y no tenga `emailVerified`: responde `409
+ACCOUNT_LINK_REQUIRED` y el usuario debe entrar con su contraseña. Sí se
+vinculan las cuentas sin contraseña (solo OAuth) y las que tienen el correo
+verificado. Es el mismo criterio de la web, donde NextAuth rechaza la
+vinculación por correo (`OAuthAccountNotLinked`). Un vínculo existente por
+`(provider, subject)` sigue funcionando. Hoy no hay un flujo de vinculación
+explícita (probar la contraseña y luego vincular); si se necesita, es trabajo
+aparte.
+
 ## Bloqueos, cambios de rol y límites de revocación
 
 La suspensión administrativa revoca los refresh tokens activos en la misma

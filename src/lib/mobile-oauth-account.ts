@@ -3,7 +3,7 @@ import { accountAuthSelect, getAccountDenial, type AuthAccount } from '@/lib/acc
 
 type OAuthResult =
   | { success: true; user: AuthAccount; isNewUser: boolean }
-  | { success: false; reason: 'banned' | 'inactive' | 'unverified-email' }
+  | { success: false; reason: 'banned' | 'inactive' | 'unverified-email' | 'link-required' }
 
 /** Inputs must come from a verified provider token, never the request's email. */
 export async function resolveMobileOAuthAccount(identity: {
@@ -30,12 +30,20 @@ export async function resolveMobileOAuthAccount(identity: {
 
     // Returning Apple users may omit email; only an existing subject link is enough then.
     if (!identity.verifiedEmail) return { success: false, reason: 'unverified-email' }
-    const existing = await tx.user.findUnique({
-      where: { email: identity.verifiedEmail }, select: accountAuthSelect,
+    const found = await tx.user.findUnique({
+      where: { email: identity.verifiedEmail },
+      select: { ...accountAuthSelect, password: true, emailVerified: true },
     })
-    if (existing) {
+    if (found) {
+      // The hash is read only to know whether one exists; never return it.
+      const { password, emailVerified, ...existing } = found
       const denial = getAccountDenial(existing)
       if (denial) return { success: false, reason: denial === 'banned' ? 'banned' : 'inactive' }
+      // Pre-hijacking guard: registration does not verify email ownership, so a
+      // password account with an unverified email may belong to whoever chose
+      // that password. Linking it would hand the provider user to that party.
+      // Mirrors web NextAuth, which refuses email-based linking (OAuthAccountNotLinked).
+      if (password && !emailVerified) return { success: false, reason: 'link-required' }
       await tx.account.create({
         data: {
           userId: existing.id, type: 'oauth', provider: identity.provider,

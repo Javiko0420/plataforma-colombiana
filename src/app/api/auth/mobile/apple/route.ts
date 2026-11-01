@@ -67,6 +67,15 @@ export async function POST(req: NextRequest) {
       name: fullName,
     })
     if (!resolved.success) {
+      if (resolved.reason === 'link-required') {
+        return NextResponse.json(
+          {
+            error: 'ACCOUNT_LINK_REQUIRED',
+            message: 'An account with this email already exists. Sign in with your password.',
+          },
+          { status: 409 }
+        )
+      }
       const unverified = resolved.reason === 'unverified-email'
       return NextResponse.json(
         {
