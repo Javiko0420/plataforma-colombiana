@@ -5,7 +5,8 @@ import GoogleProvider from 'next-auth/providers/google'
 import AppleProvider from 'next-auth/providers/apple'
 import jwt from 'jsonwebtoken'
 import { prisma } from './prisma'
-import { PasswordSecurity } from './password-security'
+import { authenticateCredentials } from './credential-auth'
+import { accountAuthSelect, getAccountDenial, getCurrentAccount, hasCompletedProfile } from './account-policy'
 import { SecurityLogger } from './logger'
 import { userLoginSchema } from './validations'
 import { checkRateLimit } from './rate-limit'
@@ -78,53 +79,18 @@ export const authOptions: NextAuthOptions = {
             return null
           }
 
-          // Find user by email
-          const user = await prisma.user.findUnique({
-            where: {
-              email: validatedData.email
-            }
-          })
-
-          if (!user) {
-            // Log failed login attempt
+          const result = await authenticateCredentials(validatedData.email, validatedData.password)
+          if (!result.success) {
             SecurityLogger.logAuthEvent({
               type: 'failed_login',
-              email: validatedData.email,
               ip,
               userAgent,
               success: false,
-              reason: 'User not found'
+              reason: 'Invalid credentials or unavailable account',
             })
             return null
           }
-
-          // Verify password (for MVP, we'll use a simple check, but in production use hashed passwords)
-          let isPasswordValid = false
-          
-          // Check if user has a hashed password (for existing users)
-          if (user.password) {
-            isPasswordValid = await PasswordSecurity.verifyPassword(
-              validatedData.password, 
-              user.password
-            )
-          } else {
-            // Temporary for MVP - allow 'password' as default
-            isPasswordValid = validatedData.password === 'password'
-          }
-
-          if (!isPasswordValid) {
-            // Log failed login attempt
-            SecurityLogger.logAuthEvent({
-              type: 'failed_login',
-              userId: user.id,
-              email: user.email,
-              ip,
-              userAgent,
-              success: false,
-              reason: 'Invalid password'
-            })
-            return null
-          }
+          const user = result.user
 
           // Log successful login
           SecurityLogger.logAuthEvent({
@@ -142,8 +108,8 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             role: user.role,
           }
-        } catch (error) {
-          console.error('Authentication error:', error)
+        } catch {
+          console.error('Authentication failed')
           
           // Log authentication error
           SecurityLogger.logAuthEvent({
@@ -199,48 +165,29 @@ export const authOptions: NextAuthOptions = {
     maxAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
-    async jwt({ token, user, account, trigger }) {
-      // Initial sign-in: populate token with user data
-      if (user) {
-        token.role = user.role
-        token.lastLogin = Date.now()
-        if (account?.provider) {
-          token.provider = account.provider
-        }
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { dateOfBirth: true, contractAcceptedAt: true }
-        })
-        token.hasCompletedProfile = !!(dbUser?.dateOfBirth && dbUser?.contractAcceptedAt)
-      }
+    async jwt({ token, user, account }) {
+      // Revalidate every session resolution, including tokens issued before a ban
+      // or role change. Never trust session-update data supplied by the client.
+      const userId = user?.id ?? token.sub
+      const current = userId ? await getCurrentAccount(userId) : null
+      if (!current) throw new Error('Account unavailable')
+      token.sub = current.id
+      token.email = current.email
+      token.name = current.name
+      token.picture = current.image
+      token.role = current.role
+      token.hasCompletedProfile = hasCompletedProfile(current)
+      if (user) token.lastLogin = Date.now()
+      if (account?.provider) token.provider = account.provider
 
-      // Token refresh: triggered by `await update()` from useSession()
-      // after the user completes their profile on /perfil/completar.
-      if (trigger === 'update') {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub! },
-          select: { dateOfBirth: true, contractAcceptedAt: true, role: true }
-        })
-        if (dbUser) {
-          token.hasCompletedProfile = !!(dbUser.dateOfBirth && dbUser.contractAcceptedAt)
-          token.role = dbUser.role
-        }
-      }
-      
-      // Rotate token periodically for security
-      const now = Date.now()
-      const tokenAge = now - (token.lastLogin as number || now)
-      const maxAge = 60 * 60 * 1000 // 1 hour
-      
-      if (tokenAge > maxAge) {
-        token.lastLogin = now
-      }
-      
       return token
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.sub!
+        session.user.email = token.email!
+        session.user.name = token.name
+        session.user.image = token.picture
         session.user.role = token.role
         session.user.hasCompletedProfile = token.hasCompletedProfile
       }
@@ -250,13 +197,33 @@ export const authOptions: NextAuthOptions = {
       try {
         if (account?.provider === 'google') {
           const googleProfile = profile as { email_verified?: boolean }
-          if (!googleProfile?.email_verified) {
+          if (googleProfile?.email_verified !== true) {
             return false
           }
         }
 
+        // Existing OAuth identities are resolved by provider subject, not a
+        // caller-provided user ID. Leave new-account/linking decisions to NextAuth.
+        if (account?.provider === 'google' || account?.provider === 'apple') {
+          const linked = await prisma.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
+            },
+            select: { user: { select: accountAuthSelect } },
+          })
+          const existing = linked?.user ?? (user.email
+            ? await prisma.user.findUnique({ where: { email: user.email }, select: accountAuthSelect })
+            : null)
+          if (existing && getAccountDenial(existing)) return false
+        } else if (account?.provider === 'credentials') {
+          if (!(await getCurrentAccount(user.id))) return false
+        }
+
         return true
-      } catch (error) {
+      } catch {
         return false
       }
     },

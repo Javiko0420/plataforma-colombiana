@@ -7,6 +7,7 @@ import { getToken, encode, decode } from 'next-auth/jwt'
 import type { JWT } from 'next-auth/jwt'
 import type { NextRequest } from 'next/server'
 import type { UserRole } from '@prisma/client'
+import { getCurrentAccount, hasCompletedProfile } from '@/lib/account-policy'
 
 const JWT_MAX_AGE = 24 * 60 * 60 // 24 hours, same as authOptions.jwt.maxAge
 
@@ -18,7 +19,7 @@ export async function getMobileToken(
   req: NextRequest,
   secret: string = process.env.NEXTAUTH_SECRET!
 ): Promise<JWT | null> {
-  return getToken({ req, secret })
+  return revalidateToken(await getToken({ req, secret }))
 }
 
 /**
@@ -57,7 +58,22 @@ export async function decodeMobileToken(
   token: string,
   secret: string = process.env.NEXTAUTH_SECRET!
 ): Promise<JWT | null> {
-  return decode({ token, secret })
+  return revalidateToken(await decode({ token, secret }))
+}
+
+async function revalidateToken(token: JWT | null): Promise<JWT | null> {
+  if (!token?.sub) return null
+  const user = await getCurrentAccount(token.sub)
+  if (!user) return null
+  return {
+    ...token,
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    picture: user.image,
+    role: user.role,
+    hasCompletedProfile: hasCompletedProfile(user),
+  }
 }
 
 export { JWT_MAX_AGE }

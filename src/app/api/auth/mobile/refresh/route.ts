@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getAccountDenial } from '@/lib/account-policy'
 import {
   generateTokenPair,
   hashRefreshToken,
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Check User Status ───────────────────────────────
-    if (storedToken.user.isBanned || !storedToken.user.isActive) {
+    if (getAccountDenial(storedToken.user)) {
       // Revoke all tokens for this user
       await prisma.mobileRefreshToken.updateMany({
         where: { userId: storedToken.userId },

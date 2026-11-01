@@ -1,13 +1,12 @@
 'use server'
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 /** Verifica que el usuario tenga rol ADMIN o MODERATOR */
 async function verifyAdmin() {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (
     !session ||

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OAuth2Client } from 'google-auth-library'
 import { prisma } from '@/lib/prisma'
+import { resolveMobileOAuthAccount } from '@/lib/mobile-oauth-account'
+import { z } from 'zod'
 import { SecurityLogger } from '@/lib/logger'
 import {
   generateTokenPair,
@@ -50,15 +52,15 @@ export async function POST(req: NextRequest) {
         audience: process.env.GOOGLE_CLIENT_ID,
       })
       googlePayload = ticket.getPayload()
-    } catch (error) {
-      console.error('[mobile/google] Token verification failed:', error)
+    } catch {
+      console.error('[mobile/google] Token verification failed')
       return NextResponse.json(
         { error: 'INVALID_GOOGLE_TOKEN', message: 'Google authentication failed.' },
         { status: 401 }
       )
     }
 
-    if (!googlePayload || !googlePayload.email) {
+    if (!googlePayload || !googlePayload.sub || !z.email().safeParse(googlePayload.email).success) {
       return NextResponse.json(
         { error: 'INVALID_GOOGLE_TOKEN', message: 'Could not extract email from Google token.' },
         { status: 401 }
@@ -73,123 +75,23 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const googleEmail = googlePayload.email
-    const googleName = googlePayload.name || null
-    const googleImage = googlePayload.picture || null
-    const googleSub = googlePayload.sub // Google's unique user ID
-
-    // ── Find or Create User ─────────────────────────────
-    let user
-    let isNewUser = false
-
-    // First, check if there's already a Google account linked
-    const existingAccount = await prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider: 'google',
-          providerAccountId: googleSub,
-        },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            nickname: true,
-            image: true,
-            role: true,
-            isActive: true,
-            isBanned: true,
-            dateOfBirth: true,
-            contractAcceptedAt: true,
-          },
-        },
-      },
+    const resolved = await resolveMobileOAuthAccount({
+      provider: 'google',
+      subject: googlePayload.sub,
+      verifiedEmail: googlePayload.email!,
+      name: googlePayload.name,
+      image: googlePayload.picture,
     })
-
-    if (existingAccount) {
-      // User already has Google linked
-      user = existingAccount.user
-    } else {
-      // Check if a user with this email exists (registered via credentials)
-      const existingUser = await prisma.user.findUnique({
-        where: { email: googleEmail },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          nickname: true,
-          image: true,
-          role: true,
-          isActive: true,
-          isBanned: true,
-          dateOfBirth: true,
-          contractAcceptedAt: true,
+    if (!resolved.success) {
+      return NextResponse.json(
+        {
+          error: resolved.reason === 'banned' ? 'ACCOUNT_BANNED' : 'ACCOUNT_INACTIVE',
+          message: 'Your account is unavailable.',
         },
-      })
-
-      if (existingUser) {
-        // Link Google to existing account
-        await prisma.account.create({
-          data: {
-            userId: existingUser.id,
-            type: 'oauth',
-            provider: 'google',
-            providerAccountId: googleSub,
-            access_token: idToken,
-          },
-        })
-        user = existingUser
-      } else {
-        // Create new user + link Google account
-        const newUser = await prisma.user.create({
-          data: {
-            email: googleEmail,
-            name: googleName,
-            image: googleImage,
-            emailVerified: new Date(), // Google already verified
-            accounts: {
-              create: {
-                type: 'oauth',
-                provider: 'google',
-                providerAccountId: googleSub,
-                access_token: idToken,
-              },
-            },
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            nickname: true,
-            image: true,
-            role: true,
-            isActive: true,
-            isBanned: true,
-            dateOfBirth: true,
-            contractAcceptedAt: true,
-          },
-        })
-        user = newUser
-        isNewUser = true
-      }
-    }
-
-    // ── Check Account Status ────────────────────────────
-    if (user.isBanned) {
-      return NextResponse.json(
-        { error: 'ACCOUNT_BANNED', message: 'Your account has been suspended.' },
         { status: 403 }
       )
     }
-
-    if (!user.isActive) {
-      return NextResponse.json(
-        { error: 'ACCOUNT_INACTIVE', message: 'Your account is inactive.' },
-        { status: 403 }
-      )
-    }
+    const { user, isNewUser } = resolved
 
     // ── Generate Tokens ─────────────────────────────────
     const hasCompletedProfile = !!(user.dateOfBirth && user.contractAcceptedAt)
@@ -245,8 +147,8 @@ export async function POST(req: NextRequest) {
       },
       isNewUser,
     })
-  } catch (error) {
-    console.error('[mobile/google] Unexpected error:', error)
+  } catch {
+    console.error('[mobile/google] Authentication failed')
     return NextResponse.json(
       { error: 'SERVER_ERROR', message: 'Something went wrong. Please try again.' },
       { status: 500 }

@@ -1,13 +1,12 @@
 'use server'
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 // Acción para APROBAR una reseña (se vuelve visible, reportes descartados)
 export async function approveReview(reviewId: string) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
     throw new Error('Unauthorized')
@@ -54,7 +53,7 @@ export async function approveReview(reviewId: string) {
 
 // Acción para OCULTAR/RECHAZAR una reseña (reportes resueltos)
 export async function hideReview(reviewId: string, reason: string) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'MODERATOR')) {
     throw new Error('Unauthorized')

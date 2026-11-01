@@ -1,3 +1,8 @@
+> **Documento histórico del protocolo compatible con NextAuth.** La sección de
+> refresh de este documento no describe el handler actual. Consulta
+> [AUTHENTICATION_SECURITY.md](AUTHENTICATION_SECURITY.md) para los protocolos
+> vigentes: `/mobile/refresh` recibe un refresh opaco en JSON y no un JWT de NextAuth.
+
 # Especificación: API de autenticación móvil
 
 Este documento define los **3 endpoints** que el backend web debe exponer para que la app móvil pueda autenticar usuarios de forma segura (auth end-to-end), reutilizando la lógica y el JWT de NextAuth.

@@ -5,8 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { prisma } from '@/lib/prisma'
-import { PasswordSecurity } from '@/lib/password-security'
+import { authenticateCredentials } from '@/lib/credential-auth'
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
 import { SecurityLogger } from '@/lib/logger'
 import { userLoginSchema } from '@/lib/validations'
 import { encodeMobileToken, JWT_MAX_AGE } from '@/lib/mobile-auth'
@@ -49,50 +49,26 @@ export async function POST(req: NextRequest) {
       throw error
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    })
+    const limit = await checkRateLimit('login', `${validatedData.email}:${ip}`)
+    if (!limit.success) {
+      return NextResponse.json(
+        { success: false, error: 'Demasiados intentos. Inténtalo más tarde.' },
+        { status: 429, headers: rateLimitHeaders(limit) }
+      )
+    }
 
-    if (!user) {
+    const result = await authenticateCredentials(validatedData.email, validatedData.password)
+    if (!result.success) {
       SecurityLogger.logAuthEvent({
-        type: 'failed_login',
-        email: validatedData.email,
-        ip,
-        userAgent,
-        success: false,
-        reason: 'User not found',
+        type: 'failed_login', ip, userAgent, success: false,
+        reason: 'Invalid credentials or unavailable account',
       })
       return NextResponse.json(
         { success: false, error: 'Credenciales inválidas' },
         { status: 401 }
       )
     }
-
-    let isPasswordValid = false
-    if (user.password) {
-      isPasswordValid = await PasswordSecurity.verifyPassword(
-        validatedData.password,
-        user.password
-      )
-    } else {
-      isPasswordValid = validatedData.password === 'password'
-    }
-
-    if (!isPasswordValid) {
-      SecurityLogger.logAuthEvent({
-        type: 'failed_login',
-        userId: user.id,
-        email: user.email,
-        ip,
-        userAgent,
-        success: false,
-        reason: 'Invalid password',
-      })
-      return NextResponse.json(
-        { success: false, error: 'Credenciales inválidas' },
-        { status: 401 }
-      )
-    }
+    const user = result.user
 
     SecurityLogger.logAuthEvent({
       type: 'login',
@@ -142,8 +118,8 @@ export async function POST(req: NextRequest) {
         },
       },
     })
-  } catch (error) {
-    console.error('Mobile sign-in error:', error)
+  } catch {
+    console.error('Mobile sign-in failed')
     SecurityLogger.logAuthEvent({
       type: 'failed_login',
       email: '',

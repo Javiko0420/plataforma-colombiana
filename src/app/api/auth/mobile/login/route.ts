@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { PasswordSecurity } from '@/lib/password-security'
+import { authenticateCredentials } from '@/lib/credential-auth'
 import { SecurityLogger } from '@/lib/logger'
 import { userLoginSchema } from '@/lib/validations'
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit'
@@ -62,112 +62,38 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── Find User ───────────────────────────────────────
-    const user = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        nickname: true,
-        image: true,
-        password: true,
-        role: true,
-        isActive: true,
-        isBanned: true,
-        loginAttempts: true,
-        lockedUntil: true,
-        dateOfBirth: true,
-        contractAcceptedAt: true,
-      },
-    })
-
-    if (!user) {
+    const result = await authenticateCredentials(validatedData.email, validatedData.password)
+    if (!result.success) {
       SecurityLogger.logAuthEvent({
-        type: 'failed_login',
-        email: validatedData.email,
-        ip,
-        userAgent,
-        success: false,
-        reason: 'User not found (mobile)',
+        type: 'failed_login', ip, userAgent, success: false,
+        reason: 'Invalid credentials or unavailable account',
       })
-      return NextResponse.json(
-        { error: 'INVALID_CREDENTIALS', message: 'Email or password is incorrect.' },
-        { status: 401 }
-      )
-    }
-
-    // ── Check Account Status ────────────────────────────
-    if (user.isBanned) {
-      return NextResponse.json(
-        { error: 'ACCOUNT_BANNED', message: 'Your account has been suspended.' },
-        { status: 403 }
-      )
-    }
-
-    if (!user.isActive) {
-      return NextResponse.json(
-        { error: 'ACCOUNT_INACTIVE', message: 'Your account is inactive.' },
-        { status: 403 }
-      )
-    }
-
-    // Check account lockout
-    if (user.lockedUntil && user.lockedUntil > new Date()) {
-      const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000)
+      if (result.reason === 'banned' || result.reason === 'inactive') {
+        return NextResponse.json(
+          {
+            error: result.reason === 'banned' ? 'ACCOUNT_BANNED' : 'ACCOUNT_INACTIVE',
+            message: 'Your account is unavailable.',
+          },
+          { status: 403 }
+        )
+      }
+      if (result.reason === 'locked') {
+        return NextResponse.json(
+          { error: 'ACCOUNT_LOCKED', message: 'Too many failed attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': String(result.retryAfter) } }
+        )
+      }
       return NextResponse.json(
         {
-          error: 'ACCOUNT_LOCKED',
-          message: `Too many failed attempts. Try again in ${minutesLeft} minutes.`,
+          error: result.reason === 'no-password' ? 'NO_PASSWORD' : 'INVALID_CREDENTIALS',
+          message: result.reason === 'no-password'
+            ? 'Use the sign-in provider associated with this account.'
+            : 'Email or password is incorrect.',
         },
-        { status: 429 }
-      )
-    }
-
-    // ── Verify Password ─────────────────────────────────
-    if (!user.password) {
-      // User registered via Google only — no password set.
-      return NextResponse.json(
-        { error: 'NO_PASSWORD', message: 'This account uses Google sign-in. Please use Google to log in.' },
         { status: 401 }
       )
     }
-
-    const isPasswordValid = await PasswordSecurity.verifyPassword(
-      validatedData.password,
-      user.password
-    )
-
-    if (!isPasswordValid) {
-      // Increment failed attempts
-      const newAttempts = user.loginAttempts + 1
-      const lockout = newAttempts >= 5
-        ? { lockedUntil: new Date(Date.now() + 15 * 60 * 1000) } // 15 min lockout
-        : {}
-
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          loginAttempts: newAttempts,
-          ...lockout,
-        },
-      })
-
-      SecurityLogger.logAuthEvent({
-        type: 'failed_login',
-        userId: user.id,
-        email: user.email,
-        ip,
-        userAgent,
-        success: false,
-        reason: `Invalid password (mobile) - attempt ${newAttempts}`,
-      })
-
-      return NextResponse.json(
-        { error: 'INVALID_CREDENTIALS', message: 'Email or password is incorrect.' },
-        { status: 401 }
-      )
-    }
+    const user = result.user
 
     // ── Generate Tokens ─────────────────────────────────
     const hasCompletedProfile = !!(user.dateOfBirth && user.contractAcceptedAt)
@@ -189,16 +115,6 @@ export async function POST(req: NextRequest) {
         expiresAt: getRefreshTokenExpiry(),
         ip,
         userAgent,
-      },
-    })
-
-    // Reset login attempts + update lastLoginAt
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        loginAttempts: 0,
-        lockedUntil: null,
-        lastLoginAt: new Date(),
       },
     })
 

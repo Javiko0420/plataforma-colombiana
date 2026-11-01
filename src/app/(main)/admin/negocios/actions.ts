@@ -1,8 +1,7 @@
 'use server'
 
-import { getServerSession } from 'next-auth'
 import { BusinessPlan, Prisma } from '@prisma/client'
-import { authOptions } from '@/lib/auth'
+import { getAuthorizedAdminSession } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
@@ -11,7 +10,7 @@ const VALID_PLANS = Object.values(BusinessPlan)
 
 // Verificar un negocio (Check Azul)
 export async function verifyBusiness(businessId: string) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   // Solo Admins pueden verificar (Moderadores quizás solo revisan)
   if (!session || session.user.role !== 'ADMIN') {
@@ -48,7 +47,7 @@ export async function dismissBusinessReport(
   businessId: string,
   reportIds: string[],
 ) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (
     !session ||
@@ -88,7 +87,7 @@ export async function dismissBusinessReport(
 
 // Desactivar un negocio reportado y resolver los reportes
 export async function deactivateReportedBusiness(businessId: string) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (
     !session ||
@@ -137,7 +136,7 @@ export async function setBusinessFeatured(
   businessId: string,
   data: { ranking?: number; plan?: BusinessPlan },
 ) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   // Solo Admins gestionan la exposición pagada de la home
   if (!session || session.user.role !== 'ADMIN') {
@@ -215,7 +214,7 @@ export async function toggleBusinessStatus(
   businessId: string,
   currentStatus: boolean,
 ) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthorizedAdminSession()
 
   if (
     !session ||

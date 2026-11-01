@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-// Lista blanca de dominios corporativos autorizados para acceder al panel admin.
-// Defense in Depth: el acceso requiere ROL válido + email en dominio corporativo.
-const ALLOWED_ADMIN_DOMAINS = ['@latinterritory.com', '@javiwarrior.com']
+import { canAccessAdmin } from '@/lib/admin-policy'
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname
@@ -20,18 +18,8 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    // B. Validación de ROL (Debe ser Admin o Moderador)
-    const userRole = token.role as string
-    const isAuthorizedRole = userRole === 'ADMIN' || userRole === 'MODERATOR'
-
-    // C. Validación de DOMINIO (Debe ser corporativo)
-    const userEmail = token.email || ''
-    const isAuthorizedDomain = ALLOWED_ADMIN_DOMAINS.some(domain =>
-      userEmail.endsWith(domain),
-    )
-
-    // D. "El Portero": Si falla rol O falla dominio -> A casa.
-    if (!isAuthorizedRole || !isAuthorizedDomain) {
+    // Early JWT filter only; server boundaries revalidate DB state and role.
+    if (!canAccessAdmin({ role: token.role, email: token.email })) {
       return NextResponse.redirect(new URL('/', req.url))
     }
 
