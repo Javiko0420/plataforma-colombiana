@@ -13,7 +13,7 @@ const apiKey = process.env.DEEPL_API_KEY || process.env.TRANSLATION_API_KEY
  */
 const serverUrl = process.env.DEEPL_API_URL
 const translator = apiKey
-  ? new deepl.Translator(apiKey, serverUrl ? { serverUrl } : undefined)
+  ? new deepl.DeepLClient(apiKey, serverUrl ? { serverUrl } : undefined)
   : undefined
 
 const DEFAULT_TIMEOUT = Number(process.env.TRANSLATION_TIMEOUT_MS ?? 8000)
