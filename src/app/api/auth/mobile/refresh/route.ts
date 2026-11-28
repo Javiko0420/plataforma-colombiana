@@ -70,6 +70,22 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // ── Check User Status ───────────────────────────────
+    // Runs before reuse/expiry checks: banning revokes every refresh token, so
+    // an ineligible account presenting one is expected, not a replay attack.
+    if (getAccountDenial(storedToken.user)) {
+      // Revoke all tokens for this user
+      await prisma.mobileRefreshToken.updateMany({
+        where: { userId: storedToken.userId },
+        data: { isRevoked: true },
+      })
+
+      return NextResponse.json(
+        { error: 'ACCOUNT_SUSPENDED', message: 'Your account has been suspended.' },
+        { status: 403 }
+      )
+    }
+
     // ── Replay Attack Detection ─────────────────────────
     // If token was already revoked, someone is reusing a stolen token.
     // Invalidate the ENTIRE family to protect the user.
@@ -101,20 +117,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: 'TOKEN_EXPIRED', message: 'Refresh token has expired. Please log in again.' },
         { status: 401 }
-      )
-    }
-
-    // ── Check User Status ───────────────────────────────
-    if (getAccountDenial(storedToken.user)) {
-      // Revoke all tokens for this user
-      await prisma.mobileRefreshToken.updateMany({
-        where: { userId: storedToken.userId },
-        data: { isRevoked: true },
-      })
-
-      return NextResponse.json(
-        { error: 'ACCOUNT_SUSPENDED', message: 'Your account has been suspended.' },
-        { status: 403 }
       )
     }
 
