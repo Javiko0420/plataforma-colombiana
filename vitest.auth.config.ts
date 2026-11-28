@@ -10,6 +10,8 @@ export default defineConfig({
   test: {
     ...base.test,
     environment: 'node',
+    // Must run first: strips credentials Prisma loads from `.env` on import.
+    setupFiles: ['./vitest.auth.setup.ts', ...[base.test?.setupFiles ?? []].flat()],
     include: [
       'src/lib/__tests__/authentication.test.ts',
       'src/lib/__tests__/nextauth-session.test.ts',
