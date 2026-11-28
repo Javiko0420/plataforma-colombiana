@@ -413,6 +413,30 @@ describe('administrative authorization and refresh revocation', () => {
     expect(mocks.db.mobileRefreshToken.updateMany).toHaveBeenCalledWith({ where: { userId: 'user-1' }, data: { isRevoked: true } })
   })
 
+  it('reports suspension, not token reuse, when a banned account presents a token revoked by the ban', async () => {
+    row!.isBanned = true
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    mocks.db.mobileRefreshToken.findUnique.mockResolvedValue({ id: 'refresh-1', family: 'family-1', user: row, userId: 'user-1', isRevoked: true, expiresAt: new Date('2030-01-01') })
+    const response = await refresh(request('/api/auth/mobile/refresh', { refreshToken: 'synthetic-refresh' }))
+    expect(response.status).toBe(403)
+    expect(await response.json()).toMatchObject({ error: 'ACCOUNT_SUSPENDED' })
+    expect(mocks.db.mobileRefreshToken.updateMany).not.toHaveBeenCalledWith(expect.objectContaining({ where: { family: 'family-1' } }))
+    expect(warn).not.toHaveBeenCalled()
+    expect(mocks.generatePair).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('still treats a revoked token on an eligible account as reuse and revokes its family', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    mocks.db.mobileRefreshToken.findUnique.mockResolvedValue({ id: 'refresh-1', family: 'family-1', user: row, userId: 'user-1', isRevoked: true, expiresAt: new Date('2030-01-01') })
+    const response = await refresh(request('/api/auth/mobile/refresh', { refreshToken: 'synthetic-refresh' }))
+    expect(response.status).toBe(401)
+    expect(await response.json()).toMatchObject({ error: 'TOKEN_REUSE_DETECTED' })
+    expect(mocks.db.mobileRefreshToken.updateMany).toHaveBeenCalledWith({ where: { family: 'family-1' }, data: { isRevoked: true } })
+    expect(mocks.generatePair).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
   it('preserves rotation and uses the current role for active accounts', async () => {
     row!.lockedUntil = new Date(Date.now() + 60000)
     mocks.db.mobileRefreshToken.findUnique.mockResolvedValue({ id: 'refresh-1', family: 'family-1', user: row, userId: 'user-1', isRevoked: false, expiresAt: new Date('2030-01-01') })
