@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest, NextResponse } from 'next/server'
 import type { CredentialsConfig } from 'next-auth/providers/credentials'
 import type { UserRole } from '@prisma/client'
@@ -118,6 +118,10 @@ beforeEach(() => {
   mocks.verifyGoogle.mockResolvedValue({ getPayload: () => ({ sub: 'google-subject', email: 'member@example.com', email_verified: true }) })
 })
 
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
+
 describe('password authentication across the three real entry points', () => {
   it.each([null, ''])('rejects a missing hash (%s), even if the verifier would accept it', async hash => {
     row!.password = hash as unknown as string
@@ -131,6 +135,8 @@ describe('password authentication across the three real entry points', () => {
   })
 
   it('preserves all success response contracts for a valid password', async () => {
+    // The legacy route signs with NEXTAUTH_SECRET; the isolated runner strips the env.
+    vi.stubEnv('NEXTAUTH_SECRET', 'synthetic-test-secret')
     expect(await webLogin()).toMatchObject({ id: 'user-1', role: 'USER' })
     const legacy = await signIn(request('/api/auth/mobile/sign-in', credentials()))
     expect(await legacy.json()).toMatchObject({ success: true, data: { accessToken: 'synthetic-nextauth-token', expiresIn: 86400 } })
