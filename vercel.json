@@ -1,4 +1,7 @@
 {
+  "regions": [
+    "syd1"
+  ],
   "crons": [
     {
       "path": "/api/cron/renew-forums",
@@ -14,4 +17,3 @@
     }
   ]
 }
-
