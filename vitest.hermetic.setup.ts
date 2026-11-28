@@ -35,7 +35,8 @@ function targetHost(args: unknown[]): string {
     if (typeof opts.path === 'string') return '' // IPC socket, not network
     return typeof opts.host === 'string' ? opts.host : ''
   }
-  if (typeof first === 'string') return '' // IPC path
+  // Like Node: a non-numeric string is an IPC path; a numeric one is a port.
+  if (typeof first === 'string' && !/^\d+$/.test(first.trim())) return ''
   return !normalized && typeof args[1] === 'string' ? args[1] : ''
 }
 net.Socket.prototype.connect = function (this: net.Socket, ...args: unknown[]) {
