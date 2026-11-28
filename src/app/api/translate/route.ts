@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { translateText, type SupportedLang } from '@/lib/translation'
 import { checkRateLimit, rateLimitHeaders, getClientIp } from '@/lib/rate-limit'
+import { translateBodySchema } from '@/lib/translation-limits'
 
 export const runtime = 'nodejs'
 
@@ -20,12 +20,6 @@ function mapToDeepLLang(input: string): SupportedLang {
   return 'EN'
 }
 
-const bodySchema = z.object({
-  text: z.union([z.string(), z.array(z.string())]).refine(v => (Array.isArray(v) ? v.length > 0 : v.trim().length > 0), 'text is required'),
-  target: z.string().min(2),
-  source: z.string().min(2).optional(),
-})
-
 export async function POST(request: NextRequest) {
   // Rate limit compartido en Redis: cada traducción consume cuota de DeepL,
   // así que el abuso cuesta dinero real. El bucket en memoria anterior no
@@ -39,7 +33,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => null)
-  const parsed = bodySchema.safeParse(body)
+  const parsed = translateBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
   }
