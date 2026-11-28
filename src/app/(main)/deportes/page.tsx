@@ -1,10 +1,8 @@
 import { Suspense } from 'react'
-import Link from 'next/link'
 import { fetchFixtures, resolveSeasonForLeague, fetchTeamNextMatches, fetchTeamLastMatches, searchTeams, loadLeaguesDashboard, inferTeamPrimaryLeague } from '@/lib/football'
 import { getServerLocale } from '@/lib/i18n-server'
 import { translate } from '@/lib/i18n'
 import { translateText, type SupportedLang } from '@/lib/translation'
-import { Trophy, ArrowRight } from 'lucide-react'
 import SportsFilters from './filters'
 import { PageHeader } from '@/components/lh/PageHeader'
 import { getDefaultStandingsLeagues, getPlatformLeagueById, mergeStandingsLeagues } from '@/lib/leagues'
@@ -148,13 +146,6 @@ export default async function SportsPage({ searchParams }: { searchParams?: Prom
         accent="var(--lh-terra)"
       >
         <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-          <Link
-            href="/deportes/mundial-2026"
-            className="lh-btn lh-btn--sm"
-            style={{ background: tint('var(--lh-warm)'), color: 'var(--lh-warm)' }}
-          >
-            <Trophy size={15} /> {t('sports.worldcup.callout')} <ArrowRight size={14} />
-          </Link>
           <div style={{ width: '100%', maxWidth: 720 }}>
             <SportsFilters defaultTeamId={teamParam} defaultLiveChecked={liveParam ? liveParam === 'all' : true} />
           </div>

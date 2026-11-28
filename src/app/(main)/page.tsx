@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import {
-  Store, Briefcase, CalendarDays, MessageCircle, Trophy, Cloud,
+  Store, Briefcase, CalendarDays, MessageCircle, Cloud,
   ArrowLeftRight, Radio, Users, ArrowRight,
   Heart, Zap, Shield, Layers,
 } from 'lucide-react'
@@ -15,14 +15,13 @@ import { ForumsWidget, ForumsWidgetSkeleton } from '@/components/home/ForumsWidg
 import { WeatherWidget } from '@/components/home/WeatherWidget'
 import { RatesWidget } from '@/components/home/RatesWidget'
 import { RadioWidget } from '@/components/home/RadioWidget'
-import { SportsWidget } from '@/components/home/SportsWidget'
 
 /*
  * Server Component: el shell y las secciones de datos se renderizan en el
  * servidor (SEO + contenido en el primer paint). Las secciones con datos
  * hacen streaming vía <Suspense> con datos cacheados (lib/home-data).
  * Solo son client: búsqueda, canvas del hero, reveals y widgets "vivos"
- * (clima, tasas, deportes, radio).
+ * (clima, tasas, radio).
  */
 
 /* ─── paleta de colores helpers ─── */
@@ -35,14 +34,13 @@ const CATEGORIES = [
   { name: 'Empleos',    desc: 'Oportunidades',        Icon: Briefcase },
   { name: 'Eventos',    desc: 'Agenda cultural',      Icon: CalendarDays },
   { name: 'Foros',      desc: 'Conversa y conecta',  Icon: MessageCircle },
-  { name: 'Deportes',   desc: 'Resultados en vivo',  Icon: Trophy },
   { name: 'Clima',      desc: 'Tu ciudad hoy',        Icon: Cloud },
   { name: 'Cambio',     desc: 'Tasas al instante',    Icon: ArrowLeftRight },
   { name: 'Radio',      desc: 'En vivo 24/7',         Icon: Radio },
   { name: 'Comunidad',  desc: 'Conoce gente',         Icon: Users },
 ]
 
-const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/deportes', '/clima', '/tasas', '/emisoras', '/directorio']
+const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/clima', '/tasas', '/emisoras', '/directorio']
 
 const WHY = [
   { title: 'Todo en un lugar',     desc: 'Negocios, empleos, eventos y comunidad sin saltar entre apps.',              Icon: Layers,  colorIdx: 0 },
@@ -53,13 +51,12 @@ const WHY = [
 
 /* Atajos populares → cada uno apunta a su módulo real.
    Negocios usan el directorio (?categoria= cuando hay categoría, si no ?q=);
-   el resto va a su vertical (empleos, eventos, deportes). */
+   el resto va a su vertical (empleos, eventos). */
 const POPULAR: { label: string; href: string }[] = [
   { label: 'Restaurantes',   href: '/directorio?categoria=GASTRONOMIA' },
   { label: 'Trabajo remoto', href: `/empleos?q=${encodeURIComponent('remoto')}` },
   { label: 'Salsa',          href: `/eventos?q=${encodeURIComponent('Salsa')}` },
   { label: 'Remesas',        href: '/directorio?categoria=SERVICIOS' },
-  { label: 'Fútbol',         href: '/deportes' },
   { label: 'Abogados',       href: '/directorio?categoria=SERVICIOS' },
 ]
 
@@ -206,7 +203,7 @@ export default function Home() {
               <h2 style={{ fontSize: 'clamp(30px,4vw,44px)', lineHeight: 1.06, letterSpacing: '-.03em', fontWeight: 600, margin: '12px 0 0', fontFamily: 'var(--lh-font)' }}>Explora por categoría</h2>
             </div>
             <p style={{ maxWidth: 300, color: 'var(--lh-fg2)', fontSize: 15.5, lineHeight: 1.55, margin: '0 0 6px', display: 'none' }} className="lt-desk-only">
-              Nueve módulos para conectar con tu comunidad, en menos de cinco segundos.
+              Ocho módulos para conectar con tu comunidad, en menos de cinco segundos.
             </p>
           </Reveal>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
@@ -342,13 +339,8 @@ export default function Home() {
               <RatesWidget />
             </Reveal>
 
-            {/* Deportes */}
-            <Reveal delay={120}>
-              <SportsWidget />
-            </Reveal>
-
             {/* Radio */}
-            <Reveal delay={180}>
+            <Reveal delay={120}>
               <RadioWidget />
             </Reveal>
 
