@@ -44,7 +44,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
       },
-      // API-Football team/league logos (used by worldcup module)
+      // API-Football team/league logos (used by /deportes)
       {
         protocol: 'https',
         hostname: 'media.api-sports.io',
@@ -66,6 +66,15 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: SECURITY_HEADERS,
       },
+    ];
+  },
+  // /deportes is hidden while the API-Football account is suspended: every
+  // league renders empty. Temporary (307) so it can be restored by deleting
+  // this entry; also catches old links to the removed /deportes/mundial-2026.
+  async redirects() {
+    return [
+      { source: '/deportes', destination: '/', permanent: false },
+      { source: '/deportes/:path*', destination: '/', permanent: false },
     ];
   },
 };
