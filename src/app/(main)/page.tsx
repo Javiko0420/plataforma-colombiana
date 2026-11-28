@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import {
   Store, Briefcase, CalendarDays, MessageCircle, Cloud,
-  ArrowLeftRight, Radio, Users, ArrowRight,
+  ArrowLeftRight, Radio, Users, ArrowRight, PlusCircle,
   Heart, Zap, Shield, Layers,
 } from 'lucide-react'
 import { Reveal } from '@/components/lh/Reveal'
@@ -29,18 +29,18 @@ const ACCENT_TINTS = ['var(--lh-accent)', 'var(--lh-terra)', 'var(--lh-warm)', '
 const chip = (v: string) => `color-mix(in oklch,${v} 14%,transparent)`
 
 /* ─── Datos ─── */
+/* colorIdx (ACCENT_TINTS) está elegido para que ningún color se repita en una
+   misma fila ni columna, tanto en la grilla 2×4 (móvil) como en la 4×2. */
 const CATEGORIES = [
-  { name: 'Negocios',   desc: 'Directorio latino',   Icon: Store },
-  { name: 'Empleos',    desc: 'Oportunidades',        Icon: Briefcase },
-  { name: 'Eventos',    desc: 'Agenda cultural',      Icon: CalendarDays },
-  { name: 'Foros',      desc: 'Conversa y conecta',  Icon: MessageCircle },
-  { name: 'Clima',      desc: 'Tu ciudad hoy',        Icon: Cloud },
-  { name: 'Cambio',     desc: 'Tasas al instante',    Icon: ArrowLeftRight },
-  { name: 'Radio',      desc: 'En vivo 24/7',         Icon: Radio },
-  { name: 'Comunidad',  desc: 'Conoce gente',         Icon: Users },
+  { name: 'Negocios',          desc: 'Directorio latino',   href: '/directorio',        Icon: Store,          colorIdx: 0 },
+  { name: 'Empleos',           desc: 'Oportunidades',       href: '/empleos',           Icon: Briefcase,      colorIdx: 1 },
+  { name: 'Eventos',           desc: 'Agenda cultural',     href: '/eventos',           Icon: CalendarDays,   colorIdx: 2 },
+  { name: 'Foros',             desc: 'Conversa y conecta',  href: '/foros',             Icon: MessageCircle,  colorIdx: 3 },
+  { name: 'Clima',             desc: 'Tu ciudad hoy',       href: '/clima',             Icon: Cloud,          colorIdx: 1 },
+  { name: 'Cambio',            desc: 'Tasas al instante',   href: '/tasas',             Icon: ArrowLeftRight, colorIdx: 2 },
+  { name: 'Radio',             desc: 'En vivo 24/7',        href: '/emisoras',          Icon: Radio,          colorIdx: 3 },
+  { name: 'Registrar negocio', desc: 'Publica tu negocio',  href: '/registrar-negocio', Icon: PlusCircle,     colorIdx: 0 },
 ]
-
-const CATEGORY_HREFS = ['/directorio', '/empleos', '/eventos', '/foros', '/clima', '/tasas', '/emisoras', '/directorio']
 
 const WHY = [
   { title: 'Todo en un lugar',     desc: 'Negocios, empleos, eventos y comunidad sin saltar entre apps.',              Icon: Layers,  colorIdx: 0 },
@@ -206,15 +206,17 @@ export default function Home() {
               Ocho módulos para conectar con tu comunidad, en menos de cinco segundos.
             </p>
           </Reveal>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
-            {CATEGORIES.map(({ name, desc, Icon }, i) => {
-              const c = ACCENT_TINTS[i % 4]
+          {/* Columnas fijas (2 en móvil, 4 desde md) para que las 8 tarjetas
+              siempre formen 2×4 o 4×2, sin huecos al final. */}
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+            {CATEGORIES.map(({ name, desc, href, Icon, colorIdx }, i) => {
+              const c = ACCENT_TINTS[colorIdx]
               return (
                 <Reveal key={name} delay={i * 40}>
                   <Link
-                    href={CATEGORY_HREFS[i]}
-                    className="lh-hover-lift"
-                    style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: 24, borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', textDecoration: 'none' }}
+                    href={href}
+                    className="lh-hover-lift flex h-full flex-col gap-3 p-4 md:gap-4 md:p-6"
+                    style={{ borderRadius: 20, background: 'var(--lh-surface)', border: '1px solid var(--lh-border)', textDecoration: 'none' }}
                   >
                     <span style={{ width: 46, height: 46, borderRadius: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', background: chip(c), color: c }}>
                       <Icon size={22} />
