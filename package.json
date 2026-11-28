@@ -65,7 +65,7 @@
     "@types/react-dom": "^19.3.0",
     "eslint": "^9",
     "eslint-config-next": "^15.5.28",
-    "jsdom": "^26.1.0",
+    "jsdom": "^31.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
