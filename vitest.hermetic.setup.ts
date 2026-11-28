@@ -25,15 +25,22 @@ process.env.DIRECT_URL = BLOCKED_DB
 //    connection to anything but loopback means a missing mock.
 const LOOPBACK = /^(localhost|127\.|::1$)/
 const connect = net.Socket.prototype.connect
+// net.connect()/http hand Socket#connect a normalized `[options, callback]`
+// array; direct calls may pass `(options)`, `(port, host)` or `(path)`.
+function targetHost(args: unknown[]): string {
+  const normalized = Array.isArray(args[0])
+  const first: unknown = normalized ? (args[0] as unknown[])[0] : args[0]
+  if (first && typeof first === 'object') {
+    const opts = first as { host?: unknown; path?: unknown }
+    if (typeof opts.path === 'string') return '' // IPC socket, not network
+    return typeof opts.host === 'string' ? opts.host : ''
+  }
+  if (typeof first === 'string') return '' // IPC path
+  return !normalized && typeof args[1] === 'string' ? args[1] : ''
+}
 net.Socket.prototype.connect = function (this: net.Socket, ...args: unknown[]) {
-  const target = args[0]
-  const host =
-    target && typeof target === 'object'
-      ? String((target as { host?: string; path?: string }).host ?? (target as { path?: string }).path ?? '')
-      : typeof args[1] === 'string'
-        ? args[1]
-        : ''
-  if (host && !host.startsWith('/') && !LOOPBACK.test(host)) {
+  const host = targetHost(args)
+  if (host && !LOOPBACK.test(host)) {
     throw new Error(`Tests must not open network connections (attempted: ${host}). Mock the client or fetch.`)
   }
   return connect.apply(this, args as Parameters<typeof connect>)
