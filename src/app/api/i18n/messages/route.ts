@@ -61,19 +61,3 @@ export async function GET(request: NextRequest) {
   response.headers.set('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=60')
   return response
 }
-
-// Opcional: POST para traducir texto arbitrario (no usado por el cliente de i18n)
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json().catch(() => null)
-    const text: unknown = body?.text
-    const lang: unknown = body?.lang
-    if (typeof text !== 'string' || typeof lang !== 'string') {
-      return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
-    }
-    const result = await translateText(text, mapLocaleToDeepL(lang))
-    return NextResponse.json({ success: true, data: { translated: result } })
-  } catch {
-    return NextResponse.json({ success: false, error: 'Translation error' }, { status: 500 })
-  }
-}
